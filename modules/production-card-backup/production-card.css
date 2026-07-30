@@ -1,0 +1,414 @@
+/* =====================================================
+   1. RESET + BAZA
+===================================================== */
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #f4f6f8;
+  color: #1f2933;
+}
+
+
+/* =====================================================
+   2. STAŁY PASEK GÓRNY
+===================================================== */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background-color: #002855;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.company-logo {
+  height: 40px;
+}
+
+
+/* =====================================================
+   3. UKŁAD STRONY
+===================================================== */
+.content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.document-header {
+  padding-top: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.document-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* =====================================================
+   4. SEKCJE (KARTY)
+===================================================== */
+main > section {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+main > section h2 {
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* =====================================================
+   5. FORMULARZE – PODSTAWY
+===================================================== */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #fff;
+  color: #1f2933;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #002855;
+  box-shadow: 0 0 0 2px rgba(0, 40, 85, 0.15);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+
+/* =====================================================
+   6. INPUT NUMBER – JAK TEXT
+===================================================== */
+input[type="number"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+/* =====================================================
+   7. CHECKBOXY
+===================================================== */
+label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+input[type="checkbox"] {
+  width: auto;
+}
+
+
+/* =====================================================
+   8. POLA W JEDNEJ LINII
+===================================================== */
+.inline-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+
+/* =====================================================
+   9. PRZYCISKI
+===================================================== */
+button {
+  width: 200px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: 1px solid #002855;
+  background-color: #002855;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #001c3d;
+}
+
+
+/* =====================================================
+   10. INDEKSY FARB
+===================================================== */
+#inksContainer {
+  margin-bottom: 12px;
+}
+
+.ink-row {
+  display: grid;
+  grid-template-columns: 320px auto;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+
+/* =====================================================
+   11. GRAFIKA I DRUK – UKŁAD
+===================================================== */
+.graphics-layout {
+  display: grid;
+  grid-template-columns: 1fr 160px;
+  gap: 24px;
+  align-items: start;
+}
+
+.graphics-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.preview-box {
+  width: 160px;
+  height: 200px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* =====================================================
+   12. GRAFIKA – WIERSZE PÓL
+===================================================== */
+.graphics-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.field-small input { max-width: 140px; }
+.field-xsmall input {
+  max-width: 120px;
+  text-align: center;
+}
+
+
+/* =====================================================
+   13. CUSTOM SELECT
+===================================================== */
+.custom-select {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.select-trigger {
+  height: 40px;
+  padding: 0 40px 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.custom-select.open .select-trigger {
+  border-color: #002855;
+  box-shadow: 0 0 0 2px rgba(0, 40, 85, 0.15);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #002855;
+  border-bottom: 2px solid #002855;
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.custom-select.open .select-arrow {
+  transform: rotate(-135deg);
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline: 0;
+  background-color: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  max-height: 280px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: 0.2s ease;
+  z-index: 20;
+}
+
+.custom-select.open .select-options {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.select-option {
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.select-option:hover {
+  background-color: #e6eef7;
+  color: #002855;
+}
+
+.select-option.selected {
+  background-color: #002855;
+  color: #fff;
+}
+
+
+/* =====================================================
+   14. PILLS
+===================================================== */
+.pill-group {
+  display: flex;
+  gap: 12px;
+}
+
+.pill {
+  padding: 8px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pill input { display: none; }
+
+.pill:has(input:checked) {
+  background-color: #002855;
+  color: #fff;
+  border-color: #002855;
+}
+
+
+/* =====================================================
+   15. TABELA POMOCNICZA
+===================================================== */
+.quantities-table {
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.quantities-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background-color: #fff;
+}
+
+.quantities-table th,
+.quantities-table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.quantities-table thead th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+.quantities-table tbody td:first-child {
+  font-weight: 600;
+  background-color: #f8fafc;
+}
+
+.quantities-table tbody tr:hover td {
+  background-color: #e6eef7;
+}
+
+#printBtn {
+  display: block;
+  margin: 5px auto 30px;
+}
+/* =====================================================
+   16. RESPONSYWNOŚĆ
+===================================================== */
+@media (max-width: 768px) {
+  .content { padding: 0 16px; }
+  .document-header h1 { font-size: 22px; }
+  .graphics-layout { grid-template-columns: 1fr; }
+}
+
+
+/* =====================================================
+   PRINT – KARTA PRODUKCYJNA A4 (DETAL FINAL)
+===================================================== */
+
+#print-header {
+  display: none;
+}
+
+
+
+/* ProdFlow integration */
+body{background:transparent;}

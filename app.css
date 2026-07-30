@@ -1,0 +1,696 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:Segoe UI,sans-serif;
+    background:#eef2f7;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+
+}
+
+/* EKRAN STARTOWY */
+
+.pf-intro{
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    color:#fff;
+    background:
+        radial-gradient(circle at 50% 45%,rgba(0,115,210,.13),transparent 34%),
+        linear-gradient(145deg,#020914 0%,#010711 48%,#020b18 100%);
+    transition:opacity .7s ease,visibility .7s ease;
+}
+
+.pf-intro::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    opacity:.16;
+    background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:42px 42px;
+    mask-image:radial-gradient(circle at center,#000,transparent 72%);
+}
+
+.pf-intro.is-leaving{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+.pf-intro__ambient{
+    position:absolute;
+    width:min(72vw,760px);
+    aspect-ratio:1;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(0,157,255,.1),rgba(0,91,190,.025) 42%,transparent 70%);
+    animation:pfAmbient 4s ease-in-out infinite alternate;
+}
+
+.pf-intro__stage{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    transform:translateY(-1.5vh);
+}
+
+.pf-intro__symbol{
+    position:relative;
+    width:clamp(230px,29vw,370px);
+    aspect-ratio:1;
+    display:grid;
+    place-items:center;
+}
+
+.pf-intro__ring{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    overflow:visible;
+    transform:rotate(-90deg);
+}
+
+.pf-intro__ring-track,
+.pf-intro__ring-progress{
+    fill:none;
+    stroke-width:9;
+}
+
+.pf-intro__ring-track{
+    stroke:rgba(0,96,184,.13);
+    opacity:0;
+    animation:pfTrackIn .45s .2s ease forwards,pfRingOut .7s 3s ease forwards;
+}
+
+.pf-intro__ring-progress{
+    stroke:url("#pfIntroGradient");
+    stroke:#08aaf4;
+    stroke-linecap:butt;
+    stroke-dasharray:792;
+    stroke-dashoffset:792;
+    filter:drop-shadow(0 0 7px rgba(0,174,255,.95)) drop-shadow(0 0 18px rgba(0,122,255,.55));
+    animation:pfRingDraw 2.55s .38s cubic-bezier(.45,.03,.18,1) forwards,pfRingOut .7s 3s ease forwards;
+}
+
+.pf-intro__mark{
+    position:relative;
+    z-index:2;
+    width:66%;
+    height:66%;
+    object-fit:contain;
+    opacity:.22;
+    filter:brightness(.25) saturate(.65);
+    transform:scale(.92);
+    animation:pfMarkReveal .9s 2.65s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.pf-intro__wordmark{
+    display:flex;
+    justify-content:center;
+    gap:0;
+    margin-top:clamp(-92px,-7vw,-58px);
+    padding-left:.4em;
+    font-family:"Segoe UI",Arial,sans-serif;
+    font-size:clamp(25px,2.7vw,38px);
+    font-weight:300;
+    line-height:1;
+    letter-spacing:.4em;
+    white-space:nowrap;
+    opacity:0;
+    transform:translateY(12px);
+    text-shadow:0 0 25px rgba(0,149,255,.24);
+    animation:pfWordmarkIn .8s 3.18s ease forwards;
+}
+
+.pf-intro__wordmark span:last-child{
+    color:#079ee9;
+}
+
+.pf-intro__owner{
+    margin-top:10px;
+    color:rgba(190,215,232,.42);
+    font-size:11px;
+    font-weight:300;
+    letter-spacing:.16em;
+    opacity:0;
+    transform:translateY(7px);
+    animation:pfOwnerIn .65s 3.48s ease forwards;
+}
+
+.pf-intro__owner strong{
+    color:rgba(218,235,247,.68);
+    font-weight:500;
+    letter-spacing:.12em;
+}
+
+.pf-login{
+    width:min(88vw,390px);
+    margin-top:20px;
+    padding:24px;
+    border:1px solid rgba(113,190,241,.2);
+    border-radius:22px;
+    color:#eaf7ff;
+    background:
+        linear-gradient(145deg,rgba(11,36,62,.78),rgba(3,20,38,.72));
+    box-shadow:
+        0 24px 70px rgba(0,0,0,.36),
+        inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    opacity:0;
+    transform:translateY(18px) scale(.985);
+    pointer-events:none;
+}
+
+.pf-intro.is-ready .pf-login{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+    animation:pfLoginIn .65s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.pf-login__heading{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    margin-bottom:20px;
+    text-align:center;
+}
+
+.pf-login__heading strong{
+    font-size:19px;
+    font-weight:600;
+    letter-spacing:.01em;
+}
+
+.pf-login__heading span{
+    color:rgba(199,222,239,.57);
+    font-size:12px;
+}
+
+.pf-login__field{
+    display:block;
+    margin-top:13px;
+}
+
+.pf-login__field > span:first-child{
+    display:block;
+    margin:0 0 7px 2px;
+    color:rgba(211,231,246,.72);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.pf-login__control{
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+
+.pf-login__control > svg{
+    position:absolute;
+    left:14px;
+    width:18px;
+    height:18px;
+    fill:none;
+    stroke:rgba(126,188,230,.64);
+    stroke-width:1.7;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    pointer-events:none;
+}
+
+.pf-login__control input{
+    width:100%;
+    height:46px;
+    padding:0 68px 0 43px;
+    border:1px solid rgba(104,166,210,.24);
+    border-radius:12px;
+    outline:none;
+    color:#eff9ff;
+    background:rgba(1,13,26,.55);
+    font:400 14px/1 "Segoe UI",sans-serif;
+    transition:border-color .22s ease,background .22s ease,box-shadow .22s ease;
+}
+
+.pf-login__control input::placeholder{
+    color:rgba(183,208,225,.31);
+}
+
+.pf-login__control input:focus{
+    border-color:rgba(25,166,242,.75);
+    background:rgba(2,20,38,.76);
+    box-shadow:0 0 0 3px rgba(0,148,235,.1),0 0 24px rgba(0,138,231,.08);
+}
+
+.pf-login__reveal{
+    position:absolute;
+    right:12px;
+    padding:5px;
+    border:0;
+    color:rgba(171,211,239,.65);
+    background:transparent;
+    font:600 11px/1 "Segoe UI",sans-serif;
+    cursor:pointer;
+}
+
+.pf-login__reveal:hover,
+.pf-login__reveal:focus-visible{
+    color:#64c8ff;
+    outline:none;
+}
+
+.pf-login__error{
+    min-height:18px;
+    margin:8px 2px 2px;
+    color:#ff8c9c;
+    font-size:11px;
+    text-align:center;
+}
+
+.pf-login__submit{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    height:46px;
+    border:1px solid rgba(61,191,255,.42);
+    border-radius:12px;
+    color:#fff;
+    background:linear-gradient(115deg,#006eb8,#078bd9);
+    box-shadow:0 10px 28px rgba(0,103,181,.24);
+    font:600 14px/1 "Segoe UI",sans-serif;
+    cursor:pointer;
+    transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+
+.pf-login__submit:hover,
+.pf-login__submit:focus-visible{
+    outline:none;
+    transform:translateY(-1px);
+    filter:brightness(1.08);
+    box-shadow:0 14px 34px rgba(0,122,208,.34);
+}
+
+.pf-login__submit:disabled{
+    cursor:wait;
+    opacity:.7;
+}
+
+.pf-login__arrow{
+    font-size:19px;
+    font-weight:300;
+    transition:transform .2s ease;
+}
+
+.pf-login__submit:hover .pf-login__arrow{
+    transform:translateX(3px);
+}
+
+.pf-login__presentation{
+    margin-top:14px;
+    color:rgba(183,211,231,.38);
+    font-size:10px;
+    letter-spacing:.025em;
+    text-align:center;
+}
+
+.pf-login__presentation strong{
+    color:rgba(202,227,244,.58);
+    font-weight:600;
+}
+
+.pf-login.is-error{
+    animation:pfLoginShake .36s ease;
+}
+
+.pf-login.is-error .pf-login__control input{
+    border-color:rgba(255,102,123,.58);
+}
+
+.pf-login.is-authenticating .pf-login__submit span:first-child{
+    font-size:0;
+}
+
+.pf-login.is-authenticating .pf-login__submit span:first-child::after{
+    content:"Logowanie…";
+    font-size:14px;
+}
+
+.pf-intro__hint{
+    position:absolute;
+    bottom:clamp(22px,5vh,48px);
+    z-index:1;
+    color:rgba(192,220,239,.42);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    transition:opacity .3s ease;
+}
+
+.pf-intro.is-ready .pf-intro__hint{
+    opacity:0;
+}
+
+@keyframes pfTrackIn{
+    to{opacity:1}
+}
+
+@keyframes pfRingDraw{
+    0%{stroke-dashoffset:792}
+    100%{stroke-dashoffset:0}
+}
+
+@keyframes pfRingOut{
+    to{opacity:0;transform:scale(1.04);transform-origin:center}
+}
+
+@keyframes pfMarkReveal{
+    0%{opacity:.22;filter:brightness(.25) saturate(.65);transform:scale(.92)}
+    70%{opacity:1;filter:brightness(1.15) saturate(1.1);transform:scale(1.025)}
+    100%{opacity:1;filter:brightness(1) saturate(1);transform:scale(1)}
+}
+
+@keyframes pfWordmarkIn{
+    to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes pfOwnerIn{
+    to{opacity:1;transform:translateY(0)}
+}
+
+@keyframes pfLoginIn{
+    from{opacity:0;transform:translateY(18px) scale(.985)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+@keyframes pfLoginShake{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-7px)}
+    55%{transform:translateX(6px)}
+    80%{transform:translateX(-3px)}
+}
+
+@keyframes pfAmbient{
+    to{transform:scale(1.08);opacity:.75}
+}
+
+@media (max-width:600px){
+    .pf-intro__wordmark{
+        margin-top:-58px;
+        padding-left:.32em;
+        letter-spacing:.32em;
+    }
+
+    .pf-login{
+        margin-top:22px;
+        padding:20px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .pf-intro *,
+    .pf-intro *::before,
+    .pf-intro *::after{
+        animation-duration:.01ms !important;
+        animation-delay:0ms !important;
+    }
+
+    .pf-intro{
+        transition-duration:.2s;
+    }
+}
+
+#app{
+
+    display:flex;
+    height:100vh;
+    width:100%;
+    overflow:hidden;
+
+}
+
+/* SIDEBAR */
+
+.sidebar{
+
+    width:220px;
+    height:100vh;
+    flex:0 0 220px;
+    overflow:hidden;
+
+    background:#002855;
+
+    color:white;
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+.logo{
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:30px 20px;
+
+    border-bottom:1px solid rgba(255,255,255,.15);
+
+}
+
+.logo img{
+
+    width:170px;
+    height:auto;
+
+}
+
+.logo h1{
+
+    font-size:28px;
+
+}
+
+.sidebar nav{
+
+    flex:1;
+    min-height:0;
+
+    padding:20px 10px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(194,219,242,.42) transparent;
+
+}
+
+.sidebar nav::-webkit-scrollbar{
+    width:6px;
+}
+
+.sidebar nav::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+.sidebar nav::-webkit-scrollbar-thumb{
+    min-height:46px;
+    border-radius:999px;
+    background:rgba(194,219,242,.36);
+}
+
+.sidebar nav::-webkit-scrollbar-thumb:hover{
+    background:rgba(220,237,252,.58);
+}
+
+@media (min-height:900px){
+    .sidebar nav{
+        overflow-y:hidden;
+    }
+}
+
+.menu-title{
+
+    font-size:11px;
+
+    text-transform:uppercase;
+
+    opacity:.6;
+
+    margin:28px 15px 10px;
+
+    letter-spacing:1px;
+
+}
+
+.sidebar nav a{
+
+    display:flex;
+
+    align-items:center;
+
+    padding:13px 16px;
+
+    color:white;
+
+    text-decoration:none;
+
+    border-radius:10px;
+
+    margin-bottom:6px;
+
+    transition:.25s;
+
+}
+
+.sidebar nav a:hover{
+
+    background:rgba(255,255,255,.12);
+
+}
+
+.sidebar nav a.active{
+
+    background:white;
+
+    color:#002855;
+
+    font-weight:600;
+
+}
+
+/* CONTENT */
+
+#content{
+
+    flex:1;
+    min-width:0;
+    min-height:0;
+    height:100vh;
+
+    padding:50px;
+
+    overflow-x:auto;
+    overflow-y:auto;
+
+}
+
+.welcome{
+
+    margin-bottom:40px;
+
+}
+
+.welcome h2{
+
+    font-size:38px;
+
+    color:#002855;
+
+}
+
+.welcome p{
+
+    color:#6c7b88;
+
+    margin-top:8px;
+
+}
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+
+    gap:25px;
+
+}
+
+.card{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    transition:.25s;
+
+    cursor:pointer;
+
+    border:1px solid #dde4ea;
+
+}
+
+.card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 20px 40px rgba(0,40,85,.10);
+
+    border-color:#002855;
+
+}
+
+.card span{
+
+    font-size:42px;
+
+}
+
+.card h3{
+
+    margin:20px 0 10px;
+
+    color:#002855;
+
+}
+
+.card p{
+
+    color:#66717b;
+
+    line-height:1.5;
+
+}
+
+.sidebar-footer{
+
+    padding:20px;
+
+    border-top:1px solid rgba(255,255,255,.15);
+
+    font-size:13px;
+
+    color:rgba(255,255,255,.75);
+
+}
+
+.sidebar-footer strong{
+
+    color:white;
+
+    display:block;
+
+    margin-bottom:4px;
+
+}

@@ -1,0 +1,141 @@
+<section class="pf-production hmi-console" id="productionCockpit" aria-label="Panel operatora produkcji">
+  <header class="hmi-topbar">
+    <div class="hmi-brand">
+      <span class="hmi-brand__mark">MP</span>
+      <div><small>STANOWISKO PRODUKCYJNE</small><strong>Panel operatora</strong></div>
+    </div>
+
+    <label class="hmi-order-picker">
+      <span>Aktywne zlecenie</span>
+      <select id="productionOrderSelect">
+        <option value="">Brak zleceń gotowych do produkcji</option>
+      </select>
+    </label>
+
+    <div class="hmi-user">
+      <div><small>Operator</small><strong id="productionOperator">—</strong></div>
+      <div><small>Zmiana I</small><strong id="productionClock">--:--:--</strong></div>
+    </div>
+  </header>
+
+  <main class="hmi-grid">
+    <section class="hmi-panel hmi-job">
+      <div class="hmi-state" id="statusBanner">
+        <span class="hmi-state__icon" id="statusIcon">▶</span>
+        <div><small>STAN MASZYNY / ZLECENIA</small><strong id="orderStatusLabel">Gotowe do uruchomienia</strong></div>
+        <b id="orderStatusPill">OCZEKUJE</b>
+      </div>
+
+      <div class="hmi-job__headline">
+        <div><small>NUMER ZLECENIA</small><h1 id="productionOrderNumber">Brak zlecenia</h1></div>
+        <span id="productionPriority">—</span>
+      </div>
+
+      <div class="hmi-job__product">
+        <small>PRODUKT</small>
+        <strong id="productionProduct">—</strong>
+        <span id="productionClient">—</span>
+      </div>
+
+      <div class="hmi-facts">
+        <div><small>Maszyna</small><strong id="productionMachine">—</strong></div>
+        <div><small>Termin</small><strong id="productionDueDate">—</strong></div>
+        <div><small>Materiał główny</small><strong id="productionMaterial">—</strong></div>
+      </div>
+    </section>
+
+    <section class="hmi-panel hmi-result">
+      <header class="hmi-panel__header">
+        <div><small>REALIZACJA</small><h2>Wynik zmiany</h2></div>
+        <div class="hmi-runtime"><small>CZAS PRACY</small><strong id="workTimeKpi">00:00</strong></div>
+      </header>
+
+      <div class="hmi-progress-head">
+        <span>Postęp zlecenia</span>
+        <strong id="progressPercent">0%</strong>
+      </div>
+      <div class="hmi-progress"><span id="progressBar"></span></div>
+
+      <div class="hmi-kpis">
+        <article class="is-good"><small>Dobre</small><strong id="goodKpi">0</strong><span>szt.</span></article>
+        <article class="is-scrap"><small>Odpad</small><strong id="scrapKpi">0</strong><span>szt.</span></article>
+        <article><small>Pozostało</small><strong id="remainingQuantity">0</strong><span>szt.</span></article>
+        <article><small>Plan</small><strong id="plannedQuantity">0</strong><span>szt.</span></article>
+      </div>
+    </section>
+
+    <section class="hmi-panel hmi-materials">
+      <header class="hmi-panel__header">
+        <div><small>PRZYGOTOWANIE</small><h2>Surowce do zlecenia</h2></div>
+        <span class="hmi-count"><b id="productionMaterialsCount">0</b> poz.</span>
+      </header>
+      <div class="hmi-materials__list" id="productionMaterialsList">
+        <p>Brak materiałów przypisanych do zlecenia.</p>
+      </div>
+      <div class="hmi-materials__footer">
+        <button class="is-request" type="button" data-production-action="warehouse-request">Zgłoś zapotrzebowanie</button>
+        <button type="button" data-production-action="withdrawals">Historia i dokumenty pobrań</button>
+      </div>
+    </section>
+
+    <section class="hmi-panel hmi-events">
+      <header class="hmi-panel__header">
+        <div><small>PRZEBIEG ZMIANY</small><h2>Ostatnie zdarzenia</h2></div>
+        <div class="hmi-downtime"><small>PRZESTÓJ</small><strong id="downtimeValue">0 min</strong></div>
+      </header>
+      <div class="hmi-timeline" id="productionTimeline">
+        <p class="pf-muted">Brak zdarzeń dla bieżącego zlecenia.</p>
+      </div>
+    </section>
+
+    <aside class="hmi-actions" aria-label="Sterowanie produkcją">
+      <div class="hmi-actions__heading"><small>STEROWANIE</small><strong>Wybierz czynność</strong></div>
+
+      <button class="hmi-action hmi-action--start" id="productionStartBtn" type="button" data-production-action="start">
+        <span>▶</span><div><strong id="productionStartLabel">START</strong><small>Rozpocznij lub wznów</small></div>
+      </button>
+      <button class="hmi-action hmi-action--stop" id="productionStopBtn" type="button" data-production-action="stop">
+        <span>■</span><div><strong>STOP</strong><small>Wybierz powód zatrzymania</small></div>
+      </button>
+      <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
+        <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
+      </button>
+      <button class="hmi-action hmi-action--material" type="button" data-production-action="withdraw-material">
+        <span>⇩</span><div><strong>Pobierz surowiec</strong><small>Produkt, ID i ilość</small></div>
+      </button>
+      <button class="hmi-action hmi-action--finish" type="button" data-production-action="finish">
+        <span>✓</span><div><strong>Zakończ zlecenie</strong><small>Przekaż do jakości</small></div>
+      </button>
+    </aside>
+  </main>
+
+  <div class="hmi-data-sink" hidden>
+    <span id="goodQuantity">0</span><span id="efficiencyKpi">0%</span>
+    <span id="productionSpeed">—</span><span id="productionWebTension">—</span>
+    <span id="productionUvTemperature">—</span><span id="productionColorCount">—</span>
+    <span id="productionCoreSize">—</span><span id="productionWinding">—</span>
+    <span id="productionOee">0%</span><span id="productionOeeBar"></span>
+    <span id="qualityIndicator">0%</span><span id="qualityBar"></span>
+    <span id="toggleActionIcon">▶</span><span id="toggleActionLabel">Uruchom zlecenie</span>
+    <span id="toggleActionHint">Rozpocznij rejestrowanie czasu</span><span id="productionProgressRing"></span>
+  </div>
+
+  <div class="hmi-modal pf-modal" id="productionModal" aria-hidden="true">
+    <div class="hmi-modal__backdrop pf-modal__backdrop" data-production-action="close-modal"></div>
+    <div class="hmi-modal__dialog pf-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="productionModalTitle">
+      <button class="hmi-modal__close pf-modal__close" type="button" data-production-action="close-modal" aria-label="Zamknij">×</button>
+      <span class="hmi-modal__eyebrow" id="productionModalEyebrow">RAPORTOWANIE</span>
+      <h2 id="productionModalTitle">Dodaj wpis</h2>
+      <p id="productionModalDescription"></p>
+      <form id="productionModalForm">
+        <div id="productionModalFields"></div>
+        <div class="hmi-modal__actions pf-modal__actions">
+          <button class="hmi-btn hmi-btn--ghost" type="button" data-production-action="close-modal">Anuluj</button>
+          <button class="hmi-btn hmi-btn--primary" type="submit">Zapisz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="hmi-toast pf-toast" id="productionToast" role="status" aria-live="polite"></div>
+</section>

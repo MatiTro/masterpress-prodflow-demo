@@ -1,0 +1,166 @@
+<section class="statistics-module" id="statisticsModule">
+  <header class="statistics-header">
+    <div>
+      <span class="statistics-kicker">Analiza operacyjna</span>
+      <h1>Statystyka</h1>
+      <p>Najważniejsze wskaźniki produkcji, terminowości, reklamacji i wykorzystania maszyn w jednym miejscu.</p>
+    </div>
+
+    <div class="statistics-header-actions">
+      <button class="statistics-btn statistics-btn-light" id="statisticsExportBtn" type="button">Eksport CSV</button>
+      <button class="statistics-btn statistics-btn-primary" id="statisticsRefreshBtn" type="button">Odśwież dane</button>
+    </div>
+  </header>
+
+  <section class="statistics-toolbar">
+    <label>
+      <span>Zakres danych</span>
+      <select id="statisticsPeriod">
+        <option value="7">Ostatnie 7 dni</option>
+        <option value="30" selected>Ostatnie 30 dni</option>
+        <option value="90">Ostatnie 90 dni</option>
+        <option value="365">Ostatni rok</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Maszyna</span>
+      <select id="statisticsMachine">
+        <option value="">Wszystkie maszyny</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Klient</span>
+      <select id="statisticsClient">
+        <option value="">Wszyscy klienci</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Status</span>
+      <select id="statisticsStatus">
+        <option value="">Wszystkie statusy</option>
+        <option value="Zakończone">Zakończone</option>
+        <option value="W produkcji">W produkcji</option>
+        <option value="Opóźnione">Opóźnione</option>
+      </select>
+    </label>
+
+    <button class="statistics-filter-clear" id="statisticsClearFilters" type="button">Wyczyść filtry</button>
+  </section>
+
+  <section class="statistics-summary" id="statisticsSummary"></section>
+
+  <section class="statistics-grid statistics-grid-top">
+    <article class="statistics-panel statistics-panel-wide">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Trend produkcji</span>
+          <h2>Wolumen w czasie</h2>
+        </div>
+        <div class="statistics-legend">
+          <span><i class="statistics-dot statistics-dot-main"></i>Produkcja</span>
+          <span><i class="statistics-dot statistics-dot-soft"></i>Plan</span>
+        </div>
+      </header>
+      <div class="statistics-chart-wrap">
+        <canvas id="statisticsProductionChart"></canvas>
+      </div>
+    </article>
+
+    <article class="statistics-panel">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Terminowość</span>
+          <h2>Realizacja zleceń</h2>
+        </div>
+      </header>
+      <div class="statistics-donut-wrap">
+        <canvas id="statisticsDeliveryChart"></canvas>
+        <div class="statistics-donut-center">
+          <strong id="statisticsOnTimePercent">0%</strong>
+          <span>na czas</span>
+        </div>
+      </div>
+      <div class="statistics-mini-legend" id="statisticsDeliveryLegend"></div>
+    </article>
+  </section>
+
+  <section class="statistics-grid">
+    <article class="statistics-panel">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Maszyny</span>
+          <h2>Wykorzystanie parku</h2>
+        </div>
+      </header>
+      <div id="statisticsMachineBars" class="statistics-bar-list"></div>
+    </article>
+
+    <article class="statistics-panel">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Reklamacje</span>
+          <h2>Najczęstsze przyczyny</h2>
+        </div>
+      </header>
+      <div id="statisticsComplaintBars" class="statistics-bar-list"></div>
+    </article>
+
+    <article class="statistics-panel">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Klienci</span>
+          <h2>Największy wolumen</h2>
+        </div>
+      </header>
+      <div id="statisticsClientList" class="statistics-ranking"></div>
+    </article>
+  </section>
+
+  <section class="statistics-grid statistics-grid-bottom">
+    <article class="statistics-panel statistics-panel-wide">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Efektywność</span>
+          <h2>Wynik według maszyn</h2>
+        </div>
+        <small>Wolumen, terminowość i jakość</small>
+      </header>
+
+      <div class="statistics-table-wrap">
+        <table class="statistics-table">
+          <thead>
+            <tr>
+              <th>Maszyna</th>
+              <th>Wolumen</th>
+              <th>Wykorzystanie</th>
+              <th>Terminowość</th>
+              <th>Odpady</th>
+              <th>Ocena</th>
+            </tr>
+          </thead>
+          <tbody id="statisticsMachineTable"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="statistics-panel">
+      <header class="statistics-panel-head">
+        <div>
+          <span>Wnioski</span>
+          <h2>Co wymaga uwagi</h2>
+        </div>
+      </header>
+      <div id="statisticsInsights" class="statistics-insights"></div>
+    </article>
+  </section>
+
+  <dialog class="statistics-dialog" id="statisticsDialog">
+    <div class="statistics-dialog-icon">✓</div>
+    <h2>Dane zostały odświeżone</h2>
+    <p>Wartości są obliczane z aktualnych danych zapisanych w ProdFlow.</p>
+    <button class="statistics-btn statistics-btn-primary" id="statisticsDialogClose" type="button">Zamknij</button>
+  </dialog>
+</section>

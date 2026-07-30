@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Karta produkcyjna e-commerce</title>
+
+  <link rel="icon" type="image/png" href="image/sygnet2x.png">
+  <link rel="stylesheet" href="/modules/production-card/production-card.css">
+</head>
+<body>
+<!-- ================= MAIN ================= -->
+<main class="content" id="print-grid">
+
+  <!-- A. INFORMACJE PODSTAWOWE -->
+  <section>
+  <h2>Informacje podstawowe</h2>
+
+  <label>Numer zlecenia <input type="text" id="orderNumber"></label>
+  <label>Numer zlecenia klienta <input type="text" id="clientOrderNumber"></label>
+
+  <label>Klient <input type="text" id="client"></label>
+  <label>Indeks klienta <input type="text" id="clientIndex"></label>
+
+  <label>Nr produktu / indeks <input type="text" id="productIndex"></label>
+  <label>Ilość zamówiona <input type="number" id="orderQty"></label>
+  <label>Wymiary koperty <input type="text" id="envelopeSize"></label>
+</section>
+
+  <!-- B. PAPIER -->
+  <section>
+    <h2>Papier</h2>
+
+    <label>Indeks papieru <input type="text" id="paperIndex"></label>
+    <label>Rodzaj papieru <input type="text" id="paperName"></label>
+    <label>Rozmiar papieru do produkcji <input type="text" id="paperSize"></label>
+  </section>
+
+  <!-- C. GRAFIKA I DRUK -->
+  <section class="full-print">
+    <h2>Grafika i druk</h2>
+
+    <div class="graphics-layout">
+      <div class="graphics-fields">
+
+        <div class="graphics-row">
+          <label class="field-small">
+    Rodzaj wyrobu
+    <input
+        type="text"
+        id="productType"
+        list="productTypes"
+        autocomplete="off">
+</label>
+
+<datalist id="productTypes">
+    <option value="TDB">
+    <option value="TDBH">
+    <option value="TDBD">
+    <option value="TVB">
+</datalist>
+          <label class="field-medium">Nr grafiki <input type="text" id="graphicNumber"></label>
+          <label class="field-xsmall">Ilość kolorów <input type="number" id="colorCount"></label>
+        </div>
+
+        <label>Indeksy farb</label>
+        <div id="inksContainer"></div>
+
+        <div class="print-inline">
+        <label class="print-label">Sposób zadruku</label>
+        <div class="custom-select" id="printMethodSelect">
+          <div class="select-trigger">
+            <span class="select-value">Wybierz</span>
+            <span class="select-arrow"></span>
+          </div>
+          <div class="select-options">
+            <div class="select-option">mała drukarka</div>
+            <div class="select-option">duża drukarka</div>
+            <div class="select-option">drukarka Somtas</div>
+          </div>
+        </div>
+        <label class="print-roll">
+        Wałek do druku
+        <input type="text" id="printRoll" maxlength="6">
+    </label>
+</div>
+
+      </div>
+
+      <div class="graphics-preview">
+        <div class="preview-box">
+          <img id="graphicPreview" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. ELEMENTY DODATKOWE -->
+  <section class="addons-print"> 
+  <h2>Elementy dodatkowe</h2>
+
+
+  <!-- BUBLAK -->
+  <label>
+    <input type="checkbox" id="embossedPaperCheckbox">
+    Papier tłoczony – bublak
+  </label>
+
+  <div id="embossedPaperFields" style="display:none; margin-top:12px;">
+    <label>Indeks papieru (bublak)
+      <input type="text" id="bublakPaperIndex">
+    </label>
+
+    <label>Rodzaj papieru (bublak)
+      <input type="text" id="bublakPaperName">
+    </label>
+
+    <label>Rozmiar papieru (cm)
+      <input type="text" id="bublakPaperSize">
+    </label>
+  </div>
+
+  <!-- PASEK SILIKONOWY -->
+  <label>Pasek silikonowy</label>
+  <div class="custom-select" id="siliconeSelect">
+    <div class="select-trigger">
+      <span class="select-value">brak</span>
+      <span class="select-arrow"></span>
+    </div>
+    <div class="select-options">
+      <div class="select-option" data-value="0">brak</div>
+      <div class="select-option" data-value="1">jeden</div>
+      <div class="select-option" data-value="2">dwa</div>
+    </div>
+  </div>
+
+  <!-- POLA DYNAMICZNE SILIKONU -->
+  <div id="siliconeFields"></div>
+
+  <!-- ZRYWKA -->
+  <label>Zrywka</label>
+  <div class="custom-select" id="tearStripSelect">
+    <div class="select-trigger">
+      <span class="select-value">brak</span>
+      <span class="select-arrow"></span>
+    </div>
+    <div class="select-options">
+      <div class="select-option">brak</div>
+      <div class="select-option">plastik</div>
+      <div class="select-option">papier</div>
+    </div>
+  </div>
+
+  <!-- PERFORACJA -->
+  <label>Perforacja</label>
+  <div class="pill-group">
+    <label class="pill">
+      <input type="radio" name="perforation" value="tak" id="perforationYes">
+      Tak
+    </label>
+    <label class="pill">
+      <input type="radio" name="perforation" value="nie" id="perforationNo">
+      Nie
+    </label>
+  </div>
+
+
+  
+  <div class="addons-pair-grid">
+
+  <!-- – KLEJE -->
+  <div class="addons-left">
+
+    <div class="form-group glue-line">
+      <label>Klej 1</label>
+      <div class="custom-select" id="glue1Select">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">900030512 – ADMELT® 3134E</div>
+<div class="select-option">900000337 – Hotmelt IvyMelt X-901</div>
+<div class="select-option">900030038 – Duocoll 6028HU (EVA)</div>
+<div class="select-option">900000385 – Giancolvil CL 270 LC</div>
+<div class="select-option">900029427 – HM-1242: Nova HM-1242</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group glue-line">
+      <label>Klej 2</label>
+      <div class="custom-select" id="glue2Select">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">900030512 – ADMELT® 3134E</div>
+<div class="select-option">900000337 – Hotmelt IvyMelt X-901</div>
+<div class="select-option">900030038 – Duocoll 6028HU (EVA)</div>
+<div class="select-option">900000385 – Giancolvil CL 270 LC</div>
+<div class="select-option">900029427 – HM-1242: Nova HM-1242</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group glue-line">
+      <label>Klej 3</label>
+      <div class="custom-select" id="glue3Select">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">900030512 – ADMELT® 3134E</div>
+<div class="select-option">900000337 – Hotmelt IvyMelt X-901</div>
+<div class="select-option">900030038 – Duocoll 6028HU (EVA)</div>
+<div class="select-option">900000385 – Giancolvil CL 270 LC</div>
+<div class="select-option">900029427 – HM-1242: Nova HM-1242</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- – PALETA / KARTON -->
+  <div class="addons-right">
+
+    <div class="print-line pallet-line">
+      <label>Paleta – wymiar</label>
+      <div class="custom-select" id="palletSizeSelect">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">Brak</div>
+          <div class="select-option">80×80</div>
+          <div class="select-option">100×100</div>
+          <div class="select-option">120×80</div>
+          <div class="select-option">120×100</div>
+          <div class="select-option">120×120</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-line pallet-line">
+      <label>Paleta – typ</label>
+      <div class="custom-select" id="palletTypeSelect">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">Karton</div>
+          <div class="select-option">Euro</div>
+          <div class="select-option">Zwykła</div>
+          <div class="select-option">Przemysłowa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-line pallet-line">
+      <label>Karton</label>
+      <div class="custom-select" id="cartonSelect">
+        <div class="select-trigger">
+          <span class="select-value">— wybierz —</span>
+          <span class="select-arrow"></span>
+        </div>
+        <div class="select-options">
+          <div class="select-option">900028478 – Pudło klapowe 3W 570×420×85</div>
+          <div class="select-option">900028333 – 3W 465×330×105</div>
+          <div class="select-option">900023792 – 5W 400×600×150</div>
+          <div class="select-option">900023789 – 5W 450×600×150</div>
+          <div class="select-option">900029552 – 5W 650×600×150</div>
+          <div class="select-option">900023796 – 5W 600×600×150</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+
+</section>
+
+
+  <!-- E. ELEMENTY STAŁE -->
+  <section class="constants-print"> 
+    <h2>Elementy stałe</h2>
+    <label><input type="checkbox" id="corner"> Narożnik</label>
+    <label><input type="checkbox" id="wrapping"> Foliowanie (cała paleta + góra)</label>
+  </section>
+
+  <!-- F. ILOŚCI -->
+  <section class="quantities-print">
+    <h2>Ilości</h2>
+    <label>Ilość w kartonie <input type="text" id="qtyCarton"></label>
+    <label>Ilość na palecie <input type="text" id="qtyPallet"></label>
+    <label>Ilość na warstwie <input type="text" id="qtyLayer"></label>
+    <label>Wysokość palety (cm) <input type="text" id="palletHeight"></label>
+     <div class="quantities-table">
+
+  <p class="helper-title">
+    Tabela pomocnicza – pakowanie i paletyzacja
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">Szerokość torby<br>DO cm</th>
+        <th rowspan="2">Karton 5W</th>
+
+        <th colspan="5">Gramatura do 110 g</th>
+        <th colspan="5">Gramatura od 120 g</th>
+      </tr>
+      <tr>
+        <th>Gram.</th>
+        <th>Ilość<br>w kartonie*</th>
+        <th>Ilość<br>na palecie</th>
+        <th>Ilość<br>na warstwie</th>
+        <th>Wys.<br>palety**</th>
+
+        <th>Gram.</th>
+        <th>Ilość<br>w kartonie*</th>
+        <th>Ilość<br>na palecie</th>
+        <th>Ilość<br>na warstwie</th>
+        <th>Wys.<br>palety**</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>20</td>
+        <td>40×60×15</td>
+        <td>110g</td>
+        <td>500</td>
+        <td>20 tys</td>
+        <td>2 tys</td>
+        <td>185 cm</td>
+        <td>120g</td>
+        <td>400</td>
+        <td>16 tys</td>
+        <td>1,6 tys</td>
+        <td>185 cm</td>
+      </tr>
+
+      <tr>
+        <td>22,5</td>
+        <td>45×60×15</td>
+        <td>110g</td>
+        <td>500</td>
+        <td>10 tys</td>
+        <td>boczne</td>
+        <td>120 cm</td>
+        <td>120g</td>
+        <td>400</td>
+        <td>8 tys</td>
+        <td>boczne</td>
+        <td>120 cm</td>
+      </tr>
+
+      <tr>
+        <td>30</td>
+        <td>60×60×15</td>
+        <td>110g</td>
+        <td>500</td>
+        <td>10 tys</td>
+        <td>boczne</td>
+        <td>150 cm</td>
+        <td>120g</td>
+        <td>400</td>
+        <td>8 tys</td>
+        <td>boczne</td>
+        <td>150 cm</td>
+      </tr>
+
+      <tr>
+        <td>40</td>
+        <td>40×60×15</td>
+        <td>110g</td>
+        <td>250</td>
+        <td>10 tys</td>
+        <td>1 tys</td>
+        <td>185 cm</td>
+        <td>120g</td>
+        <td>200</td>
+        <td>8 tys</td>
+        <td>0,8 tys</td>
+        <td>185 cm</td>
+      </tr>
+
+      <tr>
+        <td>45</td>
+        <td>45×60×15</td>
+        <td>110g</td>
+        <td>250</td>
+        <td>5 tys</td>
+        <td>boczne</td>
+        <td>120 cm</td>
+        <td>120g</td>
+        <td>200</td>
+        <td>4 tys</td>
+        <td>boczne</td>
+        <td>120 cm</td>
+      </tr>
+
+      <tr>
+        <td>60</td>
+        <td>60×60×15</td>
+        <td>110g</td>
+        <td>250</td>
+        <td>5 tys</td>
+        <td>boczne</td>
+        <td>150 cm</td>
+        <td>120g</td>
+        <td>200</td>
+        <td>4 tys</td>
+        <td>boczne</td>
+        <td>150 cm</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <small class="table-notes">
+    * Ilość w kartonie może się zmieniać w zależności od producenta papieru<br>
+    ** Konieczne narożniki
+  </small>
+
+</div>
+
+
+  </section>
+
+  <!-- G. LOGISTYKA -->
+  <section class="logistics-print">
+    <h2>Logistyka</h2>
+
+    <label>Etykieta</label>
+    <div class="custom-select" id="labelTypeSelect">
+      <div class="select-trigger">
+        <span class="select-value">standard</span>
+        <span class="select-arrow"></span>
+      </div>
+      <div class="select-options">
+        <div class="select-option">standard</div>
+        <div class="select-option">klient</div>
+      </div>
+    </div>
+
+    <label>Termin realizacji zamówienia <input type="date" id="deliveryDate"></label>
+    <label>Uwagi <textarea id="notes"></textarea></label>
+    <label>Podpis osoby zatwierdzającej <input type="text" id="signature"></label>
+  </section>
+<button id="printBtn">Drukuj kartę</button>
+</main>
+<iframe id="printFrame" src="" style="display:none;"></iframe>
+
+</body>
+</html>

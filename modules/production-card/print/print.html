@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karta produkcyjna e-commerce</title>
+  <link rel="stylesheet" href="print.css">
+</head>
+<body>
+  <main class="print-page">
+    <header class="print-header">
+      <div class="print-brand">
+        <img src="../image/logoczarne.png" alt="Masterpress">
+      </div>
+
+      <div class="print-title">
+        <h1>Karta produkcyjna e-commerce</h1>
+        <p>Dokument technologiczny zlecenia</p>
+      </div>
+
+      <div class="print-qr-block">
+        <div class="print-qr" id="qrCode" aria-label="Kod QR numeru zlecenia"></div>
+        <strong id="qrOrderNumber">Brak numeru</strong>
+      </div>
+    </header>
+
+    <section class="print-section print-section-basic">
+      <h2>Informacje podstawowe</h2>
+      <div class="field-grid field-grid-4">
+        <div class="print-field field-accent">
+          <span>Numer zlecenia</span>
+          <strong id="orderNumber">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Zlecenie klienta</span>
+          <strong id="clientOrderNumber">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Klient</span>
+          <strong id="client">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Indeks klienta</span>
+          <strong id="clientIndex">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Indeks produktu</span>
+          <strong id="productIndex">—</strong>
+        </div>
+        <div class="print-field field-span-2">
+          <span>Nazwa produktu</span>
+          <strong id="productName">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Ilość zamówiona</span>
+          <strong><span id="orderQty">—</span> <small>szt.</small></strong>
+        </div>
+        <div class="print-field">
+          <span>Wymiary wyrobu</span>
+          <strong id="envelopeSize">—</strong>
+        </div>
+        <div class="print-field">
+          <span>Termin realizacji</span>
+          <strong id="deliveryDate">—</strong>
+        </div>
+        <div class="print-field field-span-2">
+          <span>Osoba odpowiedzialna</span>
+          <strong id="responsiblePerson">—</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="print-columns print-columns-equal">
+      <section class="print-section">
+        <h2>Papier</h2>
+        <div class="field-grid field-grid-2">
+          <div class="print-field">
+            <span>Indeks papieru</span>
+            <strong id="paperIndex">—</strong>
+          </div>
+          <div class="print-field">
+            <span>Rozmiar papieru</span>
+            <strong id="paperSize">—</strong>
+          </div>
+          <div class="print-field field-span-2">
+            <span>Rodzaj papieru</span>
+            <strong id="paperName">—</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="print-section">
+        <h2>Pakowanie i ilości</h2>
+        <div class="field-grid field-grid-2">
+          <div class="print-field"><span>W kartonie</span><strong id="qtyCarton">—</strong></div>
+          <div class="print-field"><span>Na palecie</span><strong id="qtyPallet">—</strong></div>
+          <div class="print-field"><span>Na warstwie</span><strong id="qtyLayer">—</strong></div>
+          <div class="print-field"><span>Wysokość palety</span><strong id="palletHeight">—</strong></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="print-section print-section-graphics">
+      <h2>Grafika i druk</h2>
+      <div class="field-grid field-grid-5">
+        <div class="print-field"><span>Rodzaj wyrobu</span><strong id="productType">—</strong></div>
+        <div class="print-field"><span>Numer grafiki</span><strong id="graphicNumber">—</strong></div>
+        <div class="print-field"><span>Wersja</span><strong id="graphicVersion">—</strong></div>
+        <div class="print-field"><span>Status grafiki</span><strong id="graphicStatus">—</strong></div>
+        <div class="print-field"><span>Liczba kolorów</span><strong id="colorCount">—</strong></div>
+      </div>
+
+      <div class="graphics-body">
+        <div>
+          <div class="subsection-title">Indeksy farb</div>
+          <div class="inks-list" id="inksList">
+            <span class="empty-value">Brak przypisanych farb</span>
+          </div>
+        </div>
+
+        <div class="graphics-method">
+          <div class="print-field"><span>Sposób zadruku</span><strong id="printMethod">—</strong></div>
+          <div class="print-field"><span>Wałek do druku</span><strong id="printRoll">—</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="print-section print-section-addons">
+      <h2>Elementy dodatkowe i magazyn</h2>
+      <div class="addons-grid">
+        <div class="addon-group">
+          <h3>Wyposażenie wyrobu</h3>
+          <div class="compact-row"><span>Pasek silikonowy</span><strong id="siliconeSummary">—</strong></div>
+          <div id="siliconeDetails"></div>
+          <div class="compact-row"><span>Zrywka</span><strong id="tearStrip">—</strong></div>
+          <div class="compact-row"><span>Perforacja</span><strong id="perforation">—</strong></div>
+          <div class="compact-row"><span>Narożnik</span><strong id="corner">NIE</strong></div>
+          <div class="compact-row"><span>Foliowanie</span><strong id="wrapping">NIE</strong></div>
+        </div>
+
+        <div class="addon-group">
+          <h3>Kleje</h3>
+          <div class="compact-row"><span>Klej 1</span><strong id="glue1">—</strong></div>
+          <div class="compact-row"><span>Klej 2</span><strong id="glue2">—</strong></div>
+          <div class="compact-row"><span>Klej 3</span><strong id="glue3">—</strong></div>
+
+          <div id="bublakGroup" class="bublak-group hidden">
+            <h3>Papier tłoczony</h3>
+            <div id="bublakDetails"></div>
+          </div>
+        </div>
+
+        <div class="addon-group">
+          <h3>Magazyn i logistyka</h3>
+          <div class="compact-row"><span>Paleta - wymiar</span><strong id="palletSize">—</strong></div>
+          <div class="compact-row"><span>Paleta - typ</span><strong id="palletType">—</strong></div>
+          <div class="compact-row"><span>Karton</span><strong id="carton">—</strong></div>
+          <div class="compact-row"><span>Etykieta</span><strong id="labelType">—</strong></div>
+          <div class="compact-row"><span>Metoda dostawy</span><strong id="deliveryMethod">—</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="print-section print-section-notes">
+      <h2>Uwagi i wymagania jakościowe</h2>
+      <div class="notes-grid">
+        <div>
+          <span>Uwagi do zlecenia</span>
+          <p id="notes">—</p>
+        </div>
+        <div>
+          <span>Wymagania jakościowe</span>
+          <p id="qualityRequirements">—</p>
+        </div>
+      </div>
+
+      <div class="approval-row">
+        <div><span>Przygotował</span><strong id="signature">—</strong></div>
+        <div><span>Data zatwierdzenia</span><strong id="approvalDate">—</strong></div>
+        <div><span>Data wydruku</span><strong id="printDate">—</strong></div>
+      </div>
+    </section>
+
+    <footer class="print-footer">
+      <span class="prodflow-credit">Wygenerowano w ProdFlow</span>
+      <span id="footerOrderNumber">—</span>
+      <span>Masterpress</span>
+    </footer>
+  </main>
+
+  <script src="../../../assets/js/core/prodflow-events.js"></script>
+  <script src="../../../assets/js/core/prodflow-utils.js"></script>
+  <script src="../../../assets/js/core/prodflow-store.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script src="print.js"></script>
+</body>
+</html>

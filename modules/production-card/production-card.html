@@ -1,0 +1,1129 @@
+<section class="pf-card-v2" id="productionCardV2">
+
+  <header class="pf-card-v2__topbar">
+    <div class="pf-card-v2__title-block">
+      <p class="pf-card-v2__eyebrow">ProdFlow / Karta produkcyjna</p>
+
+      <div class="pf-card-v2__title-row">
+        <div>
+          <h1>Karta Produkcyjna</h1>
+          <p>
+            Centralny rekord zlecenia dla planowania, magazynu,
+            produkcji, jakości i logistyki.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-card-v2__actions">
+      <div class="pf-card-v2__order-badge">
+        <span>Numer zlecenia</span>
+        <strong id="headerOrderNumber">Nowe zlecenie</strong>
+      </div>
+
+      <div class="pf-card-v2__save-status" id="saveStatus">
+        <span class="pf-card-v2__save-dot"></span>
+        <div>
+          <strong>Gotowe do pracy</strong>
+          <small>Zmiany będą zapisywane lokalnie</small>
+        </div>
+      </div>
+
+      <button
+        class="pf-button pf-button--ghost"
+        type="button"
+        id="resetCardBtn">
+        Wyczyść
+      </button>
+
+      <button
+        class="pf-button pf-button--secondary"
+        type="button"
+        id="saveCardBtn">
+        Zapisz kartę
+      </button>
+
+      <button
+        class="pf-button pf-button--primary"
+        type="button"
+        id="printLegacyBtn">
+        Drukuj PDF
+      </button>
+    </div>
+  </header>
+
+  <div class="pf-card-v2__layout">
+
+    <main class="pf-card-v2__main">
+
+      <section class="pf-section is-open" data-section="order">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="order">
+
+          <div>
+            <span class="pf-section__number">01</span>
+
+            <span>
+              <strong>Zlecenie i klient</strong>
+              <small>Podstawowe dane identyfikacyjne</small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-form-grid pf-form-grid--3">
+
+            <label class="pf-field pf-field--required">
+              <span>Numer zlecenia</span>
+              <input
+                type="text"
+                id="orderNumber"
+                placeholder="Numer zlecenia"
+                autocomplete="off">
+            </label>
+
+            <label class="pf-field">
+              <span>Numer zlecenia klienta</span>
+              <input
+                type="text"
+                id="clientOrderNumber"
+                placeholder="Numer zamówienia klienta">
+            </label>
+
+            <label class="pf-field">
+              <span>Priorytet</span>
+              <select id="priority">
+                <option value="normal">Normalny</option>
+                <option value="high">Wysoki</option>
+                <option value="critical">Krytyczny</option>
+                <option value="low">Niski</option>
+              </select>
+            </label>
+
+            <label class="pf-field pf-field--required">
+              <span>Klient</span>
+              <input
+                type="text"
+                id="client"
+                placeholder="Nazwa klienta">
+            </label>
+
+            <label class="pf-field">
+              <span>Indeks klienta</span>
+              <input
+                type="text"
+                id="clientIndex"
+                placeholder="Indeks klienta">
+            </label>
+
+            <label class="pf-field">
+              <span>Osoba odpowiedzialna</span>
+              <input
+                type="text"
+                id="responsiblePerson"
+                placeholder="Imię i nazwisko">
+            </label>
+
+          </div>
+
+        </div>
+      </section>
+
+      <section class="pf-section is-open" data-section="product">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="product">
+
+          <div>
+            <span class="pf-section__number">02</span>
+
+            <span>
+              <strong>Produkt i rodzaj wyrobu</strong>
+              <small>Parametry koperty oraz czytelny schemat konstrukcji</small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-product-layout">
+
+            <div class="pf-product-fields">
+
+              <div class="pf-form-grid pf-form-grid--2">
+
+                <label class="pf-field pf-field--required">
+                  <span>Nr produktu / indeks</span>
+                  <input
+                    type="text"
+                    id="productIndex"
+                    placeholder="Indeks produktu">
+                </label>
+
+                <label class="pf-field pf-field--required">
+                  <span>Ilość zamówiona</span>
+                  <div class="pf-input-unit">
+                    <input
+                      type="number"
+                      id="orderQty"
+                      min="0"
+                      step="1"
+                      placeholder="0">
+                    <span>szt.</span>
+                  </div>
+                </label>
+
+                <label class="pf-field">
+                  <span>Nazwa produktu</span>
+                  <input
+                    type="text"
+                    id="productName"
+                    placeholder="Nazwa produktu">
+                </label>
+
+                <label class="pf-field">
+                  <span>Wymiary koperty</span>
+                  <input
+                    type="text"
+                    id="envelopeSize"
+                    placeholder="Wymiary produktu">
+                </label>
+
+              </div>
+
+              <div class="pf-ppwr-dimensions">
+                <div class="pf-ppwr-dimensions__heading">
+                  <div>
+                    <strong>Wymiary do specyfikacji PPWR</strong>
+                    <small>Dane przechodzą do PPWR, ale nie są umieszczane na wydruku Karty Produkcyjnej.</small>
+                  </div>
+                  <span>PPWR</span>
+                </div>
+
+                <div class="pf-form-grid pf-form-grid--3">
+                  <label class="pf-field">
+                    <span>Szerokość</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrWidth" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+
+                  <label class="pf-field">
+                    <span>Wysokość</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrHeight" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+
+                  <label class="pf-field">
+                    <span>Klapa</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrFlap" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+
+                  <label class="pf-field">
+                    <span>Zakładka dolna</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrBottomGusset" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+
+                  <label class="pf-field">
+                    <span>Paski klejowe</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrAdhesiveStrips" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+
+                  <label class="pf-field">
+                    <span>Pasek zrywający</span>
+                    <div class="pf-input-unit">
+                      <input type="number" id="ppwrTearStrip" min="0" step="0.1" placeholder="0">
+                      <span>mm</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="pf-product-type-panel">
+
+                <div class="pf-product-type-panel__heading">
+                  <div>
+                    <strong>Rodzaj wyrobu</strong>
+                    <small>
+                      Wybór typu automatycznie zmienia schemat koperty.
+                    </small>
+                  </div>
+                </div>
+
+                <div class="pf-product-types" id="productTypeCards">
+
+                  <button
+                    type="button"
+                    class="pf-product-type"
+                    data-product-type="TDB">
+
+                    <span class="pf-product-type__code">TDB</span>
+                    <span class="pf-product-type__name">
+                      Torba dolna bez uchwytu
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="pf-product-type"
+                    data-product-type="TDBH">
+
+                    <span class="pf-product-type__code">TDBH</span>
+                    <span class="pf-product-type__name">
+                      Torba dolna z dodatkowym zamknięciem
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="pf-product-type"
+                    data-product-type="TDBD">
+
+                    <span class="pf-product-type__code">TDBD</span>
+                    <span class="pf-product-type__name">
+                      Torba dolna dwustronna
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="pf-product-type"
+                    data-product-type="TVB">
+
+                    <span class="pf-product-type__code">TVB</span>
+                    <span class="pf-product-type__name">
+                      Torba V-bottom
+                    </span>
+                  </button>
+
+                </div>
+
+                <input
+                  type="hidden"
+                  id="productType"
+                  value="">
+
+              </div>
+
+            </div>
+
+            <aside class="pf-envelope-preview">
+
+              <div class="pf-envelope-preview__heading">
+
+                <div>
+                  <p class="pf-card-v2__eyebrow">
+                    Schemat konstrukcji
+                  </p>
+
+                  <h3 id="envelopePreviewTitle">
+                    Wybierz rodzaj wyrobu
+                  </h3>
+
+                  <p id="envelopePreviewDescription">
+                    Schemat pojawi się po wybraniu rodzaju wyrobu.
+                  </p>
+                </div>
+
+                <span class="pf-envelope-preview__badge">
+                  Podgląd
+                </span>
+
+              </div>
+
+              <div class="pf-envelope-stage">
+
+                <svg
+                  id="envelopePreviewSvg"
+                  class="pf-envelope-svg"
+                  viewBox="0 0 640 400"
+                  role="img"
+                  aria-label="Schemat koperty">
+
+                  <defs>
+                    <pattern
+                      id="paperPattern"
+                      width="18"
+                      height="18"
+                      patternUnits="userSpaceOnUse">
+                      <circle
+                        cx="3"
+                        cy="3"
+                        r="1"
+                        fill="currentColor"
+                        opacity=".12">
+                      </circle>
+                    </pattern>
+                  </defs>
+
+                  <g id="envelopeShape"></g>
+
+                </svg>
+
+              </div>
+
+              <div class="pf-envelope-legend">
+
+                <div>
+                  <span class="pf-envelope-legend__line"></span>
+                  <small>Linia cięcia</small>
+                </div>
+
+                <div>
+                  <span class="pf-envelope-legend__dash"></span>
+                  <small>Linia zgięcia</small>
+                </div>
+
+                <div>
+                  <span class="pf-envelope-legend__glue"></span>
+                  <small>Strefa klejenia</small>
+                </div>
+
+              </div>
+
+            </aside>
+
+          </div>
+
+        </div>
+      </section>
+
+      <section class="pf-section is-open" data-section="materials">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="materials">
+
+          <div>
+            <span class="pf-section__number">03</span>
+
+            <span>
+              <strong>Materiały</strong>
+              <small>
+                Papier, farby, kleje i elementy dodatkowe
+              </small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-subsection">
+
+            <div class="pf-subsection__heading">
+              <div>
+                <h3>Papier główny</h3>
+                <p>Materiał podstawowy do produkcji.</p>
+              </div>
+            </div>
+
+            <div class="pf-form-grid pf-form-grid--3">
+
+              <label class="pf-field">
+                <span>Indeks papieru</span>
+                <input
+                  type="text"
+                  id="paperIndex"
+                  placeholder="Indeks papieru">
+              </label>
+
+              <label class="pf-field">
+                <span>Rodzaj papieru</span>
+                <input
+                  type="text"
+                  id="paperName"
+                  placeholder="Nazwa i gramatura papieru">
+              </label>
+
+              <label class="pf-field">
+                <span>Rozmiar papieru do produkcji</span>
+                <input
+                  type="text"
+                  id="paperSize"
+                  placeholder="Rozmiar papieru">
+              </label>
+
+            </div>
+
+          </div>
+
+          <div class="pf-subsection">
+
+            <div class="pf-subsection__heading">
+              <div>
+                <h3>Farby</h3>
+                <p>
+                  Dodaj wszystkie indeksy farb potrzebne do realizacji.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="pf-inline-button"
+                id="addInkBtn">
+                + Dodaj farbę
+              </button>
+            </div>
+
+            <div class="pf-material-table">
+
+              <div class="pf-material-table__header">
+                <span>Indeks farby</span>
+                <span>Opis</span>
+                <span>Status</span>
+                <span></span>
+              </div>
+
+              <div
+                class="pf-material-table__body"
+                id="inksContainer">
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="pf-subsection">
+
+            <div class="pf-subsection__heading">
+              <div>
+                <h3>Kleje</h3>
+                <p>Wybierz maksymalnie trzy kleje technologiczne.</p>
+              </div>
+            </div>
+
+            <div class="pf-form-grid pf-form-grid--3">
+
+              <label class="pf-field">
+                <span>Klej 1</span>
+                <select id="glue1Select">
+                  <option value="">— wybierz —</option>
+                  <option value="900030512 – ADMELT® 3134E">
+                    900030512 – ADMELT® 3134E
+                  </option>
+                  <option value="900000337 – Hotmelt IvyMelt X-901">
+                    900000337 – Hotmelt IvyMelt X-901
+                  </option>
+                  <option value="900030038 – Duocoll 6028HU (EVA)">
+                    900030038 – Duocoll 6028HU (EVA)
+                  </option>
+                  <option value="900000385 – Giancolvil CL 270 LC">
+                    900000385 – Giancolvil CL 270 LC
+                  </option>
+                  <option value="900029427 – HM-1242: Nova HM-1242">
+                    900029427 – HM-1242: Nova HM-1242
+                  </option>
+                </select>
+              </label>
+
+              <label class="pf-field">
+                <span>Klej 2</span>
+                <select id="glue2Select">
+                  <option value="">— wybierz —</option>
+                  <option value="900030512 – ADMELT® 3134E">
+                    900030512 – ADMELT® 3134E
+                  </option>
+                  <option value="900000337 – Hotmelt IvyMelt X-901">
+                    900000337 – Hotmelt IvyMelt X-901
+                  </option>
+                  <option value="900030038 – Duocoll 6028HU (EVA)">
+                    900030038 – Duocoll 6028HU (EVA)
+                  </option>
+                  <option value="900000385 – Giancolvil CL 270 LC">
+                    900000385 – Giancolvil CL 270 LC
+                  </option>
+                  <option value="900029427 – HM-1242: Nova HM-1242">
+                    900029427 – HM-1242: Nova HM-1242
+                  </option>
+                </select>
+              </label>
+
+              <label class="pf-field">
+                <span>Klej 3</span>
+                <select id="glue3Select">
+                  <option value="">— wybierz —</option>
+                  <option value="900030512 – ADMELT® 3134E">
+                    900030512 – ADMELT® 3134E
+                  </option>
+                  <option value="900000337 – Hotmelt IvyMelt X-901">
+                    900000337 – Hotmelt IvyMelt X-901
+                  </option>
+                  <option value="900030038 – Duocoll 6028HU (EVA)">
+                    900030038 – Duocoll 6028HU (EVA)
+                  </option>
+                  <option value="900000385 – Giancolvil CL 270 LC">
+                    900000385 – Giancolvil CL 270 LC
+                  </option>
+                  <option value="900029427 – HM-1242: Nova HM-1242">
+                    900029427 – HM-1242: Nova HM-1242
+                  </option>
+                </select>
+              </label>
+
+            </div>
+
+          </div>
+
+          <div class="pf-subsection">
+
+            <div class="pf-subsection__heading">
+              <div>
+                <h3>Elementy dodatkowe</h3>
+                <p>
+                  Parametry specjalne konstrukcji koperty.
+                </p>
+              </div>
+            </div>
+
+            <div class="pf-options-grid">
+
+              <label class="pf-option-card">
+                <input
+                  type="checkbox"
+                  id="embossedPaperCheckbox">
+
+                <span class="pf-option-card__visual">▦</span>
+
+                <span>
+                  <strong>Papier tłoczony – bublak</strong>
+                  <small>
+                    Dodatkowy papier tłoczony dla wybranego produktu.
+                  </small>
+                </span>
+              </label>
+
+              <label class="pf-option-card">
+                <input
+                  type="checkbox"
+                  id="corner">
+
+                <span class="pf-option-card__visual">◩</span>
+
+                <span>
+                  <strong>Narożniki</strong>
+                  <small>
+                    Zastosowanie narożników podczas paletyzacji.
+                  </small>
+                </span>
+              </label>
+
+              <label class="pf-option-card">
+                <input
+                  type="checkbox"
+                  id="wrapping">
+
+                <span class="pf-option-card__visual">▣</span>
+
+                <span>
+                  <strong>Foliowanie palety</strong>
+                  <small>
+                    Cała paleta wraz z zabezpieczeniem górnym.
+                  </small>
+                </span>
+              </label>
+
+            </div>
+
+            <div
+              class="pf-conditional-panel"
+              id="embossedPaperFields"
+              hidden>
+
+              <div class="pf-form-grid pf-form-grid--3">
+
+                <label class="pf-field">
+                  <span>Indeks papieru bublak</span>
+                  <input
+                    type="text"
+                    id="bublakPaperIndex">
+                </label>
+
+                <label class="pf-field">
+                  <span>Rodzaj papieru bublak</span>
+                  <input
+                    type="text"
+                    id="bublakPaperName">
+                </label>
+
+                <label class="pf-field">
+                  <span>Rozmiar papieru bublak</span>
+                  <input
+                    type="text"
+                    id="bublakPaperSize">
+                </label>
+
+              </div>
+
+            </div>
+
+            <div class="pf-form-grid pf-form-grid--3">
+
+              <label class="pf-field">
+                <span>Pasek silikonowy</span>
+                <select id="siliconeSelect">
+                  <option value="0">Brak</option>
+                  <option value="1">Jeden pasek</option>
+                  <option value="2">Dwa paski</option>
+                </select>
+              </label>
+
+              <label class="pf-field">
+                <span>Zrywka</span>
+                <select id="tearStripSelect">
+                  <option value="brak">Brak</option>
+                  <option value="plastik">Plastik</option>
+                  <option value="papier">Papier</option>
+                </select>
+              </label>
+
+              <label class="pf-field">
+                <span>Perforacja</span>
+                <select id="perforationSelect">
+                  <option value="">Nie określono</option>
+                  <option value="tak">Tak</option>
+                  <option value="nie">Nie</option>
+                </select>
+              </label>
+
+            </div>
+
+            <div
+              class="pf-dynamic-fields"
+              id="siliconeFields">
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <section class="pf-section" data-section="technology">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="technology">
+
+          <div>
+            <span class="pf-section__number">04</span>
+
+            <span>
+              <strong>Grafika i technologia druku</strong>
+              <small>
+                Kolory i parametry procesu
+              </small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-form-grid pf-form-grid--3">
+
+            <label class="pf-field">
+              <span>Numer grafiki</span>
+              <input
+                type="text"
+                id="graphicNumber"
+                placeholder="Numer lub kod grafiki">
+            </label>
+
+            <label class="pf-field">
+              <span>Ilość kolorów</span>
+              <input
+                type="number"
+                id="colorCount"
+                min="0"
+                max="12"
+                placeholder="0">
+            </label>
+
+            <label class="pf-field">
+              <span>Sposób zadruku</span>
+              <select id="printMethodSelect">
+                <option value="">Wybierz</option>
+                <option value="mała drukarka">
+                  Mała drukarka
+                </option>
+                <option value="duża drukarka">
+                  Duża drukarka
+                </option>
+                <option value="drukarka Somtas">
+                  Drukarka Somtas
+                </option>
+              </select>
+            </label>
+
+            <label class="pf-field">
+              <span>Wałek do druku</span>
+              <input
+                type="text"
+                id="printRoll"
+                maxlength="6"
+                placeholder="Numer wałka">
+            </label>
+
+            <label class="pf-field">
+              <span>Data rozpoczęcia</span>
+              <input
+                type="date"
+                id="plannedStartDate">
+            </label>
+
+          </div>
+
+        </div>
+      </section>
+
+      <section class="pf-section" data-section="packing">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="packing">
+
+          <div>
+            <span class="pf-section__number">05</span>
+
+            <span>
+              <strong>Pakowanie i paletyzacja</strong>
+              <small>
+                Kartony, palety i automatyczne wyliczenia
+              </small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-form-grid pf-form-grid--3">
+
+            <label class="pf-field">
+              <span>Paleta – wymiar</span>
+              <select id="palletSizeSelect">
+                <option value="">— wybierz —</option>
+                <option value="Brak">Brak</option>
+                <option value="80×80">80 × 80</option>
+                <option value="100×100">100 × 100</option>
+                <option value="120×80">120 × 80</option>
+                <option value="120×100">120 × 100</option>
+                <option value="120×120">120 × 120</option>
+              </select>
+            </label>
+
+            <label class="pf-field">
+              <span>Paleta – typ</span>
+              <select id="palletTypeSelect">
+                <option value="">— wybierz —</option>
+                <option value="Karton">Karton</option>
+                <option value="Euro">Euro</option>
+                <option value="Zwykła">Zwykła</option>
+                <option value="Przemysłowa">Przemysłowa</option>
+              </select>
+            </label>
+
+            <label class="pf-field">
+              <span>Karton</span>
+              <select id="cartonSelect">
+                <option value="">— wybierz —</option>
+                <option value="900028478 – Pudło klapowe 3W 570×420×85">
+                  900028478 – Pudło klapowe 3W 570 × 420 × 85
+                </option>
+                <option value="900028333 – 3W 465×330×105">
+                  900028333 – 3W 465 × 330 × 105
+                </option>
+                <option value="900023792 – 5W 400×600×150">
+                  900023792 – 5W 400 × 600 × 150
+                </option>
+                <option value="900023789 – 5W 450×600×150">
+                  900023789 – 5W 450 × 600 × 150
+                </option>
+                <option value="900029552 – 5W 650×600×150">
+                  900029552 – 5W 650 × 600 × 150
+                </option>
+                <option value="900023796 – 5W 600×600×150">
+                  900023796 – 5W 600 × 600 × 150
+                </option>
+              </select>
+            </label>
+
+            <label class="pf-field">
+              <span>Ilość w kartonie</span>
+              <div class="pf-input-unit">
+                <input
+                  type="number"
+                  id="qtyCarton"
+                  min="0"
+                  step="1"
+                  placeholder="0">
+                <span>szt.</span>
+              </div>
+            </label>
+
+            <label class="pf-field">
+              <span>Ilość na palecie</span>
+              <div class="pf-input-unit">
+                <input
+                  type="number"
+                  id="qtyPallet"
+                  min="0"
+                  step="1"
+                  placeholder="0">
+                <span>szt.</span>
+              </div>
+            </label>
+
+            <label class="pf-field">
+              <span>Ilość na warstwie</span>
+              <div class="pf-input-unit">
+                <input
+                  type="number"
+                  id="qtyLayer"
+                  min="0"
+                  step="1"
+                  placeholder="0">
+                <span>szt.</span>
+              </div>
+            </label>
+
+          </div>
+
+          <div class="pf-calculations">
+
+            <article class="pf-calculation-card">
+              <span>Liczba kartonów</span>
+              <strong id="calculatedCartons">0</strong>
+              <small>na podstawie ilości zamówionej</small>
+            </article>
+
+            <article class="pf-calculation-card">
+              <span>Pełne palety</span>
+              <strong id="calculatedPallets">0</strong>
+              <small>pełne jednostki logistyczne</small>
+            </article>
+
+            <article class="pf-calculation-card">
+              <span>Ostatnia paleta</span>
+              <strong id="calculatedRemaining">0 szt.</strong>
+              <small>pozostała ilość</small>
+            </article>
+
+          </div>
+
+        </div>
+      </section>
+
+      <section class="pf-section" data-section="logistics">
+
+        <button
+          class="pf-section__toggle"
+          type="button"
+          data-section-toggle="logistics">
+
+          <div>
+            <span class="pf-section__number">06</span>
+
+            <span>
+              <strong>Logistyka i termin</strong>
+              <small>
+                Etykiety, data realizacji i wymagania wysyłkowe
+              </small>
+            </span>
+          </div>
+
+          <span class="pf-section__arrow">⌄</span>
+        </button>
+
+        <div class="pf-section__body">
+
+          <div class="pf-form-grid pf-form-grid--3">
+
+            <label class="pf-field">
+              <span>Typ etykiety</span>
+              <select id="labelTypeSelect">
+                <option value="standard">Standard</option>
+                <option value="klient">Etykieta klienta</option>
+              </select>
+            </label>
+
+            <label class="pf-field pf-field--required">
+              <span>Termin realizacji zamówienia</span>
+              <input
+                type="date"
+                id="deliveryDate">
+            </label>
+
+          </div>
+
+          <label class="pf-field">
+            <span>Uwagi do zlecenia</span>
+            <textarea
+              id="notes"
+              rows="5"
+              placeholder="Wpisz istotne informacje technologiczne, jakościowe lub logistyczne."></textarea>
+          </label>
+
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="pf-card-v2__sidebar">
+
+      <section class="pf-sidebar-card pf-sidebar-card--summary">
+
+        <div class="pf-sidebar-card__heading">
+          <div>
+            <p class="pf-card-v2__eyebrow">Podsumowanie</p>
+            <h2>Zlecenie</h2>
+          </div>
+        </div>
+
+        <div class="pf-summary">
+
+          <div>
+            <span>Klient</span>
+            <strong id="summaryClient">—</strong>
+          </div>
+
+          <div>
+            <span>Produkt</span>
+            <strong id="summaryProduct">—</strong>
+          </div>
+
+          <div>
+            <span>Rodzaj wyrobu</span>
+            <strong id="summaryProductType">TDB</strong>
+          </div>
+
+          <div>
+            <span>Ilość</span>
+            <strong id="summaryQuantity">0 szt.</strong>
+          </div>
+
+          <div>
+            <span>Termin</span>
+            <strong id="summaryDueDate">—</strong>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="pf-sidebar-card">
+
+        <div class="pf-sidebar-card__heading">
+          <div>
+            <p class="pf-card-v2__eyebrow">Kompletność</p>
+            <h2>Postęp karty</h2>
+          </div>
+        </div>
+
+        <div class="pf-completeness">
+
+          <div
+            class="pf-completeness__ring"
+            id="completenessRing">
+
+            <div>
+              <strong id="completenessValue">0%</strong>
+              <small>uzupełniono</small>
+            </div>
+
+          </div>
+
+          <div class="pf-completeness__list">
+
+            <div>
+              <span>Dane podstawowe</span>
+              <strong id="checkBasic">Nie</strong>
+            </div>
+
+            <div>
+              <span>Produkt</span>
+              <strong id="checkProduct">Nie</strong>
+            </div>
+
+            <div>
+              <span>Materiały</span>
+              <strong id="checkMaterials">Nie</strong>
+            </div>
+
+            <div>
+              <span>Pakowanie</span>
+              <strong id="checkPacking">Nie</strong>
+            </div>
+
+            <div>
+              <span>Termin</span>
+              <strong id="checkLogistics">Nie</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="pf-sidebar-card">
+
+        <div class="pf-sidebar-card__heading">
+          <div>
+            <p class="pf-card-v2__eyebrow">Historia</p>
+            <h2>Ostatnie zdarzenia</h2>
+          </div>
+        </div>
+
+        <div
+          class="pf-history"
+          id="cardHistory">
+
+          <div class="pf-history__empty">
+            Brak zapisanych zdarzeń.
+          </div>
+
+        </div>
+
+      </section>
+
+    </aside>
+
+  </div>
+
+  <div
+    class="pf-toast"
+    id="productionCardToast"
+    role="status"
+    aria-live="polite">
+  </div>
+
+</section>

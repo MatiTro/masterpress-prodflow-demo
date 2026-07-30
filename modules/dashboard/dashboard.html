@@ -1,0 +1,211 @@
+<section class="pf-dashboard" aria-label="Dashboard operacyjny ProdFlow">
+
+    <header class="pf-dashboard__header">
+        <div>
+            <p class="pf-eyebrow">Centrum operacyjne</p>
+            <h1>Dashboard</h1>
+            <p class="pf-muted">Produkcja, magazyn i wysyłki w jednym widoku.</p>
+        </div>
+
+        <div class="pf-header-actions">
+            <div class="pf-live">
+                <span></span>
+                <div>
+                    <small>Dane lokalne</small>
+                    <strong id="dashboardClock">--:--:--</strong>
+                </div>
+            </div>
+
+            <button class="pf-btn pf-btn--ghost" type="button" data-dashboard-action="refresh">
+                Odśwież
+            </button>
+        </div>
+    </header>
+
+    <section class="pf-alert-strip" id="dashboardAlertStrip">
+        <div class="pf-alert-strip__icon">!</div>
+        <div>
+            <small>Najważniejsze teraz</small>
+            <strong id="dashboardAlertText">Ładowanie bieżącej sytuacji...</strong>
+        </div>
+        <button type="button" data-dashboard-action="open-alert-module">Przejdź do modułu</button>
+    </section>
+
+    <section class="pf-kpis">
+        <button class="pf-kpi" type="button" data-module-target="production">
+            <span class="pf-kpi__icon">🏭</span>
+            <div>
+                <small>Maszyny w produkcji</small>
+                <strong id="machinesRunningKpi">0</strong>
+                <em id="machinesRunningHint">Brak danych</em>
+            </div>
+        </button>
+
+        <button class="pf-kpi" type="button" data-module-target="production">
+            <span class="pf-kpi__icon">◎</span>
+            <div>
+                <small>Średnie OEE</small>
+                <strong id="oeeKpi">0%</strong>
+                <em>bieżąca zmiana</em>
+            </div>
+        </button>
+
+        <button class="pf-kpi" type="button" data-module-target="warehouse">
+            <span class="pf-kpi__icon">📦</span>
+            <div>
+                <small>Nowe zapotrzebowania</small>
+                <strong id="requestsKpi">0</strong>
+                <em id="requestsHint">Brak oczekujących</em>
+            </div>
+        </button>
+
+        <button class="pf-kpi" type="button" data-module-target="warehouse">
+            <span class="pf-kpi__icon">🚚</span>
+            <div>
+                <small>Wysyłki dzisiaj</small>
+                <strong id="shipmentsTodayKpi">0</strong>
+                <em id="shipmentsTodayHint">Brak transportów</em>
+            </div>
+        </button>
+
+        <button class="pf-kpi" type="button" data-module-target="planning">
+            <span class="pf-kpi__icon">📋</span>
+            <div>
+                <small>Aktywne zlecenia</small>
+                <strong id="ordersKpi">0</strong>
+                <em id="ordersHint">Brak aktywnych zleceń</em>
+            </div>
+        </button>
+
+        <button class="pf-kpi" type="button" data-module-target="complaints">
+            <span class="pf-kpi__icon">⚠</span>
+            <div>
+                <small>Problemy operacyjne</small>
+                <strong id="issuesKpi">0</strong>
+                <em id="issuesHint">Brak krytycznych</em>
+            </div>
+        </button>
+    </section>
+
+    <div class="pf-dashboard__grid">
+
+        <main class="pf-dashboard__main">
+
+            <article class="pf-panel">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">Produkcja na żywo</p>
+                        <h2>Status maszyn</h2>
+                    </div>
+
+                    <button class="pf-link-btn" type="button" data-module-target="production">
+                        Otwórz produkcję
+                    </button>
+                </div>
+
+                <div class="pf-machine-grid" id="machineGrid"></div>
+            </article>
+
+            <article class="pf-panel">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">Przepływ materiałów</p>
+                        <h2>Zapotrzebowania z produkcji</h2>
+                    </div>
+
+                    <button class="pf-link-btn" type="button" data-module-target="warehouse">
+                        Otwórz magazyn
+                    </button>
+                </div>
+
+                <div class="pf-request-list" id="dashboardRequests"></div>
+            </article>
+
+            <article class="pf-panel">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">Aktywność</p>
+                        <h2>Ostatnie zdarzenia</h2>
+                    </div>
+                </div>
+
+                <div class="pf-timeline" id="dashboardTimeline"></div>
+            </article>
+
+        </main>
+
+        <aside class="pf-dashboard__side">
+
+            <article class="pf-panel">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">DOK / D365</p>
+                        <h2>Najbliższe wysyłki</h2>
+                    </div>
+
+                    <button class="pf-link-btn" type="button" data-module-target="warehouse">
+                        Wszystkie
+                    </button>
+                </div>
+
+                <div class="pf-shipment-list" id="dashboardShipments"></div>
+            </article>
+
+            <article class="pf-panel pf-capacity">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">Realizacja zmiany</p>
+                        <h2>Wynik produkcji</h2>
+                    </div>
+                </div>
+
+                <div class="pf-capacity__main">
+                    <div class="pf-ring" id="productionRing">
+                        <div>
+                            <strong id="shiftProgress">0%</strong>
+                            <small>planu</small>
+                        </div>
+                    </div>
+
+                    <div class="pf-capacity__numbers">
+                        <div>
+                            <span>Dobre sztuki</span>
+                            <strong id="shiftGood">0</strong>
+                        </div>
+                        <div>
+                            <span>Braki</span>
+                            <strong id="shiftScrap">0</strong>
+                        </div>
+                        <div>
+                            <span>Pozostało</span>
+                            <strong id="shiftRemaining">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="pf-panel">
+                <div class="pf-panel__heading">
+                    <div>
+                        <p class="pf-eyebrow">Szybki dostęp</p>
+                        <h2>Moduły</h2>
+                    </div>
+                </div>
+
+                <div class="pf-shortcuts">
+                    <button type="button" data-module-target="productionCard"><span>📄</span>Karta produkcyjna</button>
+                    <button type="button" data-module-target="planning"><span>🗓</span>Planowanie</button>
+                    <button type="button" data-module-target="production"><span>🏭</span>Produkcja</button>
+                    <button type="button" data-module-target="warehouse"><span>📦</span>Magazyn</button>
+                    <button type="button" data-module-target="history"><span>🕓</span>Historia</button>
+                    <button type="button" data-module-target="statistics"><span>📊</span>Statystyki</button>
+                </div>
+            </article>
+
+        </aside>
+
+    </div>
+
+    <div class="pf-toast" id="dashboardToast" role="status" aria-live="polite"></div>
+
+</section>

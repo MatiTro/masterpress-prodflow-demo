@@ -1,0 +1,284 @@
+<section class="complaints-module" id="complaintsModule">
+  <header class="complaints-header">
+    <div>
+      <span class="complaints-kicker">Centrum reklamacji</span>
+      <h1>Wniosek o kasację</h1>
+      <p>Import z Dynamics 365, analiza danych i dokument gotowy do podpisu.</p>
+    </div>
+
+    <div class="complaints-actions">
+      <button class="btn btn-secondary" id="clearComplaintBtn" type="button">Wyczyść</button>
+      <button class="btn btn-primary" id="printComplaintBtn" type="button">Drukuj</button>
+    </div>
+  </header>
+
+  <section class="import-card" id="complaintUploadZone">
+    <input id="complaintExcelInput" type="file" accept=".xlsx,.xls" hidden>
+
+    <div class="import-icon">XLSX</div>
+
+    <div class="import-copy">
+      <strong id="importTitle">Zaimportuj eksport z Dynamics 365</strong>
+      <span id="importSubtitle">Przeciągnij plik tutaj lub wybierz go z dysku.</span>
+    </div>
+
+    <button class="btn btn-file" id="chooseComplaintFileBtn" type="button">Wybierz plik</button>
+
+    <div class="import-progress" id="importProgress" hidden>
+      <span></span>
+    </div>
+  </section>
+
+  <p class="import-error" id="complaintImportError" hidden></p>
+
+  <section class="workspace" id="complaintsWorkspace" hidden>
+    <main class="editor-column">
+      <section class="assistant-panel">
+        <div class="assistant-heading">
+          <div class="assistant-avatar">PF</div>
+          <div>
+            <span>Analiza ProdFlow</span>
+            <h2>Eksport został przeanalizowany</h2>
+          </div>
+          <div class="completion-box">
+            <strong id="completionPercent">0%</strong>
+            <span>gotowości</span>
+          </div>
+        </div>
+
+        <p class="assistant-summary" id="assistantSummary">
+          Zaimportuj dane, aby zobaczyć analizę.
+        </p>
+
+        <div class="assistant-insights" id="assistantInsights"></div>
+
+        <div class="completion-track">
+          <span id="completionBar"></span>
+        </div>
+
+        <div class="missing-data" id="missingDataBox">
+          <strong id="missingDataTitle">Do uzupełnienia</strong>
+          <div id="missingDataList"></div>
+        </div>
+      </section>
+
+      <section class="quick-stats">
+        <article>
+          <span>Pozycje</span>
+          <strong id="statRows">0</strong>
+        </article>
+        <article>
+          <span>Partie</span>
+          <strong id="statBatches">0</strong>
+        </article>
+        <article>
+          <span>Magazyny</span>
+          <strong id="statWarehouses">0</strong>
+        </article>
+        <article>
+          <span>Wartość</span>
+          <strong id="statValue">0,00 zł</strong>
+        </article>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <span class="step-index">1</span>
+          <div>
+            <h3>Dane podstawowe</h3>
+            <p>Informacje wymagane na dokumencie.</p>
+          </div>
+        </div>
+
+        <div class="form-grid three-columns">
+          <label class="field required-field" data-field-name="Numer wniosku">
+            <span>Numer wniosku</span>
+            <input id="requestNumber" type="text" placeholder="Numer wniosku lub zlecenia">
+            <small>Wymagany do wydruku</small>
+          </label>
+
+          <label class="field required-field" data-field-name="Data wniosku">
+            <span>Data wniosku</span>
+            <input id="requestDate" type="date">
+            <small>Wymagana do wydruku</small>
+          </label>
+
+          <label class="field" data-field-name="Numer reklamacji">
+            <span>Numer reklamacji</span>
+            <input id="complaintNumber" type="text" placeholder="Opcjonalnie">
+            <small>Może pozostać puste</small>
+          </label>
+
+          <label class="field required-field span-two" data-field-name="Klient">
+            <span>Klient</span>
+            <input id="complaintClient" type="text" placeholder="Nazwa klienta">
+            <small id="clientHint">Nie znaleziono w pliku</small>
+          </label>
+
+          <label class="field required-field" data-field-name="Wnioskodawca">
+            <span>Wnioskodawca</span>
+            <input id="complaintApplicant" type="text" placeholder="Imię i nazwisko">
+            <small>Wymagany do podpisu</small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <span class="step-index">2</span>
+          <div>
+            <h3>Analiza reklamacji</h3>
+            <p>Uzasadnienie kasacji i działania po reklamacji.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field required-field full-width" data-field-name="Opis problemu">
+            <span>Opis problemu / przyczyna kasacji</span>
+            <textarea id="scrapReason" rows="4" placeholder="Opisz powód kasacji materiału lub wyrobu..."></textarea>
+            <small>Wymagane uzasadnienie dokumentu</small>
+          </label>
+
+          <label class="field full-width" data-field-name="Przyczyna źródłowa">
+            <span>Przyczyna źródłowa</span>
+            <textarea id="rootCause" rows="4" placeholder="Wpisz wynik analizy przyczyny źródłowej..."></textarea>
+            <small>Opcjonalnie, jeśli analiza została wykonana</small>
+          </label>
+
+          <label class="field full-width" data-field-name="Działania CAPA">
+            <span>Działania korygujące i zapobiegawcze</span>
+            <textarea id="capaActions" rows="4" placeholder="Wpisz działania CAPA..."></textarea>
+            <small>Opcjonalnie</small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading">
+          <span class="step-index">3</span>
+          <div>
+            <h3>Odpowiedzialność i termin</h3>
+            <p>Dane pomocnicze do zamknięcia sprawy.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field" data-field-name="Osoba odpowiedzialna">
+            <span>Osoba odpowiedzialna</span>
+            <input id="complaintOwner" type="text" placeholder="Imię i nazwisko">
+          </label>
+
+          <label class="field" data-field-name="Termin realizacji">
+            <span>Termin realizacji</span>
+            <input id="complaintDueDate" type="date">
+          </label>
+
+          <label class="field full-width" data-field-name="Uwagi">
+            <span>Uwagi</span>
+            <textarea id="complaintNotes" rows="3" placeholder="Dodatkowe informacje..."></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="card-heading card-heading-table">
+          <span class="step-index">4</span>
+          <div>
+            <h3>Pozycje z Dynamics</h3>
+            <p id="itemsMeta">0 pozycji</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Lp.</th>
+                <th>Indeks</th>
+                <th>Nazwa wyrobu</th>
+                <th>Partia</th>
+                <th>Magazyn</th>
+                <th>Lokalizacja</th>
+                <th class="number">Ilość</th>
+                <th class="number">Wartość</th>
+              </tr>
+            </thead>
+            <tbody id="complaintItemsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <aside class="preview-column">
+      <div class="preview-toolbar">
+        <div>
+          <strong>Podgląd dokumentu</strong>
+          <span>Aktualizowany automatycznie</span>
+        </div>
+        <span class="preview-page-label">A4</span>
+      </div>
+
+      <article class="request-preview" id="requestPreview">
+        <header class="preview-header">
+          <img src="assets/images/logoczarne.png" alt="Masterpress">
+          <div>
+            <h2>WNIOSEK O KASACJĘ</h2>
+            <p>Przeniesienie ze stanów magazynowych</p>
+          </div>
+        </header>
+
+        <section class="preview-meta">
+          <div><span>Numer wniosku</span><strong id="previewRequestNumber">—</strong></div>
+          <div><span>Data</span><strong id="previewRequestDate">—</strong></div>
+          <div><span>Numer reklamacji</span><strong id="previewComplaintNumber">—</strong></div>
+          <div><span>Klient</span><strong id="previewClient">—</strong></div>
+        </section>
+
+        <section class="preview-section">
+          <h3>Pozycje do kasacji</h3>
+          <div id="previewItems"></div>
+        </section>
+
+        <section class="preview-section">
+          <h3>Uzasadnienie</h3>
+
+          <div class="preview-text">
+            <span>Opis problemu / przyczyna kasacji</span>
+            <p id="previewScrapReason">Nie uzupełniono.</p>
+          </div>
+
+          <div class="preview-text">
+            <span>Przyczyna źródłowa</span>
+            <p id="previewRootCause">Nie uzupełniono.</p>
+          </div>
+
+          <div class="preview-text">
+            <span>Działania korygujące i zapobiegawcze</span>
+            <p id="previewCapaActions">Nie uzupełniono.</p>
+          </div>
+
+          <div class="preview-text">
+            <span>Uwagi</span>
+            <p id="previewNotes">Nie uzupełniono.</p>
+          </div>
+        </section>
+
+        <section class="preview-follow-up">
+          <div><span>Osoba odpowiedzialna</span><strong id="previewOwner">—</strong></div>
+          <div><span>Termin realizacji</span><strong id="previewDueDate">—</strong></div>
+        </section>
+
+        <section class="preview-signatures">
+          <div><span>Wnioskodawca</span><strong id="previewApplicant">—</strong><i>podpis</i></div>
+          <div><span>Akceptacja</span><strong>—</strong><i>podpis</i></div>
+          <div><span>Komisja likwidacyjna</span><strong>—</strong><i>podpisy</i></div>
+        </section>
+
+        <footer class="preview-footer">
+          <span>Dokument wygenerowany w ProdFlow</span>
+          <span>1 / 1</span>
+        </footer>
+      </article>
+    </aside>
+  </section>
+</section>

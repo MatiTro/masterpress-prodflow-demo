@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/images/sygnet2x.png">
+    <title>ProdFlow</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+
+    <section class="pf-intro" id="prodflowIntro" aria-label="Ekran startowy ProdFlow">
+        <div class="pf-intro__ambient" aria-hidden="true"></div>
+
+        <div class="pf-intro__stage">
+            <div class="pf-intro__symbol" aria-hidden="true">
+                <svg class="pf-intro__ring" viewBox="0 0 300 300">
+                    <circle class="pf-intro__ring-track" cx="150" cy="150" r="126"></circle>
+                    <circle class="pf-intro__ring-progress" cx="150" cy="150" r="126"></circle>
+                </svg>
+
+                <img class="pf-intro__mark" src="assets/images/prodflow-mark.png" alt="">
+            </div>
+
+            <div class="pf-intro__wordmark" aria-label="ProdFlow">
+                <span>PROD</span><span>FLOW</span>
+            </div>
+            <div class="pf-intro__owner">by <strong>Masterpress</strong></div>
+
+            <form class="pf-login" id="prodflowLogin" novalidate>
+                <div class="pf-login__heading">
+                    <strong>Witaj ponownie</strong>
+                    <span>Zaloguj się, aby przejść do systemu</span>
+                </div>
+
+                <label class="pf-login__field">
+                    <span>Login</span>
+                    <span class="pf-login__control">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0"></path>
+                        </svg>
+                        <input id="prodflowUsername" name="username" type="text"
+                            autocomplete="username" placeholder="Wpisz login" disabled>
+                    </span>
+                </label>
+
+                <label class="pf-login__field">
+                    <span>Hasło</span>
+                    <span class="pf-login__control">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+                            <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                        </svg>
+                        <input id="prodflowPassword" name="password" type="password"
+                            autocomplete="current-password" placeholder="Wpisz hasło" disabled>
+                        <button class="pf-login__reveal" id="prodflowRevealPassword"
+                            type="button" aria-label="Pokaż hasło" disabled>Pokaż</button>
+                    </span>
+                </label>
+
+                <p class="pf-login__error" id="prodflowLoginError" aria-live="polite"></p>
+
+                <button class="pf-login__submit" id="prodflowLoginSubmit" type="submit" disabled>
+                    <span>Zaloguj się</span>
+                    <span class="pf-login__arrow" aria-hidden="true">→</span>
+                </button>
+
+                <p class="pf-login__presentation">
+                    Dostęp prezentacyjny: <strong>admin</strong> / <strong>admin</strong>
+                </p>
+            </form>
+        </div>
+
+        <p class="pf-intro__hint" aria-live="polite">Uruchamianie ProdFlow…</p>
+    </section>
+
+    <div id="app">
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                <img src="assets/images/logo_firmowe.png" alt="Logo firmy">
+            </div>
+
+            <nav>
+
+                <a href="#" class="active" data-module="dashboard">Dashboard</a>
+
+                <div class="menu-title">Produkcja</div>
+
+                <a href="#" data-module="productionCard">Karta produkcyjna</a>
+                <a href="#" data-module="planning">Planowanie</a>
+                <a href="#" data-module="production">Produkcja</a>
+
+                <div class="menu-title">Logistyka</div>
+
+                <a href="#" data-module="warehouse">Magazyn</a>
+
+                <div class="menu-title">Jakość</div>
+
+                <a href="#" data-module="complaints">Reklamacje</a>
+                <a href="#" data-module="ppwr">PPWR</a>
+
+                <div class="menu-title">Narzędzia</div>
+
+                <a href="#" data-module="labels">Etykiety</a>
+                <a href="#" data-module="history">Historia</a>
+                <a href="#" data-module="statistics">Statystyki</a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <strong>ProdFlow</strong><br>
+                <span>Wersja 0.2.0</span>
+            </div>
+
+        </aside>
+
+        <main id="content"></main>
+
+    </div>
+<script src="assets/js/core/prodflow-events.js"></script>
+<script src="assets/js/core/prodflow-utils.js"></script>
+<script src="assets/js/core/prodflow-store.js"></script>
+<script src="assets/js/core/prodflow-core.js"></script>
+    
+<script src="assets/js/modules.js"></script>
+<script src="assets/js/router.js"></script>
+<script src="app.js"></script>
+
+</body>
+
+</html>

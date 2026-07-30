@@ -1,0 +1,403 @@
+<section class="ppwr-module" id="ppwrModule">
+  <header class="ppwr-header">
+    <div>
+      <span class="ppwr-kicker">Specyfikacja gotowego wyrobu</span>
+      <h1>PPWR / Specyfikacja</h1>
+      <p>Wybierz zlecenie z centralnej bazy, zweryfikuj dane z Karty Produkcyjnej i przygotuj specyfikację.</p>
+    </div>
+
+    <div class="ppwr-header-actions">
+      <a class="ppwr-btn ppwr-btn-light" href="modules/ppwr/templates/SPEC_pusty_arkusz.pdf"
+        target="_blank" rel="noopener">Pełny szablon (10 stron)</a>
+      <button class="ppwr-btn ppwr-btn-light" id="ppwrClearBtn" type="button">Wyczyść</button>
+      <button class="ppwr-btn ppwr-btn-light" id="ppwrSaveDraftBtn" type="button">Zapisz roboczą</button>
+      <button class="ppwr-btn ppwr-btn-primary" id="ppwrGenerateBtn" type="button">Generuj podgląd</button>
+    </div>
+  </header>
+
+  <section class="ppwr-order-browser">
+    <div class="ppwr-order-browser__head">
+      <div>
+        <span class="ppwr-kicker">Zlecenia dostępne do PPWR</span>
+        <h2>Wybierz zlecenie</h2>
+        <p>Dane Karty Produkcyjnej zostaną automatycznie przeniesione do formularza PPWR.</p>
+      </div>
+      <div class="ppwr-order-browser__filters">
+        <input id="ppwrOrderSearch" type="search" placeholder="Szukaj numeru, klienta, produktu lub indeksu">
+        <select id="ppwrOrderStatusFilter" aria-label="Filtr statusu PPWR">
+          <option value="all">Wszystkie statusy PPWR</option>
+          <option value="empty">Nieutworzone</option>
+          <option value="draft">Robocze</option>
+          <option value="approved">Gotowe</option>
+        </select>
+      </div>
+    </div>
+    <div class="ppwr-order-table-wrap">
+      <table class="ppwr-order-table">
+        <thead>
+          <tr>
+            <th>Numer zlecenia</th>
+            <th>Numer zewnętrzny</th>
+            <th>Klient</th>
+            <th>Produkt / indeks</th>
+            <th>Termin</th>
+            <th>Status PPWR</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody id="ppwrOrdersBody"></tbody>
+      </table>
+    </div>
+    <p class="ppwr-order-empty" id="ppwrOrdersEmpty" hidden>Brak zleceń spełniających wybrane kryteria.</p>
+  </section>
+
+  <section class="ppwr-topbar">
+    <div class="ppwr-document-meta">
+      <div>
+        <span>Numer specyfikacji</span>
+        <strong id="ppwrSpecNumber">—</strong>
+      </div>
+      <div>
+        <span>Klient</span>
+        <strong id="ppwrTopClient">—</strong>
+      </div>
+      <div>
+        <span>Status</span>
+        <strong class="ppwr-status-pill" id="ppwrStatus">Robocza</strong>
+      </div>
+    </div>
+
+    <div class="ppwr-completion">
+      <div class="ppwr-completion-head">
+        <span>Kompletność dokumentu</span>
+        <strong id="ppwrCompletionPercent">0%</strong>
+      </div>
+      <div class="ppwr-progress">
+        <span id="ppwrCompletionBar"></span>
+      </div>
+      <small id="ppwrMissingSummary">Uzupełnij wymagane dane.</small>
+    </div>
+  </section>
+
+  <section class="ppwr-layout">
+    <aside class="ppwr-sidebar">
+      <div class="ppwr-sidebar-title">
+        <span>Sekcje dokumentu</span>
+        <strong>Przejdź do wybranej części</strong>
+      </div>
+
+      <nav class="ppwr-nav" id="ppwrNav">
+        <button type="button" data-target="ppwrBasicSection"><span>01</span><b>Dane podstawowe</b><em>—</em></button>
+        <button type="button" data-target="ppwrMaterialsSection"><span>02</span><b>Materiały</b><em>—</em></button>
+        <button type="button" data-target="ppwrDimensionsSection"><span>03</span><b>Wymiary</b><em>—</em></button>
+        <button type="button" data-target="ppwrPrintSection"><span>04</span><b>Druk</b><em>—</em></button>
+        <button type="button" data-target="ppwrPackagingSection"><span>05</span><b>Pakowanie</b><em>—</em></button>
+        <button type="button" data-target="ppwrPhotoSection"><span>06</span><b>Zdjęcie techniczne</b><em>—</em></button>
+        <button type="button" data-target="ppwrApprovalSection"><span>07</span><b>Zatwierdzenie</b><em>—</em></button>
+      </nav>
+
+      <div class="ppwr-sidebar-note">
+        <span>Podpowiedź</span>
+        <p>Dane oznaczone gwiazdką wpływają na kompletność dokumentu.</p>
+      </div>
+    </aside>
+
+    <main class="ppwr-form-column">
+      <section class="ppwr-form-card" id="ppwrBasicSection" data-section="basic">
+        <div class="ppwr-card-head">
+          <div>
+            <span>01 · Informacje ogólne</span>
+            <h2>Dane podstawowe</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-form-grid">
+          <label>
+            <span>Numer specyfikacji *</span>
+            <input id="ppwrSpecificationNumber" type="text" placeholder="Numer specyfikacji">
+          </label>
+
+          <label>
+            <span>Data dokumentu *</span>
+            <input id="ppwrDocumentDate" type="date">
+          </label>
+
+          <label>
+            <span>Klient *</span>
+            <input id="ppwrClient" type="text" placeholder="Nazwa klienta">
+          </label>
+
+          <label>
+            <span>Dostawca</span>
+            <input id="ppwrSupplier" type="text" value="Masterpress S.A.">
+          </label>
+
+          <label class="ppwr-full">
+            <span>Nazwa produktu *</span>
+            <input id="ppwrProductName" type="text" placeholder="Nazwa produktu">
+          </label>
+
+          <label>
+            <span>Numer zlecenia</span>
+            <input id="ppwrOrderNumber" type="text" placeholder="Numer zlecenia">
+          </label>
+
+          <label>
+            <span>Indeks produktu</span>
+            <input id="ppwrProductIndex" type="text" placeholder="Indeks produktu">
+          </label>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrMaterialsSection" data-section="materials">
+        <div class="ppwr-card-head">
+          <div>
+            <span>02 · Parametry produkcyjne</span>
+            <h2>Materiały i surowce</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-form-grid">
+          <label class="ppwr-full">
+            <span>Materiał / szerokość / gramatura *</span>
+            <input id="ppwrMaterial" type="text" placeholder="Materiał i parametry">
+          </label>
+
+          <label>
+            <span>Pasek silikonowy</span>
+            <input id="ppwrSiliconeStrip" type="text" placeholder="szerokość / gramatura">
+          </label>
+
+          <label>
+            <span>Zrywka</span>
+            <input id="ppwrTearOff" type="text" placeholder="typ / parametry">
+          </label>
+
+          <label>
+            <span>Klej 1</span>
+            <input id="ppwrGlue1" type="text">
+          </label>
+
+          <label>
+            <span>Klej 2</span>
+            <input id="ppwrGlue2" type="text">
+          </label>
+
+          <label>
+            <span>Klej 3</span>
+            <input id="ppwrGlue3" type="text">
+          </label>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrDimensionsSection" data-section="dimensions">
+        <div class="ppwr-card-head">
+          <div>
+            <span>03 · Parametry wyrobu</span>
+            <h2>Wymiary</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-dimension-grid">
+          <label><span>Szerokość *</span><div><input id="ppwrWidth" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Wysokość *</span><div><input id="ppwrHeight" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Klapa</span><div><input id="ppwrFlap" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Fałda w dnie</span><div><input id="ppwrBottomGusset" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Paski zaklejające</span><div><input id="ppwrAdhesiveStrips" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Pasek zrywający</span><div><input id="ppwrTearStrip" type="number" min="0"><b>mm</b></div></label>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrPrintSection" data-section="print">
+        <div class="ppwr-card-head">
+          <div>
+            <span>04 · Dane druku</span>
+            <h2>Drukowanie</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-form-grid">
+          <label>
+            <span>Ilość kolorów *</span>
+            <input id="ppwrColorsCount" type="number" min="0">
+          </label>
+
+          <label>
+            <span>Rodzaj farb</span>
+            <input id="ppwrInkType" type="text" placeholder="Rodzaj farby">
+          </label>
+
+          <label class="ppwr-full">
+            <span>Technika druku *</span>
+            <input id="ppwrPrintTechnique" type="text" placeholder="Technika druku">
+          </label>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrPackagingSection" data-section="packaging">
+        <div class="ppwr-card-head">
+          <div>
+            <span>05 · Logistyka</span>
+            <h2>Pakowanie</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-form-grid">
+          <label>
+            <span>Ilość w kartonie *</span>
+            <input id="ppwrBoxQuantity" type="number" min="0">
+          </label>
+
+          <label>
+            <span>Ilość na palecie *</span>
+            <input id="ppwrPalletQuantity" type="number" min="0">
+          </label>
+
+          <label>
+            <span>Typ palety</span>
+            <input id="ppwrPalletType" type="text" placeholder="Typ palety">
+          </label>
+
+          <label>
+            <span>Pakiety banderolowane</span>
+            <select id="ppwrBanded">
+              <option value="">Wybierz</option>
+              <option value="Tak">Tak</option>
+              <option value="Nie">Nie</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrPhotoSection" data-section="photo">
+        <div class="ppwr-card-head">
+          <div>
+            <span>06 · Załącznik</span>
+            <h2>Zdjęcie techniczne</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <input id="ppwrPhotoInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+
+        <div class="ppwr-photo-drop" id="ppwrPhotoDrop">
+          <div class="ppwr-photo-empty" id="ppwrPhotoEmpty">
+            <span>IMG</span>
+            <strong>Przeciągnij zdjęcie techniczne</strong>
+            <p>lub wybierz plik PNG, JPG albo WEBP</p>
+            <button class="ppwr-btn ppwr-btn-light" id="ppwrPhotoChooseBtn" type="button">Wybierz zdjęcie</button>
+          </div>
+
+          <div class="ppwr-photo-preview" id="ppwrPhotoPreview" hidden>
+            <img id="ppwrPhotoImage" alt="Zdjęcie techniczne">
+            <div>
+              <strong id="ppwrPhotoName">zdjęcie.jpg</strong>
+              <button class="ppwr-btn ppwr-btn-light" id="ppwrPhotoRemoveBtn" type="button">Usuń</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ppwr-form-card" id="ppwrApprovalSection" data-section="approval">
+        <div class="ppwr-card-head">
+          <div>
+            <span>07 · Akceptacja</span>
+            <h2>Zatwierdzenie dokumentu</h2>
+          </div>
+          <span class="ppwr-section-state">Do uzupełnienia</span>
+        </div>
+
+        <div class="ppwr-form-grid">
+          <label>
+            <span>Opracował *</span>
+            <input id="ppwrPreparedBy" type="text" placeholder="Imię i nazwisko">
+          </label>
+
+          <label>
+            <span>Sprawdził *</span>
+            <input id="ppwrCheckedBy" type="text" placeholder="Imię i nazwisko">
+          </label>
+
+          <label>
+            <span>Zatwierdził *</span>
+            <input id="ppwrApprovedBy" type="text" placeholder="Imię i nazwisko">
+          </label>
+        </div>
+      </section>
+    </main>
+
+    <aside class="ppwr-preview-column">
+      <div class="ppwr-preview-toolbar">
+        <div>
+          <span>Podgląd dokumentu</span>
+          <strong>Strona 1 z 10</strong>
+        </div>
+        <button class="ppwr-preview-zoom" id="ppwrZoomBtn" type="button">Powiększ</button>
+      </div>
+
+      <div class="ppwr-paper-stage">
+        <article class="ppwr-paper" id="ppwrPaper">
+          <header class="ppwr-paper-header">
+            <div>
+              <small>F-03/I-SZBŻ-03 wydanie 2</small>
+              <span id="previewDate">—</span>
+            </div>
+            <img src="assets/images/logoczarne.png" alt="Masterpress">
+          </header>
+
+          <div class="ppwr-paper-meta">
+            <span>Specyfikacja nr / Specification sheet no.:</span>
+            <strong id="previewSpecNumber">—</strong>
+          </div>
+
+          <div class="ppwr-paper-page">
+            <span>Strona / Page 1 / 10</span>
+            <strong>Masterpress S.A.<br>Kuronia 4<br>15-569 Białystok, POL</strong>
+          </div>
+
+          <div class="ppwr-paper-rule"></div>
+
+          <div class="ppwr-paper-space">
+            <div class="ppwr-photo-mini" id="previewPhotoBox">
+              <span>Zdjęcie techniczne</span>
+            </div>
+          </div>
+
+          <section class="ppwr-paper-content">
+            <h3 id="previewProductName">SPECYFIKACJA GOTOWEGO WYROBU</h3>
+            <p>Final product SPECIFICATION</p>
+
+            <div class="ppwr-preview-table">
+              <div class="ppwr-preview-row heading"><span>I. WSTĘP / GENERAL</span></div>
+              <div class="ppwr-preview-row"><b>1.1 Klient / Customer</b><span id="previewClient">—</span></div>
+              <div class="ppwr-preview-row"><b>1.2 Dostawca / Manufacturer</b><span id="previewSupplier">Masterpress S.A.</span></div>
+              <div class="ppwr-preview-row"><b>1.3 Nazwa produktu / Product name</b><span id="previewProduct">—</span></div>
+              <div class="ppwr-preview-row heading"><span>II. PARAMETRY PRODUKCYJNE / MATERIAL DATA</span></div>
+              <div class="ppwr-preview-row"><b>Materiał / Raw material</b><span id="previewMaterial">—</span></div>
+            </div>
+          </section>
+        </article>
+      </div>
+
+      <section class="ppwr-missing-card">
+        <div>
+          <span>Brakujące dane</span>
+          <strong id="ppwrMissingCount">0</strong>
+        </div>
+        <div id="ppwrMissingList" class="ppwr-missing-list"></div>
+      </section>
+    </aside>
+  </section>
+
+  <dialog class="ppwr-dialog" id="ppwrDialog">
+    <div class="ppwr-dialog-icon">✓</div>
+    <h2>Podgląd został przygotowany</h2>
+    <p>Dokument został zaktualizowany na podstawie bieżących danych zlecenia.</p>
+    <button class="ppwr-btn ppwr-btn-primary" id="ppwrDialogClose" type="button">Zamknij</button>
+  </dialog>
+</section>

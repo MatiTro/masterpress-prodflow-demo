@@ -1,0 +1,143 @@
+<section class="planning-module" id="planningModule">
+  <header class="planning-header">
+    <div>
+      <span class="planning-kicker">Centrum operacyjne</span>
+      <h1>Planowanie produkcji</h1>
+      <p>Porządkuj zlecenia, kontroluj obciążenie maszyn i reaguj na ryzyko opóźnień.</p>
+    </div>
+
+    <div class="planning-header-actions">
+      <button class="planning-btn planning-btn-light" id="planningAddBtn" type="button">Dodaj zlecenie</button>
+      <button class="planning-btn planning-btn-primary" id="planningSaveBtn" type="button">Zapisz plan</button>
+    </div>
+  </header>
+
+  <section class="planning-toolbar">
+    <div class="planning-view-switch" role="group" aria-label="Widok planowania">
+      <button type="button" class="is-active" data-view="board">Tablica</button>
+      <button type="button" data-view="timeline">Oś czasu</button>
+    </div>
+
+    <label class="planning-search">
+      <span>Szukaj</span>
+      <input id="planningSearch" type="search" placeholder="Numer, klient, indeks...">
+    </label>
+
+    <label>
+      <span>Maszyna</span>
+      <select id="planningMachineFilter">
+        <option value="">Wszystkie</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Priorytet</span>
+      <select id="planningPriorityFilter">
+        <option value="">Wszystkie</option>
+        <option value="Krytyczny">Krytyczny</option>
+        <option value="Wysoki">Wysoki</option>
+        <option value="Normalny">Normalny</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Materiał</span>
+      <select id="planningMaterialFilter">
+        <option value="">Wszystkie</option>
+        <option value="Dostępny">Dostępny</option>
+        <option value="Częściowo">Częściowo</option>
+        <option value="Brak">Brak</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="planning-stats" id="planningStats"></section>
+
+  <section class="planning-alerts">
+    <div>
+      <span>Najważniejsze ryzyka</span>
+      <strong id="planningAlertTitle">Brak aktywnych ostrzeżeń</strong>
+    </div>
+    <div id="planningAlertList" class="planning-alert-list"></div>
+  </section>
+
+  <section class="planning-board" id="planningBoard"></section>
+
+  <section class="planning-timeline" id="planningTimeline" hidden>
+    <div class="planning-timeline-head">
+      <div>
+        <span>Plan tygodniowy</span>
+        <strong>Obciążenie według maszyn</strong>
+      </div>
+      <small>Kliknij zlecenie, aby zobaczyć szczegóły.</small>
+    </div>
+    <div id="planningTimelineContent"></div>
+  </section>
+
+  <dialog class="planning-dialog" id="planningDetailsDialog">
+    <form method="dialog" class="planning-dialog-card">
+      <button class="planning-dialog-close" value="cancel" aria-label="Zamknij">×</button>
+
+      <div class="planning-dialog-head">
+        <span>Szczegóły zlecenia</span>
+        <h2 id="planningDialogOrder">—</h2>
+        <p id="planningDialogProduct">—</p>
+      </div>
+
+      <div class="planning-detail-grid" id="planningDetailGrid"></div>
+
+      <div class="planning-detail-note">
+        <span>Notatka planisty</span>
+        <textarea id="planningDialogNote" rows="4" placeholder="Dodaj krótką notatkę..."></textarea>
+      </div>
+
+      <div class="planning-dialog-actions">
+        <button class="planning-btn planning-btn-light" value="cancel">Anuluj</button>
+        <button class="planning-btn planning-btn-primary" id="planningDialogSave" value="default" type="button">Zapisz zmiany</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="planning-dialog" id="planningAddDialog">
+    <form method="dialog" class="planning-dialog-card">
+      <button class="planning-dialog-close" value="cancel" aria-label="Zamknij">×</button>
+
+      <div class="planning-dialog-head">
+        <span>Nowe zlecenie</span>
+        <h2>Dodaj do planu</h2>
+        <p>Utworzone zlecenie zostanie zapisane w centralnej bazie ProdFlow.</p>
+      </div>
+
+      <div class="planning-form-grid">
+        <label><span>Numer zlecenia *</span><input id="planningNewOrder" type="text"></label>
+        <label><span>Klient *</span><input id="planningNewClient" type="text"></label>
+        <label class="planning-full"><span>Produkt *</span><input id="planningNewProduct" type="text"></label>
+        <label><span>Indeks</span><input id="planningNewIndex" type="text"></label>
+        <label><span>Ilość</span><input id="planningNewQuantity" type="number" min="0"></label>
+        <label><span>Termin *</span><input id="planningNewDeadline" type="date"></label>
+        <label><span>Maszyna</span><input id="planningNewMachine" type="text" placeholder="Nazwa lub numer maszyny"></label>
+        <label>
+          <span>Priorytet</span>
+          <select id="planningNewPriority">
+            <option>Normalny</option>
+            <option>Wysoki</option>
+            <option>Krytyczny</option>
+          </select>
+        </label>
+        <label>
+          <span>Status materiału</span>
+          <select id="planningNewMaterial">
+            <option>Dostępny</option>
+            <option>Częściowo</option>
+            <option>Brak</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="planning-dialog-actions">
+        <button class="planning-btn planning-btn-light" value="cancel">Anuluj</button>
+        <button class="planning-btn planning-btn-primary" id="planningCreateOrderBtn" type="button">Dodaj zlecenie</button>
+      </div>
+    </form>
+  </dialog>
+</section>

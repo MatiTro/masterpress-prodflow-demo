@@ -1,0 +1,81 @@
+<section class="labels-module" id="labelsModule">
+  <header class="labels-header">
+    <div>
+      <span class="labels-kicker">Narzędzia produkcyjne</span>
+      <h1>Etykiety</h1>
+      <p>Znajdź zlecenie i wydrukuj etykiety bez importowania dodatkowych dokumentów.</p>
+    </div>
+  </header>
+
+  <article class="labels-panel">
+    <div class="labels-toolbar">
+      <input id="labelsSearch" type="search" placeholder="Szukaj numeru, klienta, produktu lub indeksu">
+      <select id="labelsStatusFilter" aria-label="Filtr wydruków">
+        <option value="all">Wszystkie zlecenia</option>
+        <option value="not-printed">Bez wydruku</option>
+        <option value="printed">Z wydrukiem</option>
+      </select>
+    </div>
+
+    <div class="labels-table-wrap">
+      <table class="labels-table">
+        <thead>
+          <tr>
+            <th>Zlecenie</th>
+            <th>Klient</th>
+            <th>Produkt / indeks</th>
+            <th>Ilość zlecenia</th>
+            <th>Rodzaj etykiety</th>
+            <th>Wydrukowano</th>
+            <th>Ostatni wydruk</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody id="labelsOrdersBody"></tbody>
+      </table>
+    </div>
+
+    <div class="labels-empty" id="labelsEmpty" hidden>
+      Brak zleceń spełniających wybrane kryteria.
+    </div>
+  </article>
+
+  <dialog class="labels-dialog" id="labelsPrintDialog">
+    <button class="labels-dialog__close" id="labelsDialogClose" type="button" aria-label="Zamknij">×</button>
+    <span class="labels-kicker">Przygotowanie wydruku</span>
+    <h2 id="labelsDialogTitle">Drukuj etykiety</h2>
+    <p id="labelsDialogDescription"></p>
+
+    <form id="labelsPrintForm">
+      <label>
+        <span>Rodzaj etykiety</span>
+        <select id="labelsTemplate" name="template" required>
+          <option value="pallet">Etykieta paletowa</option>
+          <option value="carton">Etykieta kartonowa</option>
+          <option value="product">Etykieta produktu</option>
+        </select>
+      </label>
+      <label>
+        <span>Liczba kopii</span>
+        <input id="labelsCopies" name="quantity" type="number" min="1" step="1" value="1" required>
+      </label>
+      <label>
+        <span>Drukarka</span>
+        <input id="labelsPrinter" name="printer" type="text" placeholder="Domyślna drukarka">
+      </label>
+
+      <div class="labels-preview" id="labelsPreview">
+        <strong id="labelsPreviewOrder">—</strong>
+        <span id="labelsPreviewProduct">—</span>
+        <small id="labelsPreviewCustomer">—</small>
+      </div>
+
+      <div class="labels-dialog__actions">
+        <button class="label-btn label-btn-secondary" id="labelsCancelBtn" type="button">Anuluj</button>
+        <button class="label-btn label-btn-primary" type="submit">Drukuj</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="labels-toast" id="labelsToast" role="status" aria-live="polite"></div>
+</section>

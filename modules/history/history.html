@@ -1,0 +1,113 @@
+<section class="history-module" id="historyModule">
+  <header class="history-header">
+    <div>
+      <span class="history-kicker">Dokumenty i operacje</span>
+      <h1>Historia</h1>
+      <p>Szybkie wyszukiwanie zleceń, dokumentów i działań wykonanych w systemie.</p>
+    </div>
+    <div class="history-actions">
+      <button class="history-btn history-btn-primary" id="historyAddBtn" type="button">Dodaj wpis</button>
+    </div>
+  </header>
+
+  <section class="history-toolbar">
+    <div class="history-search">
+      <span>⌕</span>
+      <input id="historySearch" type="search" placeholder="Numer zlecenia, klient, indeks lub opis...">
+    </div>
+    <select id="historyModuleFilter">
+      <option value="all">Wszystkie moduły</option>
+      <option value="production-card">Karta produkcyjna</option>
+      <option value="labels">Etykiety</option>
+      <option value="complaints">Reklamacje</option>
+      <option value="planning">Planowanie</option>
+      <option value="ppwr">PPWR</option>
+    </select>
+    <select id="historyStatusFilter">
+      <option value="all">Wszystkie statusy</option>
+      <option value="done">Zakończone</option>
+      <option value="attention">Wymaga uwagi</option>
+      <option value="draft">Wersja robocza</option>
+    </select>
+  </section>
+
+  <section class="history-stats">
+    <article><span>Wszystkie wpisy</span><strong id="historyAllCount">0</strong><small>zapisane działania</small></article>
+    <article><span>Dzisiaj</span><strong id="historyTodayCount">0</strong><small>dzisiejsze operacje</small></article>
+    <article><span>Wymaga uwagi</span><strong id="historyAttentionCount">0</strong><small>do sprawdzenia</small></article>
+    <article><span>Zlecenia</span><strong id="historyOrdersCount">0</strong><small>unikalne numery</small></article>
+  </section>
+
+  <section class="history-layout">
+    <main class="history-list-card">
+      <div class="history-card-head">
+        <div><span>Ostatnia aktywność</span><h2>Dokumenty i zdarzenia</h2></div>
+        <strong id="historyResultCount">0 wyników</strong>
+      </div>
+      <div id="historyList" class="history-list"></div>
+      <div id="historyEmpty" class="history-empty" hidden>
+        <b>Brak wyników</b>
+        <p>Zmień wyszukiwaną frazę lub filtr.</p>
+      </div>
+    </main>
+
+    <aside class="history-details-card">
+      <div id="historyDetailsEmpty" class="history-details-empty">
+        <span>↗</span>
+        <h2>Wybierz wpis z historii</h2>
+        <p>Zobaczysz dane zlecenia i pełną oś czasu.</p>
+      </div>
+
+      <div id="historyDetails" hidden>
+        <div class="history-details-head">
+          <div><span id="detailsModule">Moduł</span><h2 id="detailsTitle">—</h2></div>
+          <b id="detailsStatus" class="history-status">—</b>
+        </div>
+
+        <div class="history-order-grid">
+          <div><span>Numer zlecenia</span><strong id="detailsOrder">—</strong></div>
+          <div><span>Klient</span><strong id="detailsClient">—</strong></div>
+          <div><span>Indeks</span><strong id="detailsIndex">—</strong></div>
+        </div>
+
+        <div class="history-description">
+          <span>Opis operacji</span>
+          <p id="detailsDescription">—</p>
+        </div>
+
+        <div class="history-meta">
+          <div><span>Data i godzina</span><strong id="detailsDate">—</strong></div>
+          <div><span>Stanowisko</span><strong id="detailsUser">—</strong></div>
+        </div>
+
+        <div class="history-timeline-wrap">
+          <div class="history-timeline-head"><span>Historia zlecenia</span><strong id="timelineCount">0 zdarzeń</strong></div>
+          <div id="historyTimeline" class="history-timeline"></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <dialog id="historyDialog" class="history-dialog">
+    <form id="historyForm" method="dialog">
+      <div class="history-dialog-head">
+        <div><span>Nowe zdarzenie</span><h2>Dodaj wpis do historii</h2></div>
+        <button value="cancel" type="submit">×</button>
+      </div>
+      <div class="history-form-grid">
+        <label><span>Numer zlecenia</span><input id="newOrder" required></label>
+        <label><span>Klient</span><input id="newClient" required></label>
+        <label><span>Indeks</span><input id="newIndex"></label>
+        <label><span>Moduł</span><select id="newModule"><option value="production-card">Karta produkcyjna</option><option value="labels">Etykiety</option><option value="complaints">Reklamacje</option><option value="planning">Planowanie</option><option value="ppwr">PPWR</option></select></label>
+        <label><span>Status</span><select id="newStatus"><option value="done">Zakończone</option><option value="attention">Wymaga uwagi</option><option value="draft">Wersja robocza</option></select></label>
+        <label><span>Stanowisko</span><select id="newUser"><option>Dział obsługi klienta</option><option>Dyrektor operacyjny</option><option>Inżynier</option><option>Magazynier</option></select></label>
+        <label class="full"><span>Tytuł</span><input id="newTitle" required></label>
+        <label class="full"><span>Opis</span><textarea id="newDescription" rows="4"></textarea></label>
+      </div>
+      <div class="history-dialog-actions">
+        <button class="history-btn history-btn-light" value="cancel" type="submit">Anuluj</button>
+        <button class="history-btn history-btn-primary" id="historySaveBtn" value="default" type="submit">Zapisz wpis</button>
+      </div>
+    </form>
+  </dialog>
+</section>
