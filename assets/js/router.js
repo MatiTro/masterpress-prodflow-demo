@@ -1,6 +1,12 @@
 let currentCss = null;
 let currentScript = null;
 let navigationRequestId = 0;
+const PROD_FLOW_ASSET_VERSION = "0.3.0-test-20260809";
+
+function versionedAsset(path) {
+    const separator = path.includes("?") ? "&" : "?";
+    return `${path}${separator}v=${encodeURIComponent(PROD_FLOW_ASSET_VERSION)}`;
+}
 
 async function loadModule(moduleKey) {
     const module = MODULES[moduleKey];
@@ -35,7 +41,9 @@ async function loadModule(moduleKey) {
          * widoczny, dopóki arkusz stylów nowego modułu nie jest gotowy.
          * Zapobiega to pokazaniu nieostylowanego HTML (FOUC).
          */
-        const htmlPromise = fetch(`${moduleBasePath}.html`).then(response => {
+        const htmlPromise = fetch(versionedAsset(`${moduleBasePath}.html`), {
+            cache: "no-cache"
+        }).then(response => {
             if (!response.ok) {
                 throw new Error(`Nie można wczytać modułu: ${module.folder}`);
             }
@@ -44,7 +52,7 @@ async function loadModule(moduleKey) {
 
         nextCss = document.createElement("link");
         nextCss.rel = "stylesheet";
-        nextCss.href = `${moduleBasePath}.css`;
+        nextCss.href = versionedAsset(`${moduleBasePath}.css`);
         nextCss.dataset.prodflowModuleStyle = moduleKey;
 
         const cssPromise = new Promise((resolve, reject) => {
@@ -83,7 +91,7 @@ async function loadModule(moduleKey) {
         previousCss?.remove();
 
         currentScript = document.createElement("script");
-        currentScript.src = `${moduleBasePath}.js`;
+        currentScript.src = versionedAsset(`${moduleBasePath}.js`);
         currentScript.dataset.prodflowModuleScript = moduleKey;
 
         await new Promise((resolve, reject) => {
@@ -97,6 +105,10 @@ async function loadModule(moduleKey) {
         if (requestId !== navigationRequestId) {
             return;
         }
+
+        // Każdy moduł zaczyna się od własnego nagłówka, niezależnie od
+        // pozycji przewinięcia pozostawionej w poprzednim widoku.
+        content.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
         document.title = `ProdFlow • ${module.title}`;
 

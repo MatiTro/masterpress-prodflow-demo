@@ -201,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       content.textContent =
         typeof item === "object"
           ? [
+              item.name,
               item.width,
               item.position,
               item.notes
@@ -212,8 +213,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  setText("tearStrip", fields.tearStripSelect);
-  setText("perforation", fields.perforationSelect);
+  setText(
+    "tearStrip",
+    {
+      folia: "Folia",
+      perforacja: "Perforacja",
+      plastik: "Folia",
+      papier: "Perforacja"
+    }[String(fields.ppwrTearStrip || fields.tearStripSelect || "").toLowerCase()] || "Brak"
+  );
   setText("corner", yesNo(fields.corner));
   setText("wrapping", yesNo(fields.wrapping));
   setText("glue1", fields.glue1Select);

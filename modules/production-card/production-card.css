@@ -292,6 +292,70 @@
 }
 
 /* =========================================================
+   PRZEŁĄCZANIE WIELU KART
+   ========================================================= */
+
+.pf-order-switcher {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.6fr) minmax(460px, 1.4fr);
+  align-items: end;
+  gap: 24px;
+  max-width: 1800px;
+  margin: 0 auto 20px;
+  padding: 16px 20px;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+  background: linear-gradient(135deg, #ffffff, #f7faff);
+  box-shadow: var(--pf-shadow-sm);
+}
+
+.pf-order-switcher__copy strong,
+.pf-order-switcher__copy small {
+  display: block;
+}
+
+.pf-order-switcher__copy strong {
+  font-size: 0.92rem;
+}
+
+.pf-order-switcher__copy small {
+  margin-top: 4px;
+  color: var(--pf-text-soft);
+  font-size: 0.72rem;
+}
+
+.pf-order-switcher__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.pf-order-switcher__select > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #42516a;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.pf-order-switcher__select select {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--pf-border-strong);
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: var(--pf-text);
+  font-size: 0.8rem;
+}
+
+.pf-order-switcher__select select:focus {
+  border-color: var(--pf-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
    PRZYCISKI
    ========================================================= */
 
@@ -330,6 +394,13 @@
 
 .pf-button:active {
   transform: translateY(0);
+}
+
+.pf-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
 }
 
 .pf-button--primary {
@@ -716,6 +787,14 @@
   color: #42516a;
   font-size: 0.74rem;
   font-weight: 750;
+}
+
+.pf-field > small {
+  display: block;
+  margin-top: 6px;
+  color: var(--pf-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
 }
 
 .pf-field--required > span:first-child::after {
@@ -1853,6 +1932,11 @@
     margin-right: 0;
   }
 
+  .pf-order-switcher {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
   .pf-button {
     flex: 1;
   }
@@ -1916,6 +2000,14 @@
 
   .pf-card-v2__actions .pf-button--primary {
     grid-column: 1 / -1;
+  }
+
+  .pf-order-switcher {
+    padding: 14px;
+  }
+
+  .pf-order-switcher__controls {
+    grid-template-columns: 1fr;
   }
 
   .pf-process__header {
@@ -1998,6 +2090,7 @@
 
   .pf-card-v2__actions,
   .pf-card-v2__save-status,
+  .pf-order-switcher,
   .pf-process,
   .pf-section__arrow,
   .pf-inline-button,

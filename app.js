@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.ProdFlow = window.ProdFlow || {};
         window.ProdFlow.currentUser = currentUser;
 
-        window.setTimeout(startApplication, reducedMotion ? 80 : 550);
+        window.setTimeout(startApplication, reducedMotion ? 80 : 280);
     }
 
     function togglePasswordVisibility() {
@@ -108,7 +108,23 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    window.setTimeout(enableEntry, reducedMotion ? 80 : 3900);
+    try {
+        const sessionUser = JSON.parse(
+            sessionStorage.getItem("prodflow.currentUser") || "null"
+        );
+
+        if (sessionUser?.username) {
+            window.ProdFlow = window.ProdFlow || {};
+            window.ProdFlow.currentUser = sessionUser;
+            intro.classList.add("is-ready");
+            window.setTimeout(startApplication, reducedMotion ? 80 : 380);
+            return;
+        }
+    } catch (_error) {
+        sessionStorage.removeItem("prodflow.currentUser");
+    }
+
+    window.setTimeout(enableEntry, reducedMotion ? 80 : 900);
     loginForm.addEventListener("submit", handleLogin);
     revealPassword.addEventListener("click", togglePasswordVisibility);
 

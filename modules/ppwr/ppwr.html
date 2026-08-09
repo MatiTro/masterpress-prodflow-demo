@@ -8,10 +8,10 @@
 
     <div class="ppwr-header-actions">
       <a class="ppwr-btn ppwr-btn-light" href="modules/ppwr/templates/SPEC_pusty_arkusz.pdf"
-        target="_blank" rel="noopener">Pełny szablon (10 stron)</a>
+        target="_blank" rel="noopener">Pusty szablon (3 strony)</a>
       <button class="ppwr-btn ppwr-btn-light" id="ppwrClearBtn" type="button">Wyczyść</button>
       <button class="ppwr-btn ppwr-btn-light" id="ppwrSaveDraftBtn" type="button">Zapisz roboczą</button>
-      <button class="ppwr-btn ppwr-btn-primary" id="ppwrGenerateBtn" type="button">Generuj podgląd</button>
+      <button class="ppwr-btn ppwr-btn-primary" id="ppwrGenerateBtn" type="button">Drukuj / zapisz PDF</button>
     </div>
   </header>
 
@@ -171,11 +171,6 @@
           </label>
 
           <label>
-            <span>Zrywka</span>
-            <input id="ppwrTearOff" type="text" placeholder="typ / parametry">
-          </label>
-
-          <label>
             <span>Klej 1</span>
             <input id="ppwrGlue1" type="text">
           </label>
@@ -205,9 +200,9 @@
           <label><span>Szerokość *</span><div><input id="ppwrWidth" type="number" min="0"><b>mm</b></div></label>
           <label><span>Wysokość *</span><div><input id="ppwrHeight" type="number" min="0"><b>mm</b></div></label>
           <label><span>Klapa</span><div><input id="ppwrFlap" type="number" min="0"><b>mm</b></div></label>
-          <label><span>Fałda w dnie</span><div><input id="ppwrBottomGusset" type="number" min="0"><b>mm</b></div></label>
+          <label><span>Fałda</span><div><input id="ppwrBottomGusset" type="number" min="0"><b>mm</b></div></label>
           <label><span>Paski zaklejające</span><div><input id="ppwrAdhesiveStrips" type="number" min="0"><b>mm</b></div></label>
-          <label><span>Pasek zrywający</span><div><input id="ppwrTearStrip" type="number" min="0"><b>mm</b></div></label>
+          <label class="ppwr-select-field"><span>Zrywka</span><select id="ppwrTearStrip"><option value="">Brak</option><option value="folia">Folia</option><option value="perforacja">Perforacja</option></select></label>
         </div>
       </section>
 
@@ -335,7 +330,7 @@
       <div class="ppwr-preview-toolbar">
         <div>
           <span>Podgląd dokumentu</span>
-          <strong>Strona 1 z 10</strong>
+          <strong>Strona 1 z 3</strong>
         </div>
         <button class="ppwr-preview-zoom" id="ppwrZoomBtn" type="button">Powiększ</button>
       </div>
@@ -356,7 +351,7 @@
           </div>
 
           <div class="ppwr-paper-page">
-            <span>Strona / Page 1 / 10</span>
+            <span>Strona / Page 1 / 3</span>
             <strong>Masterpress S.A.<br>Kuronia 4<br>15-569 Białystok, POL</strong>
           </div>
 
@@ -396,8 +391,8 @@
 
   <dialog class="ppwr-dialog" id="ppwrDialog">
     <div class="ppwr-dialog-icon">✓</div>
-    <h2>Podgląd został przygotowany</h2>
-    <p>Dokument został zaktualizowany na podstawie bieżących danych zlecenia.</p>
+    <h2>Dokument PPWR jest gotowy</h2>
+    <p>Otworzono trzystronicowy wydruk. W oknie drukowania możesz wybrać opcję „Zapisz jako PDF”.</p>
     <button class="ppwr-btn ppwr-btn-primary" id="ppwrDialogClose" type="button">Zamknij</button>
   </dialog>
 </section>

@@ -103,8 +103,6 @@ let currentOrderId = sessionStorage.getItem(
     "corner",
     "wrapping",
     "siliconeSelect",
-    "tearStripSelect",
-    "perforationSelect",
 
     "graphicNumber",
     "colorCount",
@@ -154,6 +152,7 @@ let currentOrderId = sessionStorage.getItem(
     renderEnvelope(getValue("productType"));
 
     updateAllViews();
+    renderOrderManager();
   }
 
   /* =======================================================
@@ -263,6 +262,52 @@ let currentOrderId = sessionStorage.getItem(
     const number = Number(normalized);
 
     return Number.isFinite(number) ? number : 0;
+  }
+
+  function normalizeTearType(value, legacyPerforation = "") {
+    const normalized = String(value ?? "")
+      .trim()
+      .toLowerCase();
+
+    if (
+      normalized === "perforacja" ||
+      normalized === "papier" ||
+      String(legacyPerforation).toLowerCase() === "tak"
+    ) {
+      return "perforacja";
+    }
+
+    if (
+      normalized === "folia" ||
+      normalized === "plastik"
+    ) {
+      return "folia";
+    }
+
+    return "";
+  }
+
+  function tearTypeLabel(value) {
+    return {
+      folia: "Folia",
+      perforacja: "Perforacja"
+    }[normalizeTearType(value)] || "Brak";
+  }
+
+  function orderStatusLabel(order) {
+    const labels = {
+      draft: "Robocza",
+      new: "Nowa",
+      planned: "W planowaniu",
+      in_production: "W produkcji",
+      quality_control: "Kontrola jakości",
+      packing: "Pakowanie",
+      warehouse: "Magazyn",
+      completed: "Zakończona",
+      cancelled: "Anulowana"
+    };
+
+    return labels[order?.status] || "Zapisana";
   }
 
   function debounceAutoSave() {
@@ -1297,36 +1342,25 @@ let currentOrderId = sessionStorage.getItem(
 
     for (let index = 1; index <= count; index += 1) {
       const previous = existingValues[index - 1] || {};
+      const previousName =
+        previous.name ||
+        previous.code ||
+        [previous.width, previous.position]
+          .filter(Boolean)
+          .join(" / ");
 
       fields.insertAdjacentHTML(
         "beforeend",
         `
           <label class="pf-field">
-            <span>Pasek silikonowy ${index} — szerokość</span>
-
-            <div class="pf-input-unit">
-              <input
-                type="number"
-                min="0"
-                step="0.1"
-                class="pf-silicone-width"
-                data-silicone-index="${index}"
-                value="${escapeHtml(previous.width || "")}"
-                placeholder="0">
-
-              <span>mm</span>
-            </div>
-          </label>
-
-          <label class="pf-field">
-            <span>Pasek silikonowy ${index} — położenie</span>
+            <span>Pasek silikonowy ${index} — pełna nazwa</span>
 
             <input
               type="text"
-              class="pf-silicone-position"
+              class="pf-silicone-name"
               data-silicone-index="${index}"
-              value="${escapeHtml(previous.position || "")}"
-              placeholder="np. 25 mm od górnej krawędzi">
+              value="${escapeHtml(previousName || "")}"
+              placeholder="Wklej pełną nazwę paska">
           </label>
         `
       );
@@ -1342,13 +1376,11 @@ let currentOrderId = sessionStorage.getItem(
   }
 
   function collectSiliconeData() {
-    const widths = queryAll(".pf-silicone-width");
-    const positions = queryAll(".pf-silicone-position");
-
-    return widths.map((input, index) => ({
-      width: input.value,
-      position: positions[index]?.value || ""
-    }));
+    return queryAll(".pf-silicone-name")
+      .map((input) => ({
+        name: input.value.trim()
+      }))
+      .filter((item) => item.name);
   }
 
   /* =======================================================
@@ -1569,6 +1601,92 @@ let currentOrderId = sessionStorage.getItem(
     );
   }
 
+  function orderCardLabel(order) {
+    const reference =
+      order.order?.externalNumber ||
+      order.number ||
+      order.id;
+    const client = order.customer?.name || "brak klienta";
+    const product =
+      order.product?.name ||
+      order.product?.code ||
+      "brak produktu";
+
+    return `${reference} - ${client} - ${product} (${orderStatusLabel(order)})`;
+  }
+
+  function renderOrderManager() {
+    const select = getElement("orderCardSelect");
+    const counter = getElement("orderCardCount");
+    const openButton = getElement("openOrderCardBtn");
+
+    if (!select) {
+      return;
+    }
+
+    const orders = getAllStoreOrders();
+
+    select.innerHTML = orders.length
+      ? [
+          '<option value="">- wybierz zapisaną kartę -</option>',
+          ...orders.map(
+            (order) =>
+              `<option value="${escapeHtml(order.id)}">${escapeHtml(orderCardLabel(order))}</option>`
+          )
+        ].join("")
+      : '<option value="">Brak zapisanych kart</option>';
+
+    select.value = orders.some((order) => order.id === currentOrderId)
+      ? currentOrderId
+      : "";
+
+    if (counter) {
+      counter.textContent = orders.length
+        ? `${orders.length} ${orders.length === 1 ? "zapisana karta" : orders.length < 5 ? "zapisane karty" : "zapisanych kart"}`
+        : "Brak zapisanych kart";
+    }
+
+    if (openButton) {
+      openButton.disabled = !select.value;
+    }
+  }
+
+  function preservePendingDraft() {
+    window.clearTimeout(autoSaveTimer);
+
+    if (!root.classList.contains("has-unsaved-changes")) {
+      return;
+    }
+
+    saveCard({
+      silent: true,
+      historyMessage: null
+    });
+  }
+
+  function openOrderCard(orderId) {
+    const order = findStoreOrder(orderId);
+
+    if (!order) {
+      showToast("Nie znaleziono wybranej karty.", "error");
+      renderOrderManager();
+      return;
+    }
+
+    if (order.id === currentOrderId) {
+      showToast("Ta karta jest już otwarta.");
+      return;
+    }
+
+    preservePendingDraft();
+    currentOrderId = order.id;
+    sessionStorage.setItem(ACTIVE_ORDER_KEY, currentOrderId);
+    applyCardData(convertOrderToCard(order));
+    renderOrderManager();
+    root.scrollIntoView({ behavior: "smooth", block: "start" });
+    showToast(`Otwarto kartę ${order.order?.externalNumber || order.number}.`, "success");
+  }
+
   function normalizeHistory(history) {
     if (!Array.isArray(history)) {
       return [];
@@ -1695,8 +1813,36 @@ let currentOrderId = sessionStorage.getItem(
             description: ink.description || "",
             quantity: 0,
             unit: "",
-            status: ink.status || "available"
+              status: ink.status || "available"
           }))
+        : []),
+      ...(Array.isArray(cardData.silicone)
+        ? cardData.silicone
+            .filter((item) => item?.name || item?.code)
+            .map((item, index) => ({
+              id: `silicone-${index + 1}`,
+              type: "silicone",
+              code: item.code || "",
+              name: item.name || item.code,
+              description: "Pasek silikonowy",
+              quantity: 0,
+              unit: "",
+              status: "unknown"
+            }))
+        : []),
+      ...(normalizeTearType(fields.ppwrTearStrip)
+        ? [
+            {
+              id: "tear-off",
+              type: "tear-off",
+              code: normalizeTearType(fields.ppwrTearStrip),
+              name: `Zrywka - ${tearTypeLabel(fields.ppwrTearStrip)}`,
+              description: "Rodzaj zrywki",
+              quantity: 0,
+              unit: "",
+              status: "unknown"
+            }
+          ]
         : [])
     ];
 
@@ -1742,7 +1888,7 @@ let currentOrderId = sessionStorage.getItem(
           height: toNumber(fields.ppwrHeight),
           bottomGusset: toNumber(fields.ppwrBottomGusset),
           adhesiveStrips: toNumber(fields.ppwrAdhesiveStrips),
-          tearStrip: toNumber(fields.ppwrTearStrip)
+          tearStripType: normalizeTearType(fields.ppwrTearStrip)
         },
         notes: ""
       },
@@ -1926,6 +2072,21 @@ let currentOrderId = sessionStorage.getItem(
           )
         : [];
 
+    const silicone = Array.isArray(order.materials)
+      ? order.materials
+          .filter((material) => material.type === "silicone")
+          .map((material) => ({
+            name: material.name || material.code || ""
+          }))
+          .filter((item) => item.name)
+      : [];
+
+    const tearMaterial = Array.isArray(order.materials)
+      ? order.materials.find((material) => material.type === "tear-off")
+      : null;
+
+    const dimensions = order.product?.dimensions || {};
+
     return {
       version: 3,
 
@@ -1968,6 +2129,15 @@ let currentOrderId = sessionStorage.getItem(
 
         envelopeSize: "",
 
+        ppwrWidth: dimensions.width || "",
+        ppwrHeight: dimensions.height || "",
+        ppwrFlap: dimensions.length || "",
+        ppwrBottomGusset: dimensions.bottomGusset || "",
+        ppwrAdhesiveStrips: dimensions.adhesiveStrips || "",
+        ppwrTearStrip: normalizeTearType(
+          dimensions.tearStripType || tearMaterial?.code || tearMaterial?.name
+        ),
+
         productType: "",
 
         paperIndex:
@@ -2006,10 +2176,7 @@ let currentOrderId = sessionStorage.getItem(
         corner: false,
         wrapping: false,
 
-        siliconeSelect: "0",
-
-        tearStripSelect: "brak",
-        perforationSelect: "",
+        siliconeSelect: String(Math.min(2, silicone.length)),
 
         graphicNumber:
           order.product?.drawingNumber || "",
@@ -2055,45 +2222,75 @@ let currentOrderId = sessionStorage.getItem(
       },
 
       inks,
-      silicone: [],
+      silicone,
       history: []
     };
   }
 
+  function normalizeCardData(data) {
+    const normalized = {
+      ...data,
+      fields: { ...(data?.fields || {}) },
+      silicone: Array.isArray(data?.silicone)
+        ? data.silicone
+        : []
+    };
+
+    normalized.fields.ppwrTearStrip =
+      normalizeTearType(
+        normalized.fields.ppwrTearStrip,
+        normalized.fields.perforationSelect
+      ) ||
+      normalizeTearType(
+        normalized.fields.tearStripSelect,
+        normalized.fields.perforationSelect
+      );
+
+    normalized.fields.siliconeSelect = String(
+      Math.max(
+        Number(normalized.fields.siliconeSelect) || 0,
+        Math.min(2, normalized.silicone.length)
+      )
+    );
+
+    return normalized;
+  }
+
   function applyCardData(data) {
+    const normalizedData = normalizeCardData(data);
     isRestoringData = true;
 
     try {
-      Object.entries(data.fields || {}).forEach(
+      Object.entries(normalizedData.fields || {}).forEach(
         ([fieldId, value]) => {
           setValue(fieldId, value);
         }
       );
 
-      restoreInks(data.inks || []);
+      restoreInks(normalizedData.inks || []);
 
       updateEmbossedPaperVisibility();
 
       renderSiliconeFields(
-        data.silicone || []
+        normalizedData.silicone || []
       );
 
       setProductType(
-        data.fields?.productType || "",
+        normalizedData.fields?.productType || "",
         {
           silent: true
         }
       );
 
       setProcessStep(
-        data.processStep || "card",
+        normalizedData.processStep || "card",
         {
           silent: true
         }
       );
 
       restoreHistory(
-        data.history || []
+        normalizedData.history || []
       );
 
       updateAllViews();
@@ -2181,6 +2378,8 @@ let currentOrderId = sessionStorage.getItem(
         ACTIVE_ORDER_KEY,
         currentOrderId
       );
+
+      renderOrderManager();
 
       window.setTimeout(() => {
         setSavingState(false);
@@ -2466,9 +2665,29 @@ let currentOrderId = sessionStorage.getItem(
       }
     );
 
-    getElement("resetCardBtn")?.addEventListener(
+    getElement("newCardBtn")?.addEventListener(
       "click",
-      resetCard
+      startNewCard
+    );
+
+    getElement("orderCardSelect")?.addEventListener(
+      "change",
+      (event) => {
+        const button = getElement("openOrderCardBtn");
+        if (button) {
+          button.disabled = !event.currentTarget.value;
+        }
+      }
+    );
+
+    getElement("openOrderCardBtn")?.addEventListener(
+      "click",
+      () => {
+        const selectedId = getValue("orderCardSelect");
+        if (selectedId) {
+          openOrderCard(selectedId);
+        }
+      }
     );
 
     getElement("printLegacyBtn")?.addEventListener(
@@ -2547,31 +2766,19 @@ let currentOrderId = sessionStorage.getItem(
      RESET KARTY
      ======================================================= */
 
-  function resetCard() {
+  function startNewCard() {
     const confirmed = window.confirm(
-      "Czy na pewno wyczyścić całą Kartę Produkcyjną v2? Tej operacji nie można cofnąć."
+      currentOrderId
+        ? "Rozpocząć nową kartę? Obecna karta pozostanie zapisana i będzie można do niej wrócić z listy."
+        : "Wyczyścić formularz i rozpocząć nową kartę?"
     );
 
     if (!confirmed) {
       return;
     }
 
+    preservePendingDraft();
     window.clearTimeout(autoSaveTimer);
-
-        try {
-      if (currentOrderId) {
-        const store = getProdFlowStore();
-
-        if (typeof store.deleteOrder === "function") {
-          store.deleteOrder(currentOrderId);
-        }
-      }
-    } catch (error) {
-      console.warn(
-        "[ProdFlow] Nie udało się usunąć zlecenia ze Store:",
-        error
-      );
-    }
 
     currentOrderId = "";
 
@@ -2599,7 +2806,7 @@ let currentOrderId = sessionStorage.getItem(
     setValue("priority", "normal");
     setValue("labelTypeSelect", "standard");
     setValue("siliconeSelect", "0");
-    setValue("tearStripSelect", "brak");
+    setValue("ppwrTearStrip", "");
 
     const inksContainer = getElement("inksContainer");
 
@@ -2622,15 +2829,16 @@ let currentOrderId = sessionStorage.getItem(
     });
 
     addHistory(
-      "Wyczyszczono kartę",
+      "Utworzono kartę",
       "Rozpoczęto nowe zlecenie"
     );
 
     updateAllViews();
+    renderOrderManager();
     markAsSaved();
 
     showToast(
-      "Karta została wyczyszczona.",
+      "Możesz wprowadzić kolejne zlecenie.",
       "success"
     );
   }
@@ -2806,7 +3014,7 @@ let currentOrderId = sessionStorage.getItem(
     },
 
     reset() {
-      resetCard();
+      startNewCard();
     },
 
     getData() {

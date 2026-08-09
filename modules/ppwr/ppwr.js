@@ -15,7 +15,6 @@ function initPpwr() {
     productIndex: $("ppwrProductIndex"),
     material: $("ppwrMaterial"),
     siliconeStrip: $("ppwrSiliconeStrip"),
-    tearOff: $("ppwrTearOff"),
     glue1: $("ppwrGlue1"),
     glue2: $("ppwrGlue2"),
     glue3: $("ppwrGlue3"),
@@ -149,12 +148,12 @@ function initPpwr() {
       paper?.name || paper?.code || cardFields.paperName || cardFields.paperIndex,
       paper?.metadata?.size || cardFields.paperSize
     ].filter(Boolean).join(" / ");
-    fields.siliconeStrip.value =
-      cardFields.siliconeSelect ||
-      (Array.isArray(card.silicone)
-        ? card.silicone.map(item => item.name || item.code).filter(Boolean).join(", ")
-        : "");
-    fields.tearOff.value = cardFields.tearStripSelect || "";
+    const siliconeNames = Array.isArray(card.silicone)
+      ? card.silicone
+          .map(item => item.name || item.code || [item.width, item.position].filter(Boolean).join(" / "))
+          .filter(Boolean)
+      : [];
+    fields.siliconeStrip.value = siliconeNames.join(", ");
     fields.glue1.value = glues[0]?.name || cardFields.glue1Select || "";
     fields.glue2.value = glues[1]?.name || cardFields.glue2Select || "";
     fields.glue3.value = glues[2]?.name || cardFields.glue3Select || "";
@@ -165,8 +164,12 @@ function initPpwr() {
       dimensions.bottomGusset || cardFields.ppwrBottomGusset || "";
     fields.adhesiveStrips.value =
       dimensions.adhesiveStrips || cardFields.ppwrAdhesiveStrips || "";
-    fields.tearStrip.value =
-      dimensions.tearStrip || cardFields.ppwrTearStrip || "";
+    fields.tearStrip.value = normalizeTearType(
+      dimensions.tearStripType ||
+      cardFields.ppwrTearStrip ||
+      cardFields.tearStripSelect,
+      cardFields.perforationSelect
+    );
     fields.colorsCount.value = cardFields.colorCount || inks.length || "";
     fields.inkType.value = inks.map(item => item.name || item.code).filter(Boolean).join(", ");
     fields.printTechnique.value =
@@ -176,6 +179,9 @@ function initPpwr() {
     fields.palletQuantity.value = cardFields.qtyPallet || "";
     fields.palletType.value =
       order.packing?.palletType || cardFields.palletTypeSelect || "";
+    fields.preparedBy.value =
+      latest?.fields?.preparedBy ||
+      loggedUserName();
 
     if (latest) applyDraft(latest);
     updateAll();
@@ -227,6 +233,40 @@ function initPpwr() {
 
   function clean(value) {
     return String(value ?? "").trim();
+  }
+
+  function normalizeTearType(value, legacyPerforation = "") {
+    const normalized = clean(value).toLowerCase();
+
+    if (
+      normalized === "perforacja" ||
+      normalized === "papier" ||
+      clean(legacyPerforation).toLowerCase() === "tak"
+    ) {
+      return "perforacja";
+    }
+
+    if (normalized === "folia" || normalized === "plastik") {
+      return "folia";
+    }
+
+    return "";
+  }
+
+  function loggedUserName() {
+    const direct = window.ProdFlow?.currentUser;
+    if (direct) {
+      return direct.name || direct.displayName || direct.username || "";
+    }
+
+    try {
+      const saved = JSON.parse(
+        sessionStorage.getItem("prodflow.currentUser") || "null"
+      );
+      return saved?.name || saved?.displayName || saved?.username || "";
+    } catch (_error) {
+      return "";
+    }
   }
 
   function text(value, fallback = "—") {
@@ -284,17 +324,7 @@ function initPpwr() {
   }
 
   function updateCompletion() {
-    const missing = required
-      .filter(([key]) => {
-        const field = fields[key];
-        if (!field) return true;
-        return field.type === "number"
-          ? !Number(field.value)
-          : !clean(field.value);
-      })
-      .map(([, label]) => label);
-
-    if (!photoDataUrl) missing.push("zdjęcie techniczne");
+    const missing = collectMissingRequired();
 
     const total = required.length + 1;
     const completed = total - missing.length;
@@ -315,6 +345,21 @@ function initPpwr() {
     $("ppwrStatus").textContent = percent === 100 ? "Gotowa" : "Robocza";
     $("ppwrStatus").style.background = percent === 100 ? "#e8f6ee" : "#eef1f4";
     $("ppwrStatus").style.color = percent === 100 ? "#16754a" : "#65727d";
+  }
+
+  function collectMissingRequired() {
+    const missing = required
+      .filter(([key]) => {
+        const field = fields[key];
+        if (!field) return true;
+        return field.type === "number"
+          ? !Number(field.value)
+          : !clean(field.value);
+      })
+      .map(([, label]) => label);
+
+    if (!photoDataUrl) missing.push("zdjęcie techniczne");
+    return missing;
   }
 
   function updateSections() {
@@ -384,7 +429,7 @@ function initPpwr() {
     "Rozmiar papieru", "Rodzaj papieru", "W kartonie", "Na palecie",
     "Na warstwie", "Wysokość palety", "Rodzaj wyrobu", "Numer grafiki",
     "Wersja", "Status grafiki", "Liczba kolorów", "Sposób zadruku",
-    "Wałek do druku", "Pasek silikonowy", "Zrywka", "Perforacja",
+    "Wałek do druku", "Pasek silikonowy", "Zrywka",
     "Narożnik", "Foliowanie", "Klej 1", "Klej 2", "Klej 3",
     "Paleta - wymiar", "Paleta - typ", "Karton", "Etykieta", "Metoda dostawy"
   ].map(normalizePdfText);
@@ -576,7 +621,7 @@ function initPpwr() {
       ["client", ["Klient"]],
       ["productName", ["Nazwa produktu"]],
       ["siliconeStrip", ["Pasek silikonowy"]],
-      ["tearOff", ["Zrywka"]],
+      ["tearStrip", ["Zrywka", "Pasek zrywający"]],
       ["glue1", ["Klej 1"]],
       ["glue2", ["Klej 2"]],
       ["glue3", ["Klej 3"]],
@@ -588,7 +633,10 @@ function initPpwr() {
     let filled = 0;
 
     mappings.forEach(([fieldName, labels]) => {
-      const value = findPdfValue(content, labels);
+      const rawValue = findPdfValue(content, labels);
+      const value = fieldName === "tearStrip"
+        ? normalizeTearType(rawValue)
+        : rawValue;
       if (value && value !== "Brak") {
         fields[fieldName].value = value;
         filled += 1;
@@ -680,6 +728,31 @@ function initPpwr() {
     };
   }
 
+  function openPpwrPrint(orderId, recordId) {
+    const printUrl = new URL(
+      "modules/ppwr/print/print.html",
+      document.baseURI
+    );
+    printUrl.searchParams.set("orderId", orderId);
+    printUrl.searchParams.set("recordId", recordId);
+    printUrl.searchParams.set("autoprint", "1");
+
+    const printWindow = window.open(
+      printUrl.href,
+      "_blank",
+      "width=1100,height=820"
+    );
+
+    if (!printWindow) {
+      window.alert(
+        "Przeglądarka zablokowała okno wydruku. Zezwól na wyskakujące okna dla tej strony i spróbuj ponownie."
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   function applyDraft(draft) {
     if (!draft?.fields) return;
 
@@ -690,6 +763,10 @@ function initPpwr() {
       if (field.type === "checkbox") field.checked = Boolean(value);
       else field.value = value ?? "";
     });
+
+    fields.tearStrip.value = normalizeTearType(
+      draft.fields.tearStrip || draft.fields.tearOff
+    );
 
     photoDataUrl = draft.photoDataUrl || "";
     photoName = draft.photoName || "";
@@ -864,20 +941,43 @@ function initPpwr() {
   $("ppwrGenerateBtn").addEventListener("click", () => {
     updateAll();
     const order = resolveOrder();
-    if (order) {
-      const records = Array.isArray(order.ppwr) ? order.ppwr : [];
-      const record = {
-        id: `ppwr-${Date.now()}`,
-        status: "approved",
-        ...serializeDraft(),
-        approvedAt: new Date().toISOString()
-      };
-      getStore().updateOrder(order.id, { ppwr: [...records, record] }, {
-        module: "ppwr",
-        historyMessage: "Wygenerowano i zatwierdzono dokument PPWR."
-      });
+
+    if (!order) {
+      window.alert("Najpierw wybierz zlecenie z listy PPWR.");
+      return;
     }
-    $("ppwrDialog").showModal();
+
+    const missing = collectMissingRequired();
+    if (
+      missing.length &&
+      !window.confirm(
+        `Dokument nie jest kompletny. Brakuje: ${missing.join(", ")}.\n\nWygenerować roboczy wydruk mimo braków?`
+      )
+    ) {
+      return;
+    }
+
+    const records = Array.isArray(order.ppwr) ? order.ppwr : [];
+    const complete = missing.length === 0;
+    const record = {
+      id: `ppwr-${Date.now()}`,
+      status: complete ? "approved" : "draft",
+      ...serializeDraft(),
+      approvedAt: complete ? new Date().toISOString() : null
+    };
+
+    getStore().updateOrder(order.id, { ppwr: [...records, record] }, {
+      module: "ppwr",
+      historyMessage: complete
+        ? "Wygenerowano trzystronicowy dokument PPWR."
+        : "Wygenerowano roboczy wydruk PPWR."
+    });
+
+    renderOrderBrowser();
+    const opened = openPpwrPrint(order.id, record.id);
+    if (opened) {
+      $("ppwrDialog").showModal();
+    }
   });
 
   $("ppwrDialogClose").addEventListener("click", () => {
@@ -893,6 +993,7 @@ function initPpwr() {
   });
 
   fields.documentDate.value = new Date().toISOString().slice(0, 10);
+  fields.preparedBy.value = loggedUserName();
   [
     "store:order-updated",
     "store:order-status-changed",

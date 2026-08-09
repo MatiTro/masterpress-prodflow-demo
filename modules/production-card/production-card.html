@@ -32,8 +32,8 @@
       <button
         class="pf-button pf-button--ghost"
         type="button"
-        id="resetCardBtn">
-        Wyczyść
+        id="newCardBtn">
+        + Nowa karta
       </button>
 
       <button
@@ -51,6 +51,30 @@
       </button>
     </div>
   </header>
+
+  <section class="pf-order-switcher" aria-label="Zapisane karty produkcyjne">
+    <div class="pf-order-switcher__copy">
+      <span class="pf-card-v2__eyebrow">Karty zleceń</span>
+      <strong>Pracuj na wielu zleceniach</strong>
+      <small id="orderCardCount">Brak zapisanych kart</small>
+    </div>
+
+    <div class="pf-order-switcher__controls">
+      <label class="pf-order-switcher__select">
+        <span>Otwórz zapisaną kartę</span>
+        <select id="orderCardSelect" aria-label="Wybierz kartę produkcyjną">
+          <option value="">Brak zapisanych kart</option>
+        </select>
+      </label>
+
+      <button
+        class="pf-button pf-button--secondary"
+        type="button"
+        id="openOrderCardBtn">
+        Otwórz kartę
+      </button>
+    </div>
+  </section>
 
   <div class="pf-card-v2__layout">
 
@@ -236,11 +260,12 @@
                   </label>
 
                   <label class="pf-field">
-                    <span>Zakładka dolna</span>
+                    <span>Fałda</span>
                     <div class="pf-input-unit">
                       <input type="number" id="ppwrBottomGusset" min="0" step="0.1" placeholder="0">
                       <span>mm</span>
                     </div>
+                    <small>Rodzaj fałdy wynika z wybranego rodzaju wyrobu.</small>
                   </label>
 
                   <label class="pf-field">
@@ -252,11 +277,12 @@
                   </label>
 
                   <label class="pf-field">
-                    <span>Pasek zrywający</span>
-                    <div class="pf-input-unit">
-                      <input type="number" id="ppwrTearStrip" min="0" step="0.1" placeholder="0">
-                      <span>mm</span>
-                    </div>
+                    <span>Zrywka</span>
+                    <select id="ppwrTearStrip">
+                      <option value="">Brak</option>
+                      <option value="folia">Folia</option>
+                      <option value="perforacja">Perforacja</option>
+                    </select>
                   </label>
                 </div>
               </div>
@@ -689,24 +715,6 @@
                   <option value="0">Brak</option>
                   <option value="1">Jeden pasek</option>
                   <option value="2">Dwa paski</option>
-                </select>
-              </label>
-
-              <label class="pf-field">
-                <span>Zrywka</span>
-                <select id="tearStripSelect">
-                  <option value="brak">Brak</option>
-                  <option value="plastik">Plastik</option>
-                  <option value="papier">Papier</option>
-                </select>
-              </label>
-
-              <label class="pf-field">
-                <span>Perforacja</span>
-                <select id="perforationSelect">
-                  <option value="">Nie określono</option>
-                  <option value="tak">Tak</option>
-                  <option value="nie">Nie</option>
                 </select>
               </label>
 
