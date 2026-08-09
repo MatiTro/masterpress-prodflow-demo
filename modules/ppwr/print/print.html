@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PPWR - ProdFlow</title>
+  <title>Specyfikacja gotowego wyrobu</title>
   <link rel="stylesheet" href="print.css">
 </head>
 <body>
   <div class="print-toolbar" role="toolbar" aria-label="Działania dokumentu">
     <div>
-      <strong>PPWR - 3 strony</strong>
+      <strong>Dokument klienta · 3 strony</strong>
       <span>Wybierz w drukarce „Zapisz jako PDF”, aby pobrać dokument.</span>
     </div>
     <button id="printDocumentBtn" type="button">Drukuj / zapisz PDF</button>
@@ -33,40 +33,40 @@
       </div>
 
       <section class="document-title">
-        <span>PPWR / Final product specification</span>
+        <span>Specyfikacja wyrobu / Product specification</span>
         <h1 data-field="productName">Specyfikacja gotowego wyrobu</h1>
       </section>
 
       <section class="document-section">
-        <h2>1. Dane podstawowe</h2>
+        <h2>1. Dane podstawowe / General information</h2>
         <div class="data-grid data-grid--2">
-          <div><span>Klient</span><strong data-field="client">-</strong></div>
-          <div><span>Dostawca</span><strong data-field="supplier">Masterpress S.A.</strong></div>
-          <div><span>Numer zlecenia</span><strong data-field="orderNumber">-</strong></div>
-          <div><span>Indeks produktu</span><strong data-field="productIndex">-</strong></div>
+          <div><span>Klient / Customer</span><strong data-field="client">-</strong></div>
+          <div><span>Dostawca / Manufacturer</span><strong data-field="supplier">Masterpress S.A.</strong></div>
+          <div><span>Numer referencyjny / Reference no.</span><strong data-field="orderNumber">-</strong></div>
+          <div><span>Indeks produktu / Product index</span><strong data-field="productIndex">-</strong></div>
         </div>
       </section>
 
       <section class="document-section document-section--grow">
-        <h2>2. Produkt i wymiary</h2>
+        <h2>2. Produkt i wymiary / Product and dimensions</h2>
         <div class="product-layout">
           <div class="technical-photo" id="technicalPhoto">
             <span>Zdjęcie techniczne</span>
           </div>
 
           <div class="dimension-grid">
-            <div><span>Szerokość</span><strong data-field="width">-</strong><em>mm</em></div>
-            <div><span>Wysokość</span><strong data-field="height">-</strong><em>mm</em></div>
-            <div><span>Klapa</span><strong data-field="flap">-</strong><em>mm</em></div>
-            <div><span>Fałda</span><strong data-field="bottomGusset">-</strong><em>mm</em></div>
-            <div><span>Paski zaklejające</span><strong data-field="adhesiveStrips">-</strong><em>mm</em></div>
-            <div><span>Zrywka</span><strong data-field="tearStrip">Brak</strong></div>
+            <div><span>Szerokość / Width</span><strong data-field="width">-</strong><em>mm</em></div>
+            <div><span>Wysokość / Height</span><strong data-field="height">-</strong><em>mm</em></div>
+            <div><span>Klapa / Flap</span><strong data-field="flap">-</strong><em>mm</em></div>
+            <div><span>Fałda / Gusset</span><strong data-field="bottomGusset">-</strong><em>mm</em></div>
+            <div><span>Paski zaklejające / Sealing strips</span><strong data-field="adhesiveStrips">-</strong><em>mm</em></div>
+            <div><span>Zrywka / Tear-off</span><strong data-field="tearStrip">Brak</strong></div>
           </div>
         </div>
       </section>
 
       <footer class="document-footer">
-        <span>Wygenerowano w ProdFlow</span>
+        <span>F-03/I-SZBŻ-03</span>
         <strong data-field="specificationNumber">-</strong>
         <span>Masterpress S.A.</span>
       </footer>
@@ -82,45 +82,40 @@
       </header>
 
       <section class="document-section">
-        <h2>3. Materiały i surowce</h2>
+        <h2>3. Materiały i surowce / Materials</h2>
         <table class="document-table">
           <tbody>
-            <tr><th>Materiał / szerokość / gramatura</th><td data-field="material">-</td></tr>
-            <tr><th>Pasek silikonowy</th><td data-field="siliconeStrip">-</td></tr>
-            <tr><th>Zrywka</th><td data-field="tearStrip">Brak</td></tr>
-            <tr><th>Klej 1</th><td data-field="glue1">-</td></tr>
-            <tr><th>Klej 2</th><td data-field="glue2">-</td></tr>
-            <tr><th>Klej 3</th><td data-field="glue3">-</td></tr>
+            <tr><th>Materiał / szerokość / gramatura / Raw material</th><td data-field="material">-</td></tr>
+            <tr><th>Pasek silikonowy / Silicone strip</th><td data-field="siliconeStrip">-</td></tr>
+            <tr><th>Zrywka / Tear-off</th><td data-field="tearStrip">Brak</td></tr>
+            <tr><th>Klej 1 / Adhesive 1</th><td data-field="glue1">-</td></tr>
+            <tr><th>Klej 2 / Adhesive 2</th><td data-field="glue2">-</td></tr>
+            <tr><th>Klej 3 / Adhesive 3</th><td data-field="glue3">-</td></tr>
           </tbody>
         </table>
       </section>
 
       <section class="document-section">
-        <h2>4. Parametry druku</h2>
+        <h2>4. Parametry druku / Print parameters</h2>
         <div class="data-grid data-grid--2">
-          <div><span>Liczba kolorów</span><strong data-field="colorsCount">-</strong></div>
-          <div><span>Rodzaj farb</span><strong data-field="inkType">-</strong></div>
-          <div class="data-grid__wide"><span>Technika druku</span><strong data-field="printTechnique">-</strong></div>
+          <div><span>Liczba kolorów / Number of colours</span><strong data-field="colorsCount">-</strong></div>
+          <div><span>Rodzaj farb / Ink type</span><strong data-field="inkType">-</strong></div>
+          <div class="data-grid__wide"><span>Technika druku / Printing technique</span><strong data-field="printTechnique">-</strong></div>
         </div>
       </section>
 
       <section class="document-section document-section--grow">
-        <h2>5. Pakowanie i paletyzacja</h2>
+        <h2>5. Pakowanie i paletyzacja / Packaging and palletisation</h2>
         <div class="data-grid data-grid--2">
-          <div><span>Ilość w kartonie</span><strong data-field="boxQuantity">-</strong></div>
-          <div><span>Ilość na palecie</span><strong data-field="palletQuantity">-</strong></div>
-          <div><span>Typ palety</span><strong data-field="palletType">-</strong></div>
-          <div><span>Pakiety banderolowane</span><strong data-field="banded">-</strong></div>
-        </div>
-
-        <div class="document-note">
-          <strong>Informacja produkcyjna</strong>
-          <p>Wartości w dokumencie pochodzą z bieżącej wersji Karty Produkcyjnej i formularza PPWR. Przed zatwierdzeniem należy zweryfikować zgodność materiałów oraz parametrów pakowania.</p>
+          <div><span>Ilość w kartonie / Box quantity</span><strong data-field="boxQuantity">-</strong></div>
+          <div><span>Ilość na palecie / Pallet quantity</span><strong data-field="palletQuantity">-</strong></div>
+          <div><span>Typ palety / Pallet type</span><strong data-field="palletType">-</strong></div>
+          <div><span>Banderolowanie / Banding</span><strong data-field="banded">-</strong></div>
         </div>
       </section>
 
       <footer class="document-footer">
-        <span>PPWR - parametry procesu</span>
+        <span>Specyfikacja gotowego wyrobu</span>
         <strong data-field="productName">-</strong>
         <span>Masterpress S.A.</span>
       </footer>
@@ -136,34 +131,34 @@
       </header>
 
       <section class="document-section">
-        <h2>6. Podsumowanie specyfikacji</h2>
+        <h2>6. Podsumowanie specyfikacji / Specification summary</h2>
         <table class="document-table document-table--summary">
           <tbody>
-            <tr><th>Klient</th><td data-field="client">-</td></tr>
-            <tr><th>Produkt / indeks</th><td><strong data-field="productName">-</strong><br><span data-field="productIndex">-</span></td></tr>
-            <tr><th>Materiał</th><td data-field="material">-</td></tr>
-            <tr><th>Wymiary</th><td data-field="dimensionsSummary">-</td></tr>
-            <tr><th>Druk</th><td data-field="printSummary">-</td></tr>
-            <tr><th>Pakowanie</th><td data-field="packingSummary">-</td></tr>
+            <tr><th>Klient / Customer</th><td data-field="client">-</td></tr>
+            <tr><th>Produkt / Product</th><td><strong data-field="productName">-</strong><br><span data-field="productIndex">-</span></td></tr>
+            <tr><th>Materiał / Material</th><td data-field="material">-</td></tr>
+            <tr><th>Wymiary / Dimensions</th><td data-field="dimensionsSummary">-</td></tr>
+            <tr><th>Druk / Print</th><td data-field="printSummary">-</td></tr>
+            <tr><th>Pakowanie / Packaging</th><td data-field="packingSummary">-</td></tr>
           </tbody>
         </table>
       </section>
 
       <section class="document-section document-section--grow">
-        <h2>7. Zatwierdzenie dokumentu</h2>
+        <h2>7. Zatwierdzenie dokumentu / Document approval</h2>
         <div class="approval-grid">
           <div>
-            <span>Opracował</span>
+            <span>Opracował / Prepared by</span>
             <strong data-field="preparedBy">-</strong>
             <i>podpis / data</i>
           </div>
           <div>
-            <span>Sprawdził</span>
+            <span>Sprawdził / Checked by</span>
             <strong data-field="checkedBy">-</strong>
             <i>podpis / data</i>
           </div>
           <div>
-            <span>Zatwierdził</span>
+            <span>Zatwierdził / Approved by</span>
             <strong data-field="approvedBy">-</strong>
             <i>podpis / data</i>
           </div>
@@ -171,7 +166,7 @@
 
         <div class="approval-statement">
           <strong>Potwierdzenie</strong>
-          <p>Podpisy potwierdzają sprawdzenie danych technicznych, materiałowych, drukowych i logistycznych ujętych w niniejszej specyfikacji.</p>
+          <p>Podpisy potwierdzają sprawdzenie danych ujętych w niniejszej specyfikacji. / Signatures confirm verification of the information included in this specification.</p>
         </div>
       </section>
 

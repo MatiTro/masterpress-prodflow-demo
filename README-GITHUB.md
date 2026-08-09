@@ -1,4 +1,4 @@
-# ProdFlow 0.3.0 TEST
+# ProdFlow 0.4.0 TEST
 
 Statyczna wersja testowa aplikacji przygotowana do publikacji przez GitHub Pages.
 
@@ -35,6 +35,10 @@ Nie wgrywaj samego pliku ZIP do repozytorium — najpierw go rozpakuj.
 - zrywka jako wybór `Folia` / `Perforacja`;
 - paski silikonowe zapisywane przez pełną nazwę;
 - PPWR skrócony do 3 stron A4, zarówno dla pustego szablonu, jak i wydruku z danymi;
+- klientowski PDF i pusty szablon nie zawierają nazwy ani komunikatów systemu ProdFlow;
+- podgląd PPWR obejmuje trzy przełączane, czytelne strony oraz tryb pełnoekranowy;
+- responsywny nagłówek Karty Produkcyjnej i mobilne menu dla telefonu oraz tabletu;
+- tabele i formularze PPWR zmieniają układ bez wychodzenia poza ekran;
 - automatyczne uzupełnianie autora PPWR zalogowanym użytkownikiem;
 - odświeżanie zasobów dostosowane do cache GitHub Pages;
 - reset pozycji przewinięcia po zmianie modułu.

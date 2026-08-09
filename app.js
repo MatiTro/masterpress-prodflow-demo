@@ -9,8 +9,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginSubmit = document.getElementById("prodflowLoginSubmit");
     const loginError = document.getElementById("prodflowLoginError");
     const revealPassword = document.getElementById("prodflowRevealPassword");
+    const menuToggle = document.getElementById("prodflowMenuToggle");
+    const menuBackdrop = document.getElementById("prodflowMenuBackdrop");
+    const sidebar = document.getElementById("prodflowSidebar");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let applicationStarted = false;
+
+    function setMobileMenu(open) {
+        const shouldOpen = Boolean(open);
+        document.body.classList.toggle("pf-mobile-menu-open", shouldOpen);
+        menuToggle?.setAttribute("aria-expanded", String(shouldOpen));
+        menuBackdrop?.setAttribute("tabindex", shouldOpen ? "0" : "-1");
+    }
+
+    menuToggle?.addEventListener("click", () => {
+        setMobileMenu(!document.body.classList.contains("pf-mobile-menu-open"));
+    });
+
+    menuBackdrop?.addEventListener("click", () => setMobileMenu(false));
+    sidebar?.addEventListener("click", (event) => {
+        if (event.target.closest("[data-module]")) setMobileMenu(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setMobileMenu(false);
+    });
+
+    window.matchMedia("(min-width: 901px)").addEventListener("change", (event) => {
+        if (event.matches) setMobileMenu(false);
+    });
 
     function enableEntry() {
         if (!intro || !loginForm) {

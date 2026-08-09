@@ -326,56 +326,146 @@
       </section>
     </main>
 
-    <aside class="ppwr-preview-column">
+    <aside class="ppwr-preview-column" id="ppwrPreviewColumn">
       <div class="ppwr-preview-toolbar">
-        <div>
-          <span>Podgląd dokumentu</span>
-          <strong>Strona 1 z 3</strong>
+        <div class="ppwr-preview-toolbar__title">
+          <span>Podgląd dokumentu klienta</span>
+          <strong id="ppwrPreviewPageLabel">Strona 1 z 3</strong>
         </div>
-        <button class="ppwr-preview-zoom" id="ppwrZoomBtn" type="button">Powiększ</button>
+        <div class="ppwr-preview-toolbar__actions">
+          <div class="ppwr-preview-pagination" aria-label="Wybór strony podglądu">
+            <button class="is-active" type="button" data-preview-page-target="1" aria-label="Strona 1">1</button>
+            <button type="button" data-preview-page-target="2" aria-label="Strona 2">2</button>
+            <button type="button" data-preview-page-target="3" aria-label="Strona 3">3</button>
+          </div>
+          <button class="ppwr-preview-zoom" id="ppwrZoomBtn" type="button">Pełny ekran</button>
+        </div>
       </div>
 
       <div class="ppwr-paper-stage">
-        <article class="ppwr-paper" id="ppwrPaper">
+        <article class="ppwr-paper is-active" data-preview-page="1">
           <header class="ppwr-paper-header">
             <div>
-              <small>F-03/I-SZBŻ-03 wydanie 2</small>
-              <span id="previewDate">—</span>
+              <strong>F-03/I-SZBŻ-03</strong>
+              <small>Specyfikacja gotowego wyrobu / Product specification</small>
             </div>
             <img src="assets/images/logoczarne.png" alt="Masterpress">
           </header>
 
-          <div class="ppwr-paper-meta">
-            <span>Specyfikacja nr / Specification sheet no.:</span>
-            <strong id="previewSpecNumber">—</strong>
+          <div class="ppwr-paper-meta-grid">
+            <div><span>Numer specyfikacji</span><strong data-preview-field="specificationNumber">—</strong></div>
+            <div><span>Data dokumentu</span><strong data-preview-field="documentDate">—</strong></div>
+            <div><span>Status</span><strong data-preview-field="documentStatus">Wersja robocza</strong></div>
+            <div><span>Strona</span><strong>1 / 3</strong></div>
           </div>
 
-          <div class="ppwr-paper-page">
-            <span>Strona / Page 1 / 3</span>
-            <strong>Masterpress S.A.<br>Kuronia 4<br>15-569 Białystok, POL</strong>
+          <div class="ppwr-paper-title">
+            <span>Specyfikacja wyrobu / Product specification</span>
+            <h3 data-preview-field="productName">Specyfikacja gotowego wyrobu</h3>
           </div>
 
-          <div class="ppwr-paper-rule"></div>
-
-          <div class="ppwr-paper-space">
-            <div class="ppwr-photo-mini" id="previewPhotoBox">
-              <span>Zdjęcie techniczne</span>
-            </div>
-          </div>
-
-          <section class="ppwr-paper-content">
-            <h3 id="previewProductName">SPECYFIKACJA GOTOWEGO WYROBU</h3>
-            <p>Final product SPECIFICATION</p>
-
-            <div class="ppwr-preview-table">
-              <div class="ppwr-preview-row heading"><span>I. WSTĘP / GENERAL</span></div>
-              <div class="ppwr-preview-row"><b>1.1 Klient / Customer</b><span id="previewClient">—</span></div>
-              <div class="ppwr-preview-row"><b>1.2 Dostawca / Manufacturer</b><span id="previewSupplier">Masterpress S.A.</span></div>
-              <div class="ppwr-preview-row"><b>1.3 Nazwa produktu / Product name</b><span id="previewProduct">—</span></div>
-              <div class="ppwr-preview-row heading"><span>II. PARAMETRY PRODUKCYJNE / MATERIAL DATA</span></div>
-              <div class="ppwr-preview-row"><b>Materiał / Raw material</b><span id="previewMaterial">—</span></div>
+          <section class="ppwr-paper-section">
+            <h4>1. Dane podstawowe / General information</h4>
+            <div class="ppwr-paper-data-grid">
+              <div><span>Klient / Customer</span><strong data-preview-field="client">—</strong></div>
+              <div><span>Dostawca / Manufacturer</span><strong data-preview-field="supplier">Masterpress S.A.</strong></div>
+              <div><span>Numer referencyjny / Reference no.</span><strong data-preview-field="orderNumber">—</strong></div>
+              <div><span>Indeks produktu / Product index</span><strong data-preview-field="productIndex">—</strong></div>
             </div>
           </section>
+
+          <section class="ppwr-paper-section ppwr-paper-section--grow">
+            <h4>2. Produkt i wymiary / Product and dimensions</h4>
+            <div class="ppwr-paper-product-grid">
+              <div class="ppwr-photo-mini" id="previewPhotoBox"><span>Zdjęcie techniczne / Technical image</span></div>
+              <div class="ppwr-paper-dimensions">
+                <div><span>Szerokość</span><strong data-preview-field="width">—</strong><em>mm</em></div>
+                <div><span>Wysokość</span><strong data-preview-field="height">—</strong><em>mm</em></div>
+                <div><span>Klapa</span><strong data-preview-field="flap">—</strong><em>mm</em></div>
+                <div><span>Fałda</span><strong data-preview-field="bottomGusset">—</strong><em>mm</em></div>
+                <div><span>Paski zaklejające</span><strong data-preview-field="adhesiveStrips">—</strong><em>mm</em></div>
+                <div><span>Zrywka</span><strong data-preview-field="tearStrip">Brak</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <footer class="ppwr-paper-footer"><span>F-03/I-SZBŻ-03</span><strong data-preview-field="specificationNumber">—</strong><span>Masterpress S.A.</span></footer>
+        </article>
+
+        <article class="ppwr-paper" data-preview-page="2">
+          <header class="ppwr-paper-header ppwr-paper-header--compact">
+            <div>
+              <strong data-preview-field="specificationNumber">—</strong>
+              <small>Materiały, druk i pakowanie / Materials, print and packaging</small>
+            </div>
+            <span class="ppwr-paper-page-number">2 / 3</span>
+          </header>
+
+          <section class="ppwr-paper-section">
+            <h4>3. Materiały i surowce / Materials</h4>
+            <div class="ppwr-paper-table">
+              <div><b>Materiał / Raw material</b><span data-preview-field="material">—</span></div>
+              <div><b>Pasek silikonowy / Silicone strip</b><span data-preview-field="siliconeStrip">—</span></div>
+              <div><b>Zrywka / Tear-off</b><span data-preview-field="tearStrip">Brak</span></div>
+              <div><b>Klej 1 / Adhesive 1</b><span data-preview-field="glue1">—</span></div>
+              <div><b>Klej 2 / Adhesive 2</b><span data-preview-field="glue2">—</span></div>
+              <div><b>Klej 3 / Adhesive 3</b><span data-preview-field="glue3">—</span></div>
+            </div>
+          </section>
+
+          <section class="ppwr-paper-section">
+            <h4>4. Parametry druku / Print parameters</h4>
+            <div class="ppwr-paper-data-grid">
+              <div><span>Liczba kolorów / Number of colours</span><strong data-preview-field="colorsCount">—</strong></div>
+              <div><span>Rodzaj farb / Ink type</span><strong data-preview-field="inkType">—</strong></div>
+              <div class="ppwr-paper-data-grid__wide"><span>Technika druku / Printing technique</span><strong data-preview-field="printTechnique">—</strong></div>
+            </div>
+          </section>
+
+          <section class="ppwr-paper-section ppwr-paper-section--grow">
+            <h4>5. Pakowanie i paletyzacja / Packaging and palletisation</h4>
+            <div class="ppwr-paper-data-grid">
+              <div><span>Ilość w kartonie / Box quantity</span><strong data-preview-field="boxQuantity">—</strong></div>
+              <div><span>Ilość na palecie / Pallet quantity</span><strong data-preview-field="palletQuantity">—</strong></div>
+              <div><span>Typ palety / Pallet type</span><strong data-preview-field="palletType">—</strong></div>
+              <div><span>Banderolowanie / Banding</span><strong data-preview-field="banded">—</strong></div>
+            </div>
+          </section>
+
+          <footer class="ppwr-paper-footer"><span>Specyfikacja gotowego wyrobu</span><strong data-preview-field="productName">—</strong><span>Masterpress S.A.</span></footer>
+        </article>
+
+        <article class="ppwr-paper" data-preview-page="3">
+          <header class="ppwr-paper-header ppwr-paper-header--compact">
+            <div>
+              <strong data-preview-field="specificationNumber">—</strong>
+              <small>Weryfikacja i zatwierdzenie / Verification and approval</small>
+            </div>
+            <span class="ppwr-paper-page-number">3 / 3</span>
+          </header>
+
+          <section class="ppwr-paper-section">
+            <h4>6. Podsumowanie specyfikacji / Specification summary</h4>
+            <div class="ppwr-paper-table ppwr-paper-table--summary">
+              <div><b>Klient / Customer</b><span data-preview-field="client">—</span></div>
+              <div><b>Produkt / Product</b><span data-preview-field="productSummary">—</span></div>
+              <div><b>Materiał / Material</b><span data-preview-field="material">—</span></div>
+              <div><b>Wymiary / Dimensions</b><span data-preview-field="dimensionsSummary">—</span></div>
+              <div><b>Druk / Print</b><span data-preview-field="printSummary">—</span></div>
+              <div><b>Pakowanie / Packaging</b><span data-preview-field="packingSummary">—</span></div>
+            </div>
+          </section>
+
+          <section class="ppwr-paper-section ppwr-paper-section--grow">
+            <h4>7. Zatwierdzenie dokumentu / Document approval</h4>
+            <div class="ppwr-paper-approvals">
+              <div><span>Opracował / Prepared by</span><strong data-preview-field="preparedBy">—</strong><i>podpis / data</i></div>
+              <div><span>Sprawdził / Checked by</span><strong data-preview-field="checkedBy">—</strong><i>podpis / data</i></div>
+              <div><span>Zatwierdził / Approved by</span><strong data-preview-field="approvedBy">—</strong><i>podpis / data</i></div>
+            </div>
+          </section>
+
+          <footer class="ppwr-paper-footer"><span data-preview-field="documentDate">—</span><strong data-preview-field="documentStatus">Wersja robocza</strong><span>Masterpress S.A.</span></footer>
         </article>
       </div>
 

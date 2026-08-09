@@ -381,23 +381,88 @@ function initPpwr() {
     $("ppwrSpecNumber").textContent = text(fields.specificationNumber.value);
     $("ppwrTopClient").textContent = text(fields.client.value);
 
-    $("previewDate").textContent = formatDate(fields.documentDate.value);
-    $("previewSpecNumber").textContent = text(fields.specificationNumber.value);
-    $("previewClient").textContent = text(fields.client.value);
-    $("previewSupplier").textContent = text(fields.supplier.value, "Masterpress S.A.");
-    $("previewProduct").textContent = text(fields.productName.value);
-    $("previewMaterial").textContent = text(fields.material.value);
+    const tearType = normalizeTearType(fields.tearStrip.value);
+    const tearLabel = tearType === "folia"
+      ? "Folia"
+      : tearType === "perforacja"
+        ? "Perforacja"
+        : "Brak";
+    const complete = collectMissingRequired().length === 0;
 
-    $("previewProductName").textContent = clean(fields.productName.value)
-      ? `SPECYFIKACJA GOTOWEGO WYROBU – ${fields.productName.value}`
-      : "SPECYFIKACJA GOTOWEGO WYROBU";
+    const previewValues = {
+      specificationNumber: text(fields.specificationNumber.value),
+      documentDate: formatDate(fields.documentDate.value),
+      documentStatus: complete ? "KOMPLETNA" : "WERSJA ROBOCZA",
+      client: text(fields.client.value),
+      supplier: text(fields.supplier.value, "Masterpress S.A."),
+      productName: text(fields.productName.value, "Specyfikacja gotowego wyrobu"),
+      orderNumber: text(fields.orderNumber.value),
+      productIndex: text(fields.productIndex.value),
+      material: text(fields.material.value),
+      siliconeStrip: text(fields.siliconeStrip.value),
+      tearStrip: tearLabel,
+      glue1: text(fields.glue1.value),
+      glue2: text(fields.glue2.value),
+      glue3: text(fields.glue3.value),
+      width: text(fields.width.value),
+      height: text(fields.height.value),
+      flap: text(fields.flap.value),
+      bottomGusset: text(fields.bottomGusset.value),
+      adhesiveStrips: text(fields.adhesiveStrips.value),
+      colorsCount: text(fields.colorsCount.value),
+      inkType: text(fields.inkType.value),
+      printTechnique: text(fields.printTechnique.value),
+      boxQuantity: text(fields.boxQuantity.value),
+      palletQuantity: text(fields.palletQuantity.value),
+      palletType: text(fields.palletType.value),
+      banded: text(fields.banded.value),
+      preparedBy: text(fields.preparedBy.value),
+      checkedBy: text(fields.checkedBy.value),
+      approvedBy: text(fields.approvedBy.value)
+    };
+
+    previewValues.productSummary = [
+      clean(fields.productName.value),
+      clean(fields.productIndex.value)
+    ].filter(Boolean).join(" / ") || "—";
+
+    previewValues.dimensionsSummary = [
+      fields.width.value && `szer. ${fields.width.value} mm`,
+      fields.height.value && `wys. ${fields.height.value} mm`,
+      fields.flap.value && `klapa ${fields.flap.value} mm`,
+      fields.bottomGusset.value && `fałda ${fields.bottomGusset.value} mm`,
+      tearLabel !== "Brak" && `zrywka: ${tearLabel}`
+    ].filter(Boolean).join(" / ") || "—";
+
+    previewValues.printSummary = [
+      fields.colorsCount.value && `${fields.colorsCount.value} kolorów`,
+      clean(fields.inkType.value),
+      clean(fields.printTechnique.value)
+    ].filter(Boolean).join(" / ") || "—";
+
+    previewValues.packingSummary = [
+      fields.boxQuantity.value && `${fields.boxQuantity.value} szt. w kartonie`,
+      fields.palletQuantity.value && `${fields.palletQuantity.value} szt. na palecie`,
+      clean(fields.palletType.value)
+    ].filter(Boolean).join(" / ") || "—";
+
+    Object.entries(previewValues).forEach(([name, value]) => {
+      root.querySelectorAll(`[data-preview-field="${name}"]`).forEach(element => {
+        element.textContent = value;
+      });
+    });
 
     const photoBox = $("previewPhotoBox");
 
     if (photoDataUrl) {
-      photoBox.innerHTML = `<img src="${photoDataUrl}" alt="Zdjęcie techniczne">`;
+      const image = document.createElement("img");
+      image.src = photoDataUrl;
+      image.alt = "Zdjęcie techniczne produktu";
+      photoBox.replaceChildren(image);
     } else {
-      photoBox.innerHTML = "<span>Zdjęcie techniczne</span>";
+      const label = document.createElement("span");
+      label.textContent = "Zdjęcie techniczne / Technical image";
+      photoBox.replaceChildren(label);
     }
   }
 
@@ -984,13 +1049,52 @@ function initPpwr() {
     $("ppwrDialog").close();
   });
 
-  $("ppwrZoomBtn").addEventListener("click", () => {
-    const paper = $("ppwrPaper");
-    paper.classList.toggle("is-zoomed");
-    $("ppwrZoomBtn").textContent = paper.classList.contains("is-zoomed")
-      ? "Pomniejsz"
-      : "Powiększ";
+  function setPreviewPage(pageNumber) {
+    const normalizedPage = Math.min(3, Math.max(1, Number(pageNumber) || 1));
+
+    root.querySelectorAll("[data-preview-page]").forEach(page => {
+      page.classList.toggle(
+        "is-active",
+        Number(page.dataset.previewPage) === normalizedPage
+      );
+    });
+
+    root.querySelectorAll("[data-preview-page-target]").forEach(button => {
+      const active = Number(button.dataset.previewPageTarget) === normalizedPage;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-current", active ? "page" : "false");
+    });
+
+    $("ppwrPreviewPageLabel").textContent = `Strona ${normalizedPage} z 3`;
+    $("ppwrPreviewColumn").querySelector(".ppwr-paper-stage").scrollTop = 0;
+  }
+
+  root.querySelectorAll("[data-preview-page-target]").forEach(button => {
+    button.addEventListener("click", () => {
+      setPreviewPage(button.dataset.previewPageTarget);
+    });
   });
+
+  function setPreviewExpanded(expanded) {
+    const preview = $("ppwrPreviewColumn");
+    preview.classList.toggle("is-expanded", expanded);
+    $("ppwrZoomBtn").textContent = expanded ? "Zamknij podgląd" : "Pełny ekran";
+    $("ppwrZoomBtn").setAttribute("aria-expanded", String(expanded));
+  }
+
+  $("ppwrZoomBtn").addEventListener("click", () => {
+    setPreviewExpanded(!$("ppwrPreviewColumn").classList.contains("is-expanded"));
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && $("ppwrPreviewColumn")?.classList.contains("is-expanded")) {
+      setPreviewExpanded(false);
+    }
+  });
+
+  window.addEventListener("prodflow:module-unload", () => {
+    setPreviewExpanded(false);
+  }, { once: true });
 
   fields.documentDate.value = new Date().toISOString().slice(0, 10);
   fields.preparedBy.value = loggedUserName();
@@ -1007,6 +1111,7 @@ function initPpwr() {
   loadDraft();
   renderOrderBrowser();
   renderPhotoState();
+  setPreviewPage(1);
   updateAll();
 }
 

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/sygnet2x.png">
     <title>ProdFlow</title>
-    <link rel="stylesheet" href="app.css?v=0.3.0-test-20260809">
+    <link rel="stylesheet" href="app.css?v=0.4.0-test-20260809">
 </head>
 
 <body>
@@ -78,7 +78,17 @@
 
     <div id="app">
 
-        <aside class="sidebar">
+        <button class="pf-mobile-nav-toggle" id="prodflowMenuToggle" type="button"
+            aria-controls="prodflowSidebar" aria-expanded="false">
+            <span class="pf-mobile-nav-toggle__icon" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Menu</strong>
+        </button>
+
+        <div class="pf-mobile-header-brand" aria-hidden="true">
+            <img src="assets/images/logoczarne.png" alt="">
+        </div>
+
+        <aside class="sidebar" id="prodflowSidebar">
 
             <div class="logo">
                 <img src="assets/images/logo_firmowe.png" alt="Logo firmy">
@@ -113,22 +123,25 @@
 
             <div class="sidebar-footer">
                 <strong>ProdFlow</strong><br>
-                <span>Wersja 0.3.0 TEST</span>
+                <span>Wersja 0.4.0 TEST</span>
             </div>
 
         </aside>
 
+        <button class="pf-mobile-nav-backdrop" id="prodflowMenuBackdrop" type="button"
+            aria-label="Zamknij menu" tabindex="-1"></button>
+
         <main id="content"></main>
 
     </div>
-<script src="assets/js/core/prodflow-events.js?v=0.3.0-test-20260809"></script>
-<script src="assets/js/core/prodflow-utils.js?v=0.3.0-test-20260809"></script>
-<script src="assets/js/core/prodflow-store.js?v=0.3.0-test-20260809"></script>
-<script src="assets/js/core/prodflow-core.js?v=0.3.0-test-20260809"></script>
+<script src="assets/js/core/prodflow-events.js?v=0.4.0-test-20260809"></script>
+<script src="assets/js/core/prodflow-utils.js?v=0.4.0-test-20260809"></script>
+<script src="assets/js/core/prodflow-store.js?v=0.4.0-test-20260809"></script>
+<script src="assets/js/core/prodflow-core.js?v=0.4.0-test-20260809"></script>
     
-<script src="assets/js/modules.js?v=0.3.0-test-20260809"></script>
-<script src="assets/js/router.js?v=0.3.0-test-20260809"></script>
-<script src="app.js?v=0.3.0-test-20260809"></script>
+<script src="assets/js/modules.js?v=0.4.0-test-20260809"></script>
+<script src="assets/js/router.js?v=0.4.0-test-20260809"></script>
+<script src="app.js?v=0.4.0-test-20260809"></script>
 
 </body>
 

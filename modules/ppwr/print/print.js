@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     photo.replaceChildren(image);
   }
 
-  document.title = `PPWR-${values.specificationNumber.replace(/[^a-z0-9_-]+/gi, "-")}`;
+  document.title = `SPECYFIKACJA-${values.specificationNumber.replace(/[^a-z0-9_-]+/gi, "-")}`;
 
   document.getElementById("printDocumentBtn")?.addEventListener("click", () => {
     window.print();
