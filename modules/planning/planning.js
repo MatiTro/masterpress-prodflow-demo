@@ -40,6 +40,8 @@ function initPlanning() {
       new: "unplanned",
       planned: "planned",
       in_production: "production",
+      suspended: "production",
+      dropped: "unplanned",
       quality_control: "production",
       packing: "production",
       warehouse: "production",
@@ -153,13 +155,7 @@ function initPlanning() {
       0;
 
     if (quantity > 0 && produced > 0) {
-      return Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round((produced / quantity) * 100)
-        )
-      );
+      return Math.max(0, Math.round((produced / quantity) * 100));
     }
 
     return planningStatus === "production" ? 10 : 0;
@@ -196,7 +192,9 @@ function initPlanning() {
       ),
       status: planningStatus,
       progress: getProgress(order, planningStatus),
-      note: order.planning?.notes || ""
+      note: order.planning?.notes || "",
+      systemStatus: order.status,
+      disposition: order.metadata?.productionDisposition || null
     };
   }
 
@@ -378,6 +376,10 @@ function initPlanning() {
     const machine = order.machine || "Nieprzydzielona";
     const days = daysUntil(order.deadline);
     let deadlineText = formatDate(order.deadline);
+    const specialStatus = {
+      suspended: ["suspended", "Zawieszone"],
+      dropped: ["dropped", "Spadnięte - wymaga przeplanowania"]
+    }[order.systemStatus];
 
     if (days < 0 && order.status !== "completed") deadlineText += " · po terminie";
     else if (days === 0 && order.status !== "completed") deadlineText += " · dzisiaj";
@@ -392,6 +394,10 @@ function initPlanning() {
           <span class="planning-card-order">${escapeHtml(order.order)}</span>
           <span class="planning-card-priority">${escapeHtml(order.priority)}</span>
         </div>
+
+        ${specialStatus
+          ? `<span class="planning-card-state planning-card-state--${specialStatus[0]}">${escapeHtml(specialStatus[1])}</span>`
+          : ""}
 
         <h3>${escapeHtml(order.product)}</h3>
         <p class="planning-card-client">${escapeHtml(order.client)} · indeks ${escapeHtml(order.index || "—")}</p>
@@ -468,6 +474,28 @@ function initPlanning() {
               module: "planning"
             }
           );
+
+          if (
+            ["suspended", "dropped"].includes(order.systemStatus) &&
+            ["draft", "planned"].includes(target.status)
+          ) {
+            getStore().updateOrder(
+              id,
+              {
+                production: {
+                  status: "not_started",
+                  actualStart: "",
+                  actualEnd: ""
+                },
+                metadata: {
+                  productionRuntime: {
+                    status: "waiting"
+                  }
+                }
+              },
+              { addHistory: false, module: "planning" }
+            );
+          }
 
           refreshOrders();
           renderAll();
@@ -551,6 +579,17 @@ function initPlanning() {
     });
   }
 
+  function productionCardPreviewUrl(id, embedded = true) {
+    const url = new URL(
+      "modules/production-card/print/print.html",
+      document.baseURI
+    );
+    url.searchParams.set("orderId", id);
+    url.searchParams.set("preview", "1");
+    if (embedded) url.searchParams.set("embedded", "1");
+    return url;
+  }
+
   function openDetails(id) {
     const order = orders.find(item => item.id === id);
     if (!order) return;
@@ -558,25 +597,7 @@ function initPlanning() {
     selectedOrderId = id;
     $("planningDialogOrder").textContent = order.order;
     $("planningDialogProduct").textContent = `${order.client} · ${order.product}`;
-
-    const details = [
-      ["Indeks", order.index || "—"],
-      ["Ilość", `${formatNumber(order.quantity)} szt.`],
-      ["Termin", formatDate(order.deadline)],
-      ["Maszyna", order.machine || "Nieprzydzielona"],
-      ["Priorytet", order.priority],
-      ["Materiał", order.material],
-      ["Status", statuses.find(status => status.id === order.status)?.label || order.status],
-      ["Postęp", `${Number(order.progress || 0)}%`]
-    ];
-
-    $("planningDetailGrid").innerHTML = details.map(([label, value]) => `
-      <div class="planning-detail-item">
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(value)}</strong>
-      </div>
-    `).join("");
-
+    $("planningProductionCardFrame").src = productionCardPreviewUrl(id).href;
     $("planningDialogNote").value = order.note || "";
     $("planningDetailsDialog").showModal();
   }
@@ -823,6 +844,22 @@ function initPlanning() {
   });
 
   $("planningCreateOrderBtn").addEventListener("click", createOrder);
+
+  $("planningOpenCardBtn").addEventListener("click", () => {
+    if (!selectedOrderId) return;
+    const cardWindow = window.open(
+      productionCardPreviewUrl(selectedOrderId, false).href,
+      "_blank",
+      "noopener,noreferrer"
+    );
+    if (!cardWindow) {
+      alert("Przeglądarka zablokowała otwarcie Karty Produkcyjnej.");
+    }
+  });
+
+  $("planningDetailsDialog").addEventListener("close", () => {
+    $("planningProductionCardFrame").src = "about:blank";
+  });
 
   ensureWithdrawButton()?.addEventListener(
     "click",

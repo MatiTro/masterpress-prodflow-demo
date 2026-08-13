@@ -336,6 +336,7 @@
 }
 
 .pf-status--paused,
+.pf-status--suspended,
 .pf-status--picking,
 .pf-status--loading,
 .pf-status--transit {
@@ -343,7 +344,8 @@
     color: var(--pf-orange);
 }
 
-.pf-status--issue {
+.pf-status--issue,
+.pf-status--dropped {
     background: var(--pf-red-soft);
     color: var(--pf-red);
 }

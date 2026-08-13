@@ -3,7 +3,7 @@
     <div>
       <span class="warehouse-kicker">Logistyka wewnętrzna</span>
       <h1>Magazyn</h1>
-      <p>Zapotrzebowania operatorów i niezależny rejestr ładunków D365.</p>
+      <p>Kolejka zapotrzebowań materiałowych zgłaszanych przez operatorów.</p>
     </div>
     <div class="warehouse-clock">
       <small>Aktualny czas</small>
@@ -14,13 +14,7 @@
   <div class="warehouse-kpis">
     <article><span>Do dostarczenia</span><strong id="warehousePendingKpi">0</strong></article>
     <article><span>Dostarczone dzisiaj</span><strong id="warehouseDeliveredKpi">0</strong></article>
-    <article><span>Aktywne ładunki D365</span><strong id="warehouseLoadsKpi">0</strong></article>
   </div>
-
-  <nav class="warehouse-tabs">
-    <button class="is-active" type="button" data-warehouse-tab="requests">Zapotrzebowania <span id="warehouseRequestsCount">0</span></button>
-    <button type="button" data-warehouse-tab="loads">Ładunki D365 <span id="warehouseLoadsCount">0</span></button>
-  </nav>
 
   <section class="warehouse-panel is-active" data-warehouse-panel="requests">
     <div class="warehouse-panel__head">
@@ -56,60 +50,6 @@
       </table>
     </div>
     <div class="warehouse-empty" id="warehouseRequestsEmpty" hidden>Brak zapotrzebowań do wyświetlenia.</div>
-  </section>
-
-  <section class="warehouse-panel" data-warehouse-panel="loads">
-    <div class="warehouse-load-layout">
-      <form class="warehouse-load-form" id="warehouseLoadForm">
-        <span class="warehouse-kicker">Dane z D365</span>
-        <h2>Dodaj ładunek</h2>
-        <p>Ładunek jest niezależnym rekordem i nie wymaga wskazania zlecenia produkcyjnego.</p>
-
-        <label>
-          <span>Numer ładunku D365 *</span>
-          <input name="number" required placeholder="Numer ładunku">
-        </label>
-        <label>
-          <span>Planowana data</span>
-          <input name="plannedDate" type="date">
-        </label>
-        <label>
-          <span>Klient / opis pomocniczy</span>
-          <input name="customer" placeholder="Opcjonalnie">
-        </label>
-        <label>
-          <span>Numer auta</span>
-          <input name="vehicle" placeholder="Opcjonalnie">
-        </label>
-        <button class="warehouse-btn warehouse-btn--primary" type="submit">Dodaj ładunek</button>
-      </form>
-
-      <article class="warehouse-load-register">
-        <div class="warehouse-panel__head">
-          <div>
-            <span class="warehouse-kicker">Rejestr niezależny</span>
-            <h2>Ładunki D365</h2>
-          </div>
-          <input id="warehouseLoadSearch" type="search" placeholder="Szukaj numeru lub klienta">
-        </div>
-        <div class="warehouse-table-wrap">
-          <table class="warehouse-table">
-            <thead>
-              <tr>
-                <th>Numer</th>
-                <th>Data</th>
-                <th>Klient / opis</th>
-                <th>Auto</th>
-                <th>Status</th>
-                <th>Akcja</th>
-              </tr>
-            </thead>
-            <tbody id="warehouseLoadsBody"></tbody>
-          </table>
-        </div>
-        <div class="warehouse-empty" id="warehouseLoadsEmpty" hidden>Brak ładunków D365.</div>
-      </article>
-    </div>
   </section>
 
   <div class="warehouse-toast" id="warehouseToast" role="status" aria-live="polite"></div>

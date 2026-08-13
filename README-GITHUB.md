@@ -1,50 +1,60 @@
-# ProdFlow 0.4.0 TEST
+# ProdFlow 0.5.0 TEST
 
 Statyczna wersja testowa aplikacji przygotowana do publikacji przez GitHub Pages.
 
 ## Publikacja na GitHub Pages
 
 1. Rozpakuj paczkę.
-2. Wgraj **zawartość** paczki do katalogu głównego repozytorium. Plik `index.html` musi znajdować się w katalogu głównym — nie w dodatkowym podkatalogu.
-3. W GitHub przejdź do `Settings` → `Pages`.
-4. Wybierz `Deploy from a branch`, gałąź `main` i katalog `/(root)`, a następnie zapisz.
-5. Po zakończeniu publikacji otwórz podany przez GitHub adres. Po podmianie wersji wykonaj twarde odświeżenie (`Ctrl+F5`).
+2. Wgraj **zawartość** paczki do katalogu głównego repozytorium. Plik `index.html` musi znajdować się w katalogu głównym.
+3. Zatwierdź zmiany w GitHubie. Obecna konfiguracja Pages automatycznie opublikuje nową wersję z gałęzi `main` i katalogu `/(root)`.
+4. Po zakończeniu zadania `pages build and deployment` otwórz dotychczasowy adres strony.
+5. Wykonaj twarde odświeżenie: `Ctrl+F5`.
 
-Nie wgrywaj samego pliku ZIP do repozytorium — najpierw go rozpakuj.
+Nie wgrywaj samego pliku ZIP do repozytorium - najpierw go rozpakuj.
 
 ## Dostęp testowy
 
 - login: `admin`
 - hasło: `admin`
 
-## Zalecany test odbiorczy
+## Adres e-mail magazynu
 
-1. Otwórz „Kartę produkcyjną” i utwórz pierwsze zlecenie.
-2. Zapisz kartę, wybierz „+ Nowa karta” i utwórz drugie zlecenie.
-3. Przełączaj zapisane karty przez listę „Karty zleceń” i sprawdź, czy dane obu zleceń pozostają niezależne.
-4. Przekaż oba zlecenia do planowania i sprawdź je w panelu „Produkcja”.
-5. Otwórz PPWR, wybierz zlecenie i użyj „Drukuj / zapisz PDF”. Wydruk powinien mieć dokładnie 3 strony A4.
-6. Sprawdź zrywkę `Folia` i `Perforacja` oraz pełne nazwy pasków silikonowych.
+Wersja testowa otwiera gotową wiadomość w domyślnym programie pocztowym. Adres odbiorcy znajduje się na początku pliku `app.js`:
+
+```js
+warehouseEmail: "magazyn@masterpress.com.pl"
+```
+
+Jeżeli właściwy adres jest inny, wystarczy zmienić wyłącznie tę wartość przed wgraniem plików na GitHub.
+
+## Zalecany test odbiorczy 0.5.0
+
+1. Utwórz co najmniej dwa zlecenia i przekaż je do planowania.
+2. W Panelu Operatora uruchom zlecenie i sprawdź automatyczną zmianę: I od 06:00 do 14:00, II od 14:00 do 22:00, III od 22:00 do 06:00.
+3. Otwórz Kartę Produkcyjną bezpośrednio z Panelu Operatora.
+4. Zgłoś wynik większy niż plan i sprawdź oznaczenie „Nadprodukcja”.
+5. Zgłoś pobranie surowca oraz dobry wyrób, a następnie wydrukuj wspólny dokument PDF.
+6. Utwórz zapotrzebowanie materiałowe. Materiał powinien być możliwy do wyboru wyłącznie z listy zlecenia, a po zapisaniu powinna otworzyć się gotowa wiadomość e-mail.
+7. Zawieś zlecenie i następnie je wznów.
+8. Oznacz zlecenie jako spadnięte. Powinno wrócić w Planowaniu do kolumny „Do zaplanowania” z zapisanym powodem.
+9. W Planowaniu kliknij „Szczegóły” i sprawdź duży, wyśrodkowany podgląd Karty Produkcyjnej.
+10. W Magazynie sprawdź wyłącznie kolejkę zapotrzebowań - rejestr ładunków został usunięty.
 
 ## Najważniejsze zmiany
 
-- obsługa wielu kart i wielu zleceń produkcyjnych;
-- bezpieczne rozpoczynanie nowej karty bez usuwania poprzedniego zlecenia;
-- lista zapisanych kart z możliwością przełączania;
-- „Zakładka dolna” zastąpiona polem „Fałda”;
-- zrywka jako wybór `Folia` / `Perforacja`;
-- paski silikonowe zapisywane przez pełną nazwę;
-- PPWR skrócony do 3 stron A4, zarówno dla pustego szablonu, jak i wydruku z danymi;
-- klientowski PDF i pusty szablon nie zawierają nazwy ani komunikatów systemu ProdFlow;
-- podgląd PPWR obejmuje trzy przełączane, czytelne strony oraz tryb pełnoekranowy;
-- responsywny nagłówek Karty Produkcyjnej i mobilne menu dla telefonu oraz tabletu;
-- tabele i formularze PPWR zmieniają układ bez wychodzenia poza ekran;
-- automatyczne uzupełnianie autora PPWR zalogowanym użytkownikiem;
-- odświeżanie zasobów dostosowane do cache GitHub Pages;
-- reset pozycji przewinięcia po zmianie modułu.
+- usunięto „Kontrolę jakości” z powodów zatrzymania produkcji;
+- dodano dwa osobne przebiegi: zawieszenie z możliwością wznowienia oraz zlecenie spadnięte, wracające do planowania;
+- dodano Kartę Produkcyjną jako dokument dostępny z Panelu Operatora;
+- pobrania surowców i zgłoszenia dobrego wyrobu trafiają na jeden dokument PDF;
+- zapotrzebowanie materiałowe przygotowuje kompletną wiadomość e-mail;
+- materiał w zapotrzebowaniu jest wybierany wyłącznie z listy przypisanej do zlecenia;
+- dopuszczono raportowanie nadprodukcji i dodano jej czytelny wskaźnik;
+- zmiana operatora jest wyznaczana automatycznie na podstawie godziny;
+- zmniejszono kafelki Planowania i dodano oznaczenia „Zawieszone” oraz „Spadnięte”;
+- „Szczegóły” w Planowaniu pokazują właściwą Kartę Produkcyjną w dużym oknie;
+- z modułu Magazyn usunięto sekcję ładunków D365;
+- zachowano obsługę wielu niezależnych zleceń, responsywność i działanie na GitHub Pages.
 
-## Ważne przed użyciem produkcyjnym
+## Ważne ograniczenia wersji testowej
 
-Ta wersja jest przeznaczona do testów i prezentacji. Dane są zapisywane lokalnie w przeglądarce (`localStorage`), więc nie synchronizują się między komputerami ani użytkownikami. Login `admin/admin` jest dostępem demonstracyjnym, a nie zabezpieczeniem produkcyjnym. Przed użyciem operacyjnym należy podłączyć backend, wspólną bazę danych, prawdziwe uwierzytelnianie, role oraz kopie zapasowe.
-
-Nazwy typów wyrobów (np. TDB/TVB) pozostawiono bez zmian, ponieważ w przekazanych uwagach wskazano je do zmiany, ale nie podano nazw docelowych.
+Dane są zapisywane lokalnie w przeglądarce (`localStorage`), dlatego każdy komputer ma własny zestaw danych. Login `admin/admin` jest demonstracyjny. Statyczna strona nie może samodzielnie wysłać wiadomości bez usługi pocztowej, dlatego przygotowuje kompletny e-mail i otwiera go w programie pocztowym użytkownika; wysłanie wymaga potwierdzenia przez operatora.

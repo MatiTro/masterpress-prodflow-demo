@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
+  const previewMode = params.get("preview") === "1";
+  const embeddedMode = params.get("embedded") === "1";
+  document.documentElement.classList.toggle("is-preview", previewMode);
+  document.documentElement.classList.toggle("is-embedded", embeddedMode);
   const orderId =
     params.get("orderId") ||
     sessionStorage.getItem("prodflow.activeOrderId") ||
@@ -343,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    window.print();
+    if (!previewMode) {
+      window.print();
+    }
   }, 350);
 });

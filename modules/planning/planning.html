@@ -74,17 +74,19 @@
     <div id="planningTimelineContent"></div>
   </section>
 
-  <dialog class="planning-dialog" id="planningDetailsDialog">
+  <dialog class="planning-dialog planning-card-dialog" id="planningDetailsDialog">
     <form method="dialog" class="planning-dialog-card">
       <button class="planning-dialog-close" value="cancel" aria-label="Zamknij">×</button>
 
       <div class="planning-dialog-head">
-        <span>Szczegóły zlecenia</span>
+        <span>Karta produkcyjna zlecenia</span>
         <h2 id="planningDialogOrder">—</h2>
         <p id="planningDialogProduct">—</p>
       </div>
 
-      <div class="planning-detail-grid" id="planningDetailGrid"></div>
+      <div class="planning-card-preview">
+        <iframe id="planningProductionCardFrame" title="Podgląd Karty Produkcyjnej"></iframe>
+      </div>
 
       <div class="planning-detail-note">
         <span>Notatka planisty</span>
@@ -92,8 +94,9 @@
       </div>
 
       <div class="planning-dialog-actions">
-        <button class="planning-btn planning-btn-light" value="cancel">Anuluj</button>
-        <button class="planning-btn planning-btn-primary" id="planningDialogSave" value="default" type="button">Zapisz zmiany</button>
+        <button class="planning-btn planning-btn-light" value="cancel">Zamknij</button>
+        <button class="planning-btn planning-btn-light" id="planningOpenCardBtn" type="button">Otwórz w nowym oknie</button>
+        <button class="planning-btn planning-btn-primary" id="planningDialogSave" value="default" type="button">Zapisz notatkę</button>
       </div>
     </form>
   </dialog>

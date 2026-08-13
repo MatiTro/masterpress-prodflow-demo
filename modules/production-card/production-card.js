@@ -300,6 +300,8 @@ let currentOrderId = sessionStorage.getItem(
       new: "Nowa",
       planned: "W planowaniu",
       in_production: "W produkcji",
+      suspended: "Zawieszona",
+      dropped: "Spadnięta - do przeplanowania",
       quality_control: "Kontrola jakości",
       packing: "Pakowanie",
       warehouse: "Magazyn",

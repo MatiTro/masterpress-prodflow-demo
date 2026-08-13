@@ -63,6 +63,8 @@ function initHistory() {
     if (order?.status === "draft" || entry.action === "created") return "draft";
     if (
       order?.status === "cancelled" ||
+      order?.status === "suspended" ||
+      order?.status === "dropped" ||
       entry.type === "complaint" ||
       entry.action === "error"
     ) return "attention";

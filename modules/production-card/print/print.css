@@ -27,6 +27,29 @@ body {
   line-height: 1.2;
 }
 
+html.is-preview body {
+  min-height: 100vh;
+  padding: 18px;
+  background: #e8edf2;
+}
+
+html.is-preview .print-page {
+  min-height: 288mm;
+  padding: 6mm;
+  background: #fff;
+  box-shadow: 0 16px 50px rgba(15, 31, 45, .16);
+}
+
+html.is-embedded body {
+  padding: 12px;
+}
+
+@media (max-width: 820px) {
+  html.is-preview body {
+    padding: 8px;
+  }
+}
+
 .print-page {
   width: 198mm;
   min-height: 288mm;
@@ -391,11 +414,18 @@ body {
     overflow: visible;
   }
 
-  .print-page {
+  .print-page,
+  html.is-preview .print-page {
     width: auto;
     min-height: auto;
     margin: 0;
     padding: 0;
     box-shadow: none;
+  }
+
+  html.is-preview body,
+  html.is-embedded body {
+    padding: 0;
+    background: #fff;
   }
 }

@@ -28,6 +28,8 @@
     NEW: "new",
     PLANNED: "planned",
     IN_PRODUCTION: "in_production",
+    SUSPENDED: "suspended",
+    DROPPED: "dropped",
     QUALITY_CONTROL: "quality_control",
     PACKING: "packing",
     WAREHOUSE: "warehouse",

@@ -14,7 +14,7 @@
 
     <div class="hmi-user">
       <div><small>Operator</small><strong id="productionOperator">—</strong></div>
-      <div><small>Zmiana I</small><strong id="productionClock">--:--:--</strong></div>
+      <div><small id="productionShiftLabel">Zmiana —</small><strong id="productionClock">--:--:--</strong></div>
     </div>
   </header>
 
@@ -28,7 +28,10 @@
 
       <div class="hmi-job__headline">
         <div><small>NUMER ZLECENIA</small><h1 id="productionOrderNumber">Brak zlecenia</h1></div>
-        <span id="productionPriority">—</span>
+        <div class="hmi-job__tools">
+          <span id="productionPriority">—</span>
+          <button type="button" data-production-action="production-card">Karta produkcyjna</button>
+        </div>
       </div>
 
       <div class="hmi-job__product">
@@ -59,7 +62,7 @@
       <div class="hmi-kpis">
         <article class="is-good"><small>Dobre</small><strong id="goodKpi">0</strong><span>szt.</span></article>
         <article class="is-scrap"><small>Odpad</small><strong id="scrapKpi">0</strong><span>szt.</span></article>
-        <article><small>Pozostało</small><strong id="remainingQuantity">0</strong><span>szt.</span></article>
+        <article><small id="remainingLabel">Pozostało</small><strong id="remainingQuantity">0</strong><span>szt.</span></article>
         <article><small>Plan</small><strong id="plannedQuantity">0</strong><span>szt.</span></article>
       </div>
     </section>
@@ -74,7 +77,7 @@
       </div>
       <div class="hmi-materials__footer">
         <button class="is-request" type="button" data-production-action="warehouse-request">Zgłoś zapotrzebowanie</button>
-        <button type="button" data-production-action="withdrawals">Historia i dokumenty pobrań</button>
+        <button type="button" data-production-action="withdrawals">Pobrania i wyrób gotowy PDF</button>
       </div>
     </section>
 
@@ -97,6 +100,14 @@
       <button class="hmi-action hmi-action--stop" id="productionStopBtn" type="button" data-production-action="stop">
         <span>■</span><div><strong>STOP</strong><small>Wybierz powód zatrzymania</small></div>
       </button>
+      <div class="hmi-actions__secondary">
+        <button class="hmi-action-compact hmi-action-compact--suspend" id="productionSuspendBtn" type="button" data-production-action="suspend">
+          <span>Ⅱ</span><div><strong>Zawieś zlecenie</strong><small>Pozostaw do wznowienia</small></div>
+        </button>
+        <button class="hmi-action-compact hmi-action-compact--drop" id="productionDropBtn" type="button" data-production-action="drop-order">
+          <span>↘</span><div><strong>Zlecenie spadło</strong><small>Oddaj do planowania</small></div>
+        </button>
+      </div>
       <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
         <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
       </button>

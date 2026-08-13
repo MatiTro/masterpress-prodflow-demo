@@ -1,3 +1,10 @@
+window.PRODFLOW_CONFIG = Object.assign(
+    {
+        warehouseEmail: "magazyn@masterpress.com.pl"
+    },
+    window.PRODFLOW_CONFIG || {}
+);
+
 document.addEventListener("DOMContentLoaded", () => {
 
     initializeNavigation();

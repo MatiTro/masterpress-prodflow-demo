@@ -145,6 +145,7 @@
             order.processStep === "quality" ||
             order.status === "quality_control" ||
             order.status === "completed";
+        const isSuspended = order.status === "suspended";
 
         return {
             orderId: order.id,
@@ -201,6 +202,8 @@
                 Number(production.rejectedQuantity) || 0,
             status: isFinished
                 ? "finished"
+                : isSuspended
+                    ? "suspended"
                 : runtime.status ||
                   (order.status === "in_production"
                       ? "running"
@@ -236,13 +239,12 @@
             storeOrders.filter(
                 order =>
                     order.processStep === "production" ||
-                    order.status === "in_production"
+                    order.status === "in_production" ||
+                    order.status === "suspended"
             );
         const plannedOrders =
             storeOrders.filter(
-                order =>
-                    order.processStep === "planning" ||
-                    order.status === "planned"
+                order => order.status === "planned"
             );
         return [
             ...activeOrders,
@@ -349,10 +351,30 @@
         });
     }
 
+    function getShiftInfo(date = new Date()) {
+        const hour = date.getHours();
+
+        if (hour >= 6 && hour < 14) {
+            return { number: "I", label: "Zmiana I", hours: "06:00-14:00" };
+        }
+
+        if (hour >= 14 && hour < 22) {
+            return { number: "II", label: "Zmiana II", hours: "14:00-22:00" };
+        }
+
+        return { number: "III", label: "Zmiana III", hours: "22:00-06:00" };
+    }
+
     function renderClock() {
         const clock = $("#productionClock");
+        const shiftLabel = $("#productionShiftLabel");
+        const shift = getShiftInfo();
         if (clock) {
             clock.textContent = new Date().toLocaleTimeString("pl-PL");
+        }
+        if (shiftLabel) {
+            shiftLabel.textContent = shift.label;
+            shiftLabel.title = shift.hours;
         }
     }
 
@@ -376,15 +398,19 @@
             running: { label: "Produkcja w toku", pill: "W PRODUKCJI", icon: "●", action: "Wstrzymaj produkcję", hint: "Zatrzymaj rejestrowanie czasu" },
             paused: { label: openSegment?.label || "Produkcja wstrzymana", pill: "STOP", icon: "Ⅱ", action: "Wznów produkcję", hint: "Kontynuuj realizację zlecenia" },
             issue: { label: openSegment?.label || "Oczekiwanie na rozwiązanie problemu", pill: "PROBLEM", icon: "!", action: "Wznów produkcję", hint: "Potwierdź usunięcie problemu" },
+            suspended: { label: openSegment?.label || "Zlecenie zawieszone", pill: "ZAWIESZONE", icon: "Ⅱ", action: "Wznów zlecenie", hint: "Zlecenie pozostaje przypisane do stanowiska" },
+            dropped: { label: "Zlecenie zdjęte ze stanowiska", pill: "SPADNIĘTE", icon: "↘", action: "Przekazano do planowania", hint: "Zlecenie wymaga ponownego zaplanowania" },
             finished: { label: "Zlecenie zakończone", pill: "ZAKOŃCZONE", icon: "✓", action: "Zlecenie zamknięte", hint: "Zlecenie przekazano do kontroli jakości" }
         }[state.status];
     }
 
     function render() {
         const percent = state.planned > 0
-            ? Math.min(100, Math.round((state.good / state.planned) * 100))
+            ? Math.max(0, Math.round((state.good / state.planned) * 100))
             : 0;
+        const barPercent = Math.min(100, percent);
         const remaining = Math.max(0, state.planned - state.good);
+        const overproduction = Math.max(0, state.good - state.planned);
         const total = state.good + state.scrap;
         const quality = total > 0 ? (state.good / total) * 100 : 0;
         const efficiency = total > 0
@@ -442,15 +468,19 @@
         $("#goodQuantity").textContent = formatNumber(state.good);
         $("#goodKpi").textContent = formatNumber(state.good);
         $("#scrapKpi").textContent = formatNumber(state.scrap);
-        $("#remainingQuantity").textContent = formatNumber(remaining);
+        $("#remainingQuantity").textContent = formatNumber(overproduction || remaining);
+        const remainingLabel = $("#remainingLabel");
+        if (remainingLabel) {
+            remainingLabel.textContent = overproduction ? "Nadprodukcja" : "Pozostało";
+        }
         $("#plannedQuantity").textContent = formatNumber(state.planned);
         $("#progressPercent").textContent = `${percent}%`;
-        $("#progressBar").style.width = `${percent}%`;
+        $("#progressBar").style.width = `${barPercent}%`;
         const progressRing = $("#productionProgressRing");
         if (progressRing) {
             progressRing.style.setProperty(
                 "--progress",
-                `${percent * 3.6}deg`
+                `${barPercent * 3.6}deg`
             );
         }
         $("#efficiencyKpi").textContent = `${efficiency}%`;
@@ -470,6 +500,9 @@
 
         const startButton = $("#productionStartBtn");
         const stopButton = $("#productionStopBtn");
+        const suspendButton = $("#productionSuspendBtn");
+        const dropButton = $("#productionDropBtn");
+        const productionCardButton = $("[data-production-action=\"production-card\"]");
         if (startButton) {
             startButton.disabled =
                 !state.orderId ||
@@ -481,10 +514,23 @@
                 !state.orderId ||
                 state.status !== "running";
         }
+        if (suspendButton) {
+            suspendButton.disabled =
+                !state.orderId ||
+                state.status === "finished" ||
+                state.status === "suspended";
+        }
+        if (dropButton) {
+            dropButton.disabled =
+                !state.orderId || state.status === "finished";
+        }
+        if (productionCardButton) {
+            productionCardButton.disabled = !state.orderId;
+        }
         const startLabel = $("#productionStartLabel");
         if (startLabel) {
             startLabel.textContent =
-                ["paused", "issue"].includes(state.status)
+                ["paused", "issue", "suspended"].includes(state.status)
                     ? "WZNÓW"
                     : "START";
         }
@@ -662,7 +708,7 @@
             label,
             note,
             operator: state.operator,
-            shift: "I",
+            shift: getShiftInfo().number,
             startedAt: new Date().toISOString(),
             endedAt: ""
         });
@@ -691,7 +737,6 @@
             material: "Brak materiału",
             changeover: "Przezbrojenie",
             failure: "Awaria",
-            quality: "Kontrola jakości",
             organization: "Przerwa organizacyjna",
             other: "Inny powód"
         }[type] || "Inny powód";
@@ -701,71 +746,114 @@
         return `${material.name}${material.code ? ` — ${material.code}` : ""}`;
     }
 
-    function withdrawalDocumentHtml(records) {
-        const rows = records.map((record, index) => `
+    function formatDocumentDate(value) {
+        return new Intl.DateTimeFormat("pl-PL", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }).format(new Date(value));
+    }
+
+    function productionMovementDocumentHtml(withdrawals, reports) {
+        const withdrawalRows = withdrawals.map((record, index) => `
             <tr>
                 <td>${index + 1}</td>
                 <td>${escapeHtml(record.materialName)}</td>
                 <td>${escapeHtml(record.materialCode || "—")}</td>
                 <td>${escapeHtml(record.identifier || "—")}</td>
                 <td>${escapeHtml(formatNumber(record.quantity))} ${escapeHtml(record.unit)}</td>
-                <td>${escapeHtml(new Intl.DateTimeFormat("pl-PL", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }).format(new Date(record.createdAt)))}</td>
+                <td>${escapeHtml(record.shift || "—")}</td>
+                <td>${escapeHtml(formatDocumentDate(record.createdAt))}</td>
             </tr>`).join("");
+
+        const goodReports = reports.filter(record => Number(record.goodQuantity) > 0);
+        const reportRows = goodReports.map((record, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${escapeHtml(formatNumber(record.goodQuantity))} szt.</td>
+                <td>${escapeHtml(record.operator || state.operator || "—")}</td>
+                <td>${escapeHtml(record.shift || "—")}</td>
+                <td>${escapeHtml(record.note || "—")}</td>
+                <td>${escapeHtml(formatDocumentDate(record.createdAt))}</td>
+            </tr>`).join("");
+
+        const withdrawnTotal = withdrawals.reduce(
+            (sum, record) => sum + (Number(record.quantity) || 0),
+            0
+        );
+        const goodTotal = goodReports.reduce(
+            (sum, record) => sum + (Number(record.goodQuantity) || 0),
+            0
+        );
 
         return `<!doctype html>
           <html lang="pl">
           <head>
             <meta charset="utf-8">
-            <title>Dokument pobrania surowca</title>
+            <title>Raport pobrań i wyrobu gotowego - ${escapeHtml(state.orderNumber)}</title>
             <style>
-              @page{size:A4;margin:14mm}
+              @page{size:A4;margin:12mm}
               *{box-sizing:border-box}
-              body{margin:0;color:#172436;font:12px Arial,sans-serif}
+              body{margin:0;color:#172436;font:11px Arial,sans-serif}
               header{display:flex;justify-content:space-between;gap:20px;padding-bottom:14px;border-bottom:2px solid #172436}
-              h1{margin:0 0 4px;font-size:22px}
+              h1{margin:0 0 4px;font-size:20px}
+              h2{margin:20px 0 7px;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
               p{margin:3px 0;color:#506174}
-              .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
-              .meta div{padding:10px;border:1px solid #cfd8e1}
+              .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:14px 0}
+              .meta div{padding:8px;border:1px solid #cfd8e1}
               .meta span,.meta strong{display:block}.meta span{margin-bottom:5px;color:#68798a;font-size:9px;text-transform:uppercase}
+              .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 0 15px}
+              .summary div{padding:9px;border-left:4px solid #002855;background:#eef3f7}
+              .summary span,.summary strong{display:block}.summary span{color:#68798a;font-size:8px;text-transform:uppercase}.summary strong{margin-top:3px;font-size:16px}
               table{width:100%;border-collapse:collapse}
-              th,td{padding:9px 7px;border:1px solid #bdc8d2;text-align:left}
+              th,td{padding:7px 6px;border:1px solid #bdc8d2;text-align:left;vertical-align:top}
               th{background:#eef2f5;font-size:9px;text-transform:uppercase}
-              .signatures{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:70px}
+              .empty{text-align:center;color:#7b8996;font-style:italic}
+              .signatures{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:48px;break-inside:avoid}
               .signature{padding-top:8px;border-top:1px solid #172436;text-align:center;color:#68798a}
               footer{position:fixed;right:0;bottom:0;color:#9aa7b2;font-size:9px}
             </style>
           </head>
           <body>
             <header>
-              <div><h1>Dokument pobrania surowca</h1><p>Masterpress S.A.</p></div>
+              <div><h1>Raport pobrań i wyrobu gotowego</h1><p>Masterpress S.A.</p></div>
               <div><strong>${escapeHtml(state.orderNumber)}</strong><p>${escapeHtml(state.product)}</p></div>
             </header>
             <section class="meta">
               <div><span>Maszyna</span><strong>${escapeHtml(state.machine || "—")}</strong></div>
               <div><span>Operator</span><strong>${escapeHtml(state.operator || "—")}</strong></div>
-              <div><span>Data wydruku</span><strong>${escapeHtml(new Intl.DateTimeFormat("pl-PL").format(new Date()))}</strong></div>
+              <div><span>Zmiana</span><strong>${escapeHtml(getShiftInfo().number)}</strong></div>
+              <div><span>Data wydruku</span><strong>${escapeHtml(formatDocumentDate(new Date()))}</strong></div>
             </section>
+            <section class="summary">
+              <div><span>Plan zlecenia</span><strong>${escapeHtml(formatNumber(state.planned))} szt.</strong></div>
+              <div><span>Dobre zgłoszone</span><strong>${escapeHtml(formatNumber(goodTotal))} szt.</strong></div>
+              <div><span>Pozycje pobrań</span><strong>${escapeHtml(formatNumber(withdrawals.length))}</strong></div>
+            </section>
+            <h2>Pobrania surowców</h2>
             <table>
-              <thead><tr><th>Lp.</th><th>Surowiec</th><th>Indeks</th><th>Numer identyfikacyjny</th><th>Ilość</th><th>Data pobrania</th></tr></thead>
-              <tbody>${rows}</tbody>
+              <thead><tr><th>Lp.</th><th>Surowiec</th><th>Indeks</th><th>Numer identyfikacyjny</th><th>Ilość</th><th>Zmiana</th><th>Data pobrania</th></tr></thead>
+              <tbody>${withdrawalRows || '<tr><td class="empty" colspan="7">Brak zapisanych pobrań surowców.</td></tr>'}</tbody>
+            </table>
+            <h2>Zgłoszenia dobrego wyrobu gotowego</h2>
+            <table>
+              <thead><tr><th>Lp.</th><th>Ilość dobra</th><th>Operator</th><th>Zmiana</th><th>Uwagi</th><th>Data zgłoszenia</th></tr></thead>
+              <tbody>${reportRows || '<tr><td class="empty" colspan="6">Brak zgłoszeń dobrego wyrobu.</td></tr>'}</tbody>
             </table>
             <section class="signatures">
-              <div class="signature">Operator / osoba pobierająca</div>
-              <div class="signature">Osoba wykonująca rozchód w ERP</div>
+              <div class="signature">Operator / osoba zgłaszająca</div>
+              <div class="signature">Magazyn / osoba przyjmująca zgłoszenie</div>
             </section>
             <footer>Dokument wygenerowany dla Masterpress S.A.</footer>
           </body></html>`;
     }
 
-    function printWithdrawals(records) {
-        if (!records.length) {
-            showToast("Brak pobrań surowca do wydrukowania.");
+    function printProductionDocument(withdrawals = state.withdrawals, reports = state.reports) {
+        const goodReports = reports.filter(record => Number(record.goodQuantity) > 0);
+        if (!withdrawals.length && !goodReports.length) {
+            showToast("Brak pobrań i zgłoszeń dobrego wyrobu do wydrukowania.");
             return;
         }
         const printWindow = window.open("", "_blank", "width=980,height=760");
@@ -774,10 +862,77 @@
             return;
         }
         printWindow.document.open();
-        printWindow.document.write(withdrawalDocumentHtml(records));
+        printWindow.document.write(productionMovementDocumentHtml(withdrawals, reports));
         printWindow.document.close();
         printWindow.focus();
         window.setTimeout(() => printWindow.print(), 250);
+    }
+
+    function productionCardUrl(orderId, embedded = false) {
+        const url = new URL(
+            "modules/production-card/print/print.html",
+            document.baseURI
+        );
+        url.searchParams.set("orderId", orderId);
+        url.searchParams.set("preview", "1");
+        if (embedded) url.searchParams.set("embedded", "1");
+        return url;
+    }
+
+    function openProductionCard() {
+        if (!state.orderId) {
+            showToast("Najpierw wybierz zlecenie.");
+            return;
+        }
+
+        const cardWindow = window.open(
+            productionCardUrl(state.orderId).href,
+            "_blank",
+            "noopener,noreferrer"
+        );
+
+        if (!cardWindow) {
+            showToast("Przeglądarka zablokowała otwarcie Karty Produkcyjnej.");
+        }
+    }
+
+    function prepareWarehouseEmail(issue) {
+        const recipient = String(
+            window.PRODFLOW_CONFIG?.warehouseEmail || ""
+        ).trim();
+        const subject = `Zapotrzebowanie na surowiec - ${state.orderNumber} - ${state.machine || "bez maszyny"}`;
+        const body = [
+            "Zapotrzebowanie materiałowe z panelu operatora",
+            "",
+            `Zlecenie: ${state.orderNumber}`,
+            `Maszyna: ${state.machine || "—"}`,
+            `Materiał: ${issue.material}${issue.materialCode ? ` (${issue.materialCode})` : ""}`,
+            `Ilość: ${issue.quantity}`,
+            `Priorytet: ${issue.priority}`,
+            `Operator: ${state.operator || "—"}`,
+            `Zmiana: ${issue.shift}`,
+            `Data zgłoszenia: ${formatDocumentDate(issue.createdAt)}`
+        ].join("\n");
+        const mailto = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        window.ProdFlow = window.ProdFlow || {};
+        window.ProdFlow.lastWarehouseEmail = {
+            recipient,
+            subject,
+            body,
+            mailto
+        };
+
+        if (!window.PRODFLOW_TEST_DISABLE_MAILTO) {
+            const link = document.createElement("a");
+            link.href = mailto;
+            link.hidden = true;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        return recipient;
     }
 
     function handleAction(action, button) {
@@ -789,7 +944,8 @@
             }
 
             const firstStart = state.status === "waiting";
-            if (firstStart) {
+            const resumeSuspended = state.status === "suspended";
+            if (firstStart || resumeSuspended) {
                 const store = getStore();
                 store.updateStatus(
                     state.orderId,
@@ -797,7 +953,9 @@
                     {
                         processStep: "production",
                         module: "production",
-                        message: "Rozpoczęto produkcję zlecenia."
+                        message: resumeSuspended
+                            ? "Wznowiono zawieszone zlecenie."
+                            : "Rozpoczęto produkcję zlecenia."
                     }
                 );
                 store.updateOrder(
@@ -805,7 +963,9 @@
                     {
                         production: {
                             status: "running",
-                            actualStart: new Date().toISOString(),
+                            actualStart: firstStart
+                                ? new Date().toISOString()
+                                : undefined,
                             operatorName: state.operator
                         }
                     },
@@ -845,7 +1005,6 @@
                             <option value="material">Brak materiału</option>
                             <option value="changeover">Przezbrojenie</option>
                             <option value="failure">Awaria</option>
-                            <option value="quality">Kontrola jakości</option>
                             <option value="organization">Przerwa organizacyjna</option>
                             <option value="other">Inny powód</option>
                         </select>
@@ -875,6 +1034,152 @@
                     );
                     closeModal();
                     showToast(`Zapisano zatrzymanie: ${label}.`);
+                }
+            });
+        }
+
+        if (action === "suspend") {
+            if (!requireActive()) return;
+            openModal({
+                eyebrow: "Status zlecenia",
+                title: "Zawieś zlecenie",
+                description: "Zlecenie pozostanie przypisane do stanowiska i będzie można je później wznowić.",
+                fields: `
+                    <div class="pf-field">
+                        <label for="suspendReason">Powód zawieszenia</label>
+                        <select id="suspendReason" name="reason" required>
+                            <option value="">Wybierz powód</option>
+                            <option>Awaria maszyny</option>
+                            <option>Brak materiału</option>
+                            <option>Brak obsady</option>
+                            <option>Oczekiwanie na decyzję</option>
+                            <option>Inny powód</option>
+                        </select>
+                    </div>
+                    <div class="pf-field">
+                        <label for="suspendNote">Uwagi</label>
+                        <textarea id="suspendNote" name="note" placeholder="Opisz, co jest potrzebne do wznowienia..."></textarea>
+                    </div>
+                `,
+                onSubmit: form => {
+                    const data = new FormData(form);
+                    const reason = String(data.get("reason") || "").trim();
+                    const note = String(data.get("note") || "").trim();
+                    if (!reason) {
+                        showToast("Wybierz powód zawieszenia.");
+                        return;
+                    }
+
+                    openTimeSegment("suspension", `Zawieszenie: ${reason}`, note);
+                    updateDowntimeTotal();
+                    state.status = "suspended";
+                    getStore().updateStatus(
+                        state.orderId,
+                        "suspended",
+                        {
+                            processStep: "production",
+                            module: "production",
+                            message: `Zawieszono zlecenie. Powód: ${reason}.`
+                        }
+                    );
+                    addEvent(
+                        "Zlecenie zawieszone",
+                        [reason, note].filter(Boolean).join(" - "),
+                        "warning"
+                    );
+                    closeModal();
+                    showToast("Zlecenie zostało zawieszone i można je później wznowić.");
+                }
+            });
+        }
+
+        if (action === "drop-order") {
+            if (!requireActive()) return;
+            openModal({
+                eyebrow: "Status zlecenia",
+                title: "Oznacz jako spadnięte",
+                description: "Zlecenie zostanie zdjęte ze stanowiska i wróci do kolumny „Do zaplanowania”.",
+                fields: `
+                    <div class="pf-field">
+                        <label for="dropReason">Powód</label>
+                        <select id="dropReason" name="reason" required>
+                            <option value="">Wybierz powód</option>
+                            <option>Awaria uniemożliwiająca realizację</option>
+                            <option>Brak surowca</option>
+                            <option>Brak możliwości technologicznych</option>
+                            <option>Zmiana priorytetów</option>
+                            <option>Inny powód</option>
+                        </select>
+                    </div>
+                    <div class="pf-field">
+                        <label for="dropNote">Uwagi dla planisty</label>
+                        <textarea id="dropNote" name="note" placeholder="Co powinien wiedzieć planista?"></textarea>
+                    </div>
+                `,
+                onSubmit: form => {
+                    const data = new FormData(form);
+                    const reason = String(data.get("reason") || "").trim();
+                    const note = String(data.get("note") || "").trim();
+                    if (!reason) {
+                        showToast("Wybierz powód zdjęcia zlecenia.");
+                        return;
+                    }
+
+                    const store = getStore();
+                    const droppedOrderId = state.orderId;
+                    const droppedOrderNumber = state.orderNumber;
+                    const previousMachine = state.machine;
+                    closeOpenSegment();
+                    updateDowntimeTotal();
+                    state.status = "dropped";
+                    state.events.push({
+                        time: nowTime(),
+                        title: "Zlecenie spadło ze stanowiska",
+                        detail: [reason, note].filter(Boolean).join(" - "),
+                        type: "warning"
+                    });
+                    persistState(`Zlecenie ${droppedOrderNumber} spadło ze stanowiska. Powód: ${reason}.`);
+
+                    store.updateOrder(
+                        droppedOrderId,
+                        {
+                            planning: {
+                                status: "not_planned",
+                                machineId: "",
+                                machineName: "",
+                                notes: [
+                                    note,
+                                    `Spadło z maszyny ${previousMachine || "—"}: ${reason}`
+                                ].filter(Boolean).join("\n")
+                            },
+                            metadata: {
+                                productionDisposition: {
+                                    type: "dropped",
+                                    reason,
+                                    note,
+                                    previousMachine,
+                                    operator: state.operator,
+                                    shift: getShiftInfo().number,
+                                    createdAt: new Date().toISOString()
+                                }
+                            }
+                        },
+                        { addHistory: false, module: "production" }
+                    );
+                    store.updateStatus(
+                        droppedOrderId,
+                        "dropped",
+                        {
+                            processStep: "planning",
+                            module: "production",
+                            message: `Zlecenie spadło ze stanowiska i wróciło do planowania. Powód: ${reason}.`
+                        }
+                    );
+
+                    closeModal();
+                    loadStateFromStore();
+                    render();
+                    showToast("Zlecenie wróciło do planowania jako spadnięte.");
                 }
             });
         }
@@ -949,7 +1254,7 @@
                         unit: String(data.get("unit") || ""),
                         note: String(data.get("note") || "").trim(),
                         operator: state.operator,
-                        shift: "I",
+                        shift: getShiftInfo().number,
                         createdAt: new Date().toISOString()
                     };
                     state.withdrawals.push(record);
@@ -960,7 +1265,9 @@
                     );
                     const shouldPrint = data.get("printAfterSave") === "yes";
                     closeModal();
-                    if (shouldPrint) printWithdrawals([record]);
+                    if (shouldPrint) {
+                        printProductionDocument(state.withdrawals, state.reports);
+                    }
                     showToast("Pobranie surowca zostało zapisane.");
                 }
             });
@@ -968,26 +1275,42 @@
 
         if (action === "withdrawals") {
             if (!requireActive()) return;
+            const goodReports = state.reports.filter(
+                record => Number(record.goodQuantity) > 0
+            );
+            const hasDocumentData = state.withdrawals.length || goodReports.length;
             openModal({
-                eyebrow: "Dokumenty materiałowe",
-                title: "Pobrania surowców",
-                description: state.withdrawals.length
-                    ? "Możesz wydrukować pojedynczy dokument lub zbiorczy dokument pobrań."
-                    : "Dla tego zlecenia nie zapisano jeszcze pobrań.",
+                eyebrow: "Dokument produkcyjny",
+                title: "Pobrania i wyrób gotowy",
+                description: hasDocumentData
+                    ? "Pobrania surowców i zgłoszenia dobrego wyrobu zostaną umieszczone na jednym dokumencie PDF."
+                    : "Dla tego zlecenia nie zapisano jeszcze pobrań ani dobrego wyrobu.",
                 readOnly: true,
-                fields: state.withdrawals.length
-                    ? `<div class="operator-withdrawal-list">
+                fields: hasDocumentData
+                    ? `<div class="operator-document-section">
+                        <h3>Pobrania surowców</h3>
+                        <div class="operator-withdrawal-list">
                         ${state.withdrawals.slice().reverse().map(record => `
                             <div class="operator-withdrawal-item">
                                 <div>
                                     <strong>${escapeHtml(record.materialName)} · ${escapeHtml(formatNumber(record.quantity))} ${escapeHtml(record.unit)}</strong>
                                     <small>${escapeHtml(record.identifier)} · ${escapeHtml(new Intl.DateTimeFormat("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(record.createdAt)))}</small>
                                 </div>
-                                <button type="button" data-print-withdrawal="${escapeHtml(record.id)}">Drukuj</button>
-                            </div>`).join("")}
-                        <button class="operator-btn operator-btn--primary" type="button" data-print-all-withdrawals>Drukuj dokument zbiorczy</button>
+                            </div>`).join("") || '<div class="operator-history-list"><div><strong>Brak pobrań</strong><small>Nie zapisano pobrań surowców.</small></div></div>'}
+                        </div>
+                        <h3>Dobry wyrób gotowy</h3>
+                        <div class="operator-withdrawal-list">
+                          ${goodReports.slice().reverse().map(record => `
+                            <div class="operator-withdrawal-item">
+                              <div>
+                                <strong>${escapeHtml(formatNumber(record.goodQuantity))} szt. dobrych</strong>
+                                <small>Zmiana ${escapeHtml(record.shift || "—")} · ${escapeHtml(formatDocumentDate(record.createdAt))}</small>
+                              </div>
+                            </div>`).join("") || '<div class="operator-history-list"><div><strong>Brak zgłoszeń</strong><small>Nie zapisano dobrego wyrobu.</small></div></div>'}
+                        </div>
+                        <button class="operator-btn operator-btn--primary" type="button" data-print-production-document>Drukuj wspólny PDF</button>
                       </div>`
-                    : "<div class=\"operator-history-list\"><div><strong>Brak pobrań</strong><small>Użyj przycisku „Pobranie surowca”.</small></div></div>"
+                    : "<div class=\"operator-history-list\"><div><strong>Brak danych</strong><small>Użyj „Pobierz surowiec” lub „Raport wyniku”.</small></div></div>"
             });
         }
 
@@ -1021,6 +1344,9 @@
                         <label for="reportNote">Krótka uwaga</label>
                         <textarea id="reportNote" name="note" placeholder="Opcjonalnie..."></textarea>
                     </div>
+                    <label class="pf-field">
+                        <span><input name="printAfterSave" type="checkbox" value="yes"> Drukuj wspólny PDF po zapisaniu</span>
+                    </label>
                 `,
                 onSubmit: form => {
                     const data = new FormData(form);
@@ -1034,9 +1360,7 @@
                         return;
                     }
 
-                    state.good = state.planned > 0
-                        ? Math.min(state.planned, state.good + good)
-                        : state.good + good;
+                    state.good += good;
                     state.scrap += scrap;
                     state.reports.push({
                         id: `report-${Date.now()}`,
@@ -1045,7 +1369,7 @@
                         scrapReason: reason,
                         note,
                         operator: state.operator,
-                        shift: "I",
+                        shift: getShiftInfo().number,
                         createdAt: new Date().toISOString()
                     });
                     const detail = [
@@ -1056,10 +1380,23 @@
                     ].filter(Boolean).join(" ");
 
                     addEvent("Zapisano raport produkcji", detail, scrap ? "warning" : "success");
+                    const shouldPrint = data.get("printAfterSave") === "yes";
                     closeModal();
-                    showToast("Wynik produkcji został zapisany.");
+                    if (shouldPrint) {
+                        printProductionDocument(state.withdrawals, state.reports);
+                    }
+                    const overproduction = Math.max(0, state.good - state.planned);
+                    showToast(
+                        overproduction
+                            ? `Wynik zapisany. Nadprodukcja: ${formatNumber(overproduction)} szt.`
+                            : "Wynik produkcji został zapisany."
+                    );
                 }
             });
+        }
+
+        if (action === "production-card") {
+            openProductionCard();
         }
 
         if (action === "details") {
@@ -1101,7 +1438,7 @@
                 onSubmit: form => {
                     const amount = Number(new FormData(form).get("amount"));
                     if (!Number.isFinite(amount) || amount <= 0) return;
-                    state.good = Math.min(state.planned, state.good + amount);
+                    state.good += amount;
                     addEvent(`Zaraportowano ${formatNumber(amount)} szt.`, `Łącznie wykonano ${formatNumber(state.good)} dobrych sztuk.`, "success");
                     closeModal();
                     showToast("Postęp produkcji został zaktualizowany.");
@@ -1176,17 +1513,36 @@
 
         if (action === "material" || action === "warehouse-request") {
             if (!requireActive()) return;
+            if (!state.materials.length) {
+                showToast("Zlecenie nie ma przypisanej listy surowców.");
+                return;
+            }
             openModal({
                 title: "Zapotrzebowanie materiałowe",
-                description: "Zgłoszenie zostanie zapisane w danych magazynowych zlecenia.",
+                description: "Wybierz surowiec przypisany do zlecenia. Po zapisaniu otworzy się gotowa wiadomość e-mail do magazynu.",
                 fields: `
                     <div class="pf-field">
-                        <label for="materialName">Materiał</label>
-                        <input id="materialName" name="material" value="${escapeHtml(state.material)}" required>
+                        <label for="warehouseMaterial">Materiał z Karty Produkcyjnej</label>
+                        <select id="warehouseMaterial" name="materialId" required>
+                            <option value="">Wybierz surowiec</option>
+                            ${state.materials.map(material => `<option value="${escapeHtml(material.id)}">${escapeHtml(formatMaterialOption(material))}</option>`).join("")}
+                        </select>
                     </div>
-                    <div class="pf-field">
-                        <label for="materialQuantity">Ilość</label>
-                        <input id="materialQuantity" name="quantity" placeholder="Ilość i jednostka" required>
+                    <div class="operator-details-grid">
+                        <div class="pf-field">
+                            <label for="materialQuantity">Ilość</label>
+                            <input id="materialQuantity" name="quantity" type="number" min="0.001" step="0.001" inputmode="decimal" required>
+                        </div>
+                        <div class="pf-field">
+                            <label for="materialUnit">Jednostka</label>
+                            <select id="materialUnit" name="unit" required>
+                                <option value="kg">kg</option>
+                                <option value="m">m</option>
+                                <option value="szt.">szt.</option>
+                                <option value="rolka">rolka</option>
+                                <option value="opak.">opak.</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="pf-field">
                         <label for="materialPriority">Priorytet</label>
@@ -1198,6 +1554,14 @@
                 `,
                 onSubmit: form => {
                     const data = new FormData(form);
+                    const material = state.materials.find(
+                        item => item.id === String(data.get("materialId") || "")
+                    );
+                    const quantityValue = Number(data.get("quantity"));
+                    if (!material || !Number.isFinite(quantityValue) || quantityValue <= 0) {
+                        showToast("Wybierz surowiec i wpisz prawidłową ilość.");
+                        return;
+                    }
                     const store = getStore();
                     const order = store.getOrder(
                         state.orderId
@@ -1209,15 +1573,19 @@
                         : [];
                     const issue = {
                         id: `material-${Date.now()}`,
-                        material:
-                            String(data.get("material") || ""),
-                        quantity:
-                            String(data.get("quantity") || ""),
+                        materialId: material.id,
+                        material: material.name,
+                        materialCode: material.code,
+                        quantity: `${formatNumber(quantityValue)} ${String(data.get("unit") || "")}`,
+                        quantityValue,
+                        unit: String(data.get("unit") || ""),
                         priority:
                             String(data.get("priority") || ""),
                         status: "open",
                         machine: state.machine,
                         requestedBy: state.operator,
+                        shift: getShiftInfo().number,
+                        emailRecipient: String(window.PRODFLOW_CONFIG?.warehouseEmail || ""),
                         createdAt:
                             new Date().toISOString()
                     };
@@ -1238,9 +1606,14 @@
                     );
 
                     state.status = "issue";
-                    addEvent("Zgłoszono brak materiału", `${data.get("material")} · ${data.get("quantity")} · priorytet ${String(data.get("priority")).toLowerCase()}.`, "warning");
+                    addEvent("Zgłoszono brak materiału", `${issue.material} · ${issue.quantity} · priorytet ${issue.priority.toLowerCase()}.`, "warning");
+                    const recipient = prepareWarehouseEmail(issue);
                     closeModal();
-                    showToast("Magazyn otrzymał zgłoszenie.");
+                    showToast(
+                        recipient
+                            ? `Zapisano zgłoszenie i przygotowano e-mail do ${recipient}.`
+                            : "Zapisano zgłoszenie i przygotowano wiadomość e-mail."
+                    );
                 }
             });
         }
@@ -1469,18 +1842,9 @@
         }, { once: true });
 
         document.querySelector(".pf-production").addEventListener("click", event => {
-            const printOne = event.target.closest("[data-print-withdrawal]");
-            if (printOne) {
-                const record = state.withdrawals.find(
-                    item => item.id === printOne.dataset.printWithdrawal
-                );
-                if (record) printWithdrawals([record]);
-                return;
-            }
-
-            const printAll = event.target.closest("[data-print-all-withdrawals]");
-            if (printAll) {
-                printWithdrawals(state.withdrawals);
+            const printDocument = event.target.closest("[data-print-production-document]");
+            if (printDocument) {
+                printProductionDocument(state.withdrawals, state.reports);
                 return;
             }
 

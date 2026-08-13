@@ -29,6 +29,8 @@
             planned: "Zaplanowane",
             paused: "Pauza",
             issue: "Problem",
+            suspended: "Zawieszone",
+            dropped: "Spadnięte",
             completed: "Zakończone",
             new: "Nowe",
             accepted: "Przyjęte",
@@ -68,7 +70,7 @@
         const production = order.production || {};
         const planned = Number(order.order?.quantity) || Number(order.product?.quantity) || 0;
         const good = Number(production.goodQuantity) || 0;
-        const progress = planned > 0 ? Math.min(100, Math.round(good / planned * 100)) : 0;
+        const progress = planned > 0 ? Math.max(0, Math.round(good / planned * 100)) : 0;
         const produced = Number(production.producedQuantity) || 0;
         const rejected = Number(production.rejectedQuantity) || 0;
         const oee = produced > 0 ? Math.max(0, Math.round((produced - rejected) / produced * 100)) : 0;
@@ -116,7 +118,7 @@
         $("#machineGrid").innerHTML = machines.length ? machines.map(machine => `
             <article class="pf-machine">
                 <div class="pf-machine__top"><div><strong>${escapeHtml(machine.name)}</strong><small>${escapeHtml(machine.order)} · ${escapeHtml(machine.operator)}</small></div><span class="pf-status pf-status--${escapeHtml(machine.status)}">${statusLabel(machine.status)}</span></div>
-                <div class="pf-machine__progress"><i style="width:${machine.progress}%"></i></div>
+                <div class="pf-machine__progress"><i style="width:${Math.min(100, machine.progress)}%"></i></div>
                 <div class="pf-machine__progress-copy"><span>${escapeHtml(machine.detail)}</span><strong>${machine.progress}% · OEE ${machine.oee}%</strong></div>
             </article>
         `).join("") : `<div class="pf-empty">Brak aktywnych maszyn.</div>`;
