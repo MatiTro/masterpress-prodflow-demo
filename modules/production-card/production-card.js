@@ -24,6 +24,7 @@ let currentOrderId = sessionStorage.getItem(
   let toastTimer = null;
   let inkCounter = 0;
   let isRestoringData = false;
+  let graphicPdfAttachment = null;
 
   /* =======================================================
      KONFIGURACJA RODZAJÓW WYROBU
@@ -78,7 +79,6 @@ let currentOrderId = sessionStorage.getItem(
     "productIndex",
     "orderQty",
     "productName",
-    "envelopeSize",
     "ppwrWidth",
     "ppwrHeight",
     "ppwrFlap",
@@ -146,6 +146,7 @@ let currentOrderId = sessionStorage.getItem(
     bindActionButtons();
     bindMaterialButtons();
     bindSpecialFields();
+    bindGraphicAttachment();
 
     restoreCard();
     ensureInitialInkRow();
@@ -1526,6 +1527,103 @@ let currentOrderId = sessionStorage.getItem(
   }
 
   /* =======================================================
+     ZAŁĄCZNIK GRAFIKI
+     ======================================================= */
+
+  function formatAttachmentSize(size) {
+    const bytes = Number(size) || 0;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
+  }
+
+  function renderGraphicAttachment() {
+    const panel = getElement("graphicAttachmentPanel");
+    const status = getElement("graphicPdfStatus");
+    const openButton = getElement("graphicPdfOpenBtn");
+    const removeButton = getElement("graphicPdfRemoveBtn");
+
+    const hasFile = Boolean(graphicPdfAttachment?.dataUrl);
+    panel?.classList.toggle("has-file", hasFile);
+
+    if (status) {
+      status.textContent = hasFile
+        ? `${graphicPdfAttachment.name || "załącznik.pdf"} · ${formatAttachmentSize(graphicPdfAttachment.size)}`
+        : "Nie dodano załącznika PDF.";
+    }
+
+    if (openButton) openButton.hidden = !hasFile;
+    if (removeButton) removeButton.hidden = !hasFile;
+  }
+
+  function openGraphicAttachment() {
+    if (!graphicPdfAttachment?.dataUrl) {
+      showToast("Brak załącznika PDF.", "warning");
+      return;
+    }
+
+    const opened = window.open("", "_blank");
+    if (!opened) {
+      showToast("Przeglądarka zablokowała otwarcie załącznika.", "warning");
+      return;
+    }
+    opened.opener = null;
+    opened.location.href = graphicPdfAttachment.dataUrl;
+  }
+
+  function readGraphicAttachment(file) {
+    if (!file || (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"))) {
+      showToast("Wybierz plik PDF.", "warning");
+      return;
+    }
+
+    const maxSize = 3 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("W wersji testowej załącznik może mieć maksymalnie 3 MB.", "warning");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      graphicPdfAttachment = {
+        name: file.name,
+        type: "application/pdf",
+        size: file.size,
+        dataUrl: String(reader.result || ""),
+        addedAt: new Date().toISOString()
+      };
+      renderGraphicAttachment();
+      addHistory("Dodano załącznik grafiki", file.name);
+      debounceAutoSave();
+    };
+    reader.onerror = () => {
+      showToast("Nie udało się odczytać pliku PDF.", "error");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function bindGraphicAttachment() {
+    const input = getElement("graphicPdfInput");
+
+    getElement("graphicPdfChooseBtn")?.addEventListener("click", () => input?.click());
+    input?.addEventListener("change", () => {
+      const file = input.files?.[0];
+      if (file) readGraphicAttachment(file);
+      input.value = "";
+    });
+    getElement("graphicPdfOpenBtn")?.addEventListener("click", openGraphicAttachment);
+    getElement("graphicPdfRemoveBtn")?.addEventListener("click", () => {
+      if (!graphicPdfAttachment) return;
+      graphicPdfAttachment = null;
+      renderGraphicAttachment();
+      addHistory("Usunięto załącznik grafiki", "Usunięto wzór i siatkę projektu.");
+      debounceAutoSave();
+    });
+
+    renderGraphicAttachment();
+  }
+
+  /* =======================================================
      ZAPIS I ODCZYT DANYCH
      ======================================================= */
 
@@ -1537,12 +1635,15 @@ let currentOrderId = sessionStorage.getItem(
     });
 
     return {
-      version: 3,
+      version: 4,
       updatedAt: new Date().toISOString(),
       processStep: root.dataset.processStep || "card",
       fields,
       inks: collectInks(),
       silicone: collectSiliconeData(),
+      graphicAttachment: graphicPdfAttachment
+        ? { ...graphicPdfAttachment }
+        : null,
       history: getHistory()
     };
   }
@@ -1875,12 +1976,7 @@ let currentOrderId = sessionStorage.getItem(
       product: {
         code: fields.productIndex || "",
         name: fields.productName || "",
-        description: [
-          fields.productType || "",
-          fields.envelopeSize || ""
-        ]
-          .filter(Boolean)
-          .join(" — "),
+        description: fields.productType || "",
         revision: existingOrder?.product?.revision || "",
         quantity: toNumber(fields.orderQty),
         drawingNumber: fields.graphicNumber || "",
@@ -1954,7 +2050,7 @@ let currentOrderId = sessionStorage.getItem(
       metadata: {
         source: "production-card",
         productionCard: {
-          version: cardData.version || 3,
+          version: cardData.version || 4,
           updatedAt:
             cardData.updatedAt ||
             new Date().toISOString(),
@@ -1969,6 +2065,10 @@ let currentOrderId = sessionStorage.getItem(
           )
             ? cardData.silicone
             : [],
+          graphicAttachment:
+            cardData.graphicAttachment?.dataUrl
+              ? { ...cardData.graphicAttachment }
+              : null,
           history: normalizeHistory(
             cardData.history
           )
@@ -1988,7 +2088,7 @@ let currentOrderId = sessionStorage.getItem(
     ) {
       return {
         version:
-          savedCard.version || 3,
+          savedCard.version || 4,
 
         updatedAt:
           order.updatedAt ||
@@ -2010,6 +2110,11 @@ let currentOrderId = sessionStorage.getItem(
           Array.isArray(savedCard.silicone)
             ? savedCard.silicone
             : [],
+
+        graphicAttachment:
+          savedCard.graphicAttachment?.dataUrl
+            ? { ...savedCard.graphicAttachment }
+            : null,
 
         history:
           Array.isArray(savedCard.history)
@@ -2090,7 +2195,7 @@ let currentOrderId = sessionStorage.getItem(
     const dimensions = order.product?.dimensions || {};
 
     return {
-      version: 3,
+      version: 4,
 
       updatedAt:
         order.updatedAt ||
@@ -2128,8 +2233,6 @@ let currentOrderId = sessionStorage.getItem(
 
         productName:
           order.product?.name || "",
-
-        envelopeSize: "",
 
         ppwrWidth: dimensions.width || "",
         ppwrHeight: dimensions.height || "",
@@ -2225,6 +2328,10 @@ let currentOrderId = sessionStorage.getItem(
 
       inks,
       silicone,
+      graphicAttachment:
+        order.metadata?.productionCard?.graphicAttachment?.dataUrl
+          ? { ...order.metadata.productionCard.graphicAttachment }
+          : null,
       history: []
     };
   }
@@ -2235,8 +2342,20 @@ let currentOrderId = sessionStorage.getItem(
       fields: { ...(data?.fields || {}) },
       silicone: Array.isArray(data?.silicone)
         ? data.silicone
-        : []
+        : [],
+      graphicAttachment: data?.graphicAttachment?.dataUrl
+        ? { ...data.graphicAttachment }
+        : null
     };
+
+    const legacyEnvelopeSize = String(normalized.fields.envelopeSize || "").trim();
+    const currentProductName = String(normalized.fields.productName || "").trim();
+    if (legacyEnvelopeSize && !currentProductName.toLowerCase().includes(legacyEnvelopeSize.toLowerCase())) {
+      normalized.fields.productName = [currentProductName, legacyEnvelopeSize]
+        .filter(Boolean)
+        .join(" — ");
+    }
+    delete normalized.fields.envelopeSize;
 
     normalized.fields.ppwrTearStrip =
       normalizeTearType(
@@ -2263,6 +2382,10 @@ let currentOrderId = sessionStorage.getItem(
     isRestoringData = true;
 
     try {
+      graphicPdfAttachment = normalizedData.graphicAttachment
+        ? { ...normalizedData.graphicAttachment }
+        : null;
+
       Object.entries(normalizedData.fields || {}).forEach(
         ([fieldId, value]) => {
           setValue(fieldId, value);
@@ -2295,6 +2418,8 @@ let currentOrderId = sessionStorage.getItem(
         normalizedData.history || []
       );
 
+      renderGraphicAttachment();
+
       updateAllViews();
       markAsSaved();
     } finally {
@@ -2324,6 +2449,10 @@ let currentOrderId = sessionStorage.getItem(
 
       const cardData =
         collectCardData();
+
+      if (targetProcessStep) {
+        cardData.processStep = targetProcessStep;
+      }
 
       const orderData =
         convertCardToOrder(cardData);
@@ -2380,6 +2509,10 @@ let currentOrderId = sessionStorage.getItem(
         ACTIVE_ORDER_KEY,
         currentOrderId
       );
+
+      if (targetProcessStep) {
+        setProcessStep(targetProcessStep, { silent: true });
+      }
 
       renderOrderManager();
 
@@ -2642,12 +2775,6 @@ let currentOrderId = sessionStorage.getItem(
      ======================================================= */
 
   function bindActionButtons() {
-    ensureTransferToPlanningButton()
-      ?.addEventListener(
-        "click",
-        transferToPlanning
-      );
-
     getElement("saveCardBtn")?.addEventListener(
       "click",
       () => {
@@ -2660,9 +2787,23 @@ let currentOrderId = sessionStorage.getItem(
           return;
         }
 
+        const existingOrder = currentOrderId
+          ? findStoreOrder(currentOrderId)
+          : null;
+        const shouldPlan = !existingOrder ||
+          existingOrder.processStep === "card" ||
+          ["draft", "new"].includes(existingOrder.status);
+
         saveCard({
           silent: false,
-          historyMessage: "Ręczny zapis karty"
+          historyMessage: shouldPlan
+            ? "Zapisano Kartę Produkcyjną i dodano zlecenie do planu"
+            : "Ręczny zapis karty",
+          targetStatus: shouldPlan ? "planned" : null,
+          targetProcessStep: shouldPlan ? "planning" : null,
+          successMessage: shouldPlan
+            ? "Karta została zapisana i trafiła do Zaplanowanych."
+            : "Karta produkcyjna została zaktualizowana."
         });
       }
     );
@@ -2810,6 +2951,9 @@ let currentOrderId = sessionStorage.getItem(
     setValue("siliconeSelect", "0");
     setValue("ppwrTearStrip", "");
 
+    graphicPdfAttachment = null;
+    renderGraphicAttachment();
+
     const inksContainer = getElement("inksContainer");
 
     if (inksContainer) {
@@ -2888,8 +3032,7 @@ let currentOrderId = sessionStorage.getItem(
 
     const printWindow = window.open(
       printUrl.href,
-      "_blank",
-      "noopener,noreferrer"
+      "_blank"
     );
 
     if (!printWindow) {
@@ -2897,6 +3040,8 @@ let currentOrderId = sessionStorage.getItem(
         "Przeglądarka zablokowała okno wydruku.",
         "warning"
       );
+    } else {
+      printWindow.opener = null;
     }
   }
 
@@ -3032,6 +3177,10 @@ let currentOrderId = sessionStorage.getItem(
 
       isRestoringData = true;
 
+      graphicPdfAttachment = data.graphicAttachment?.dataUrl
+        ? { ...data.graphicAttachment }
+        : null;
+
       Object.entries(data.fields || {}).forEach(
         ([fieldId, value]) => {
           setValue(fieldId, value);
@@ -3057,6 +3206,7 @@ let currentOrderId = sessionStorage.getItem(
       );
 
       restoreHistory(data.history || []);
+      renderGraphicAttachment();
 
       isRestoringData = false;
 

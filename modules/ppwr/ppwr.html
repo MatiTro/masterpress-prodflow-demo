@@ -172,17 +172,32 @@
 
           <label>
             <span>Klej 1</span>
-            <input id="ppwrGlue1" type="text">
+            <select id="ppwrGlue1">
+              <option value="">— nie dotyczy —</option>
+              <option value="klej żywy (PSA Glue)">klej żywy (PSA Glue)</option>
+              <option value="Hotmelt">Hotmelt</option>
+              <option value="klej EVA (EVA glue)">klej EVA (EVA glue)</option>
+            </select>
           </label>
 
           <label>
             <span>Klej 2</span>
-            <input id="ppwrGlue2" type="text">
+            <select id="ppwrGlue2">
+              <option value="">— nie dotyczy —</option>
+              <option value="klej żywy (PSA Glue)">klej żywy (PSA Glue)</option>
+              <option value="Hotmelt">Hotmelt</option>
+              <option value="klej EVA (EVA glue)">klej EVA (EVA glue)</option>
+            </select>
           </label>
 
           <label>
             <span>Klej 3</span>
-            <input id="ppwrGlue3" type="text">
+            <select id="ppwrGlue3">
+              <option value="">— nie dotyczy —</option>
+              <option value="klej żywy (PSA Glue)">klej żywy (PSA Glue)</option>
+              <option value="Hotmelt">Hotmelt</option>
+              <option value="klej EVA (EVA glue)">klej EVA (EVA glue)</option>
+            </select>
           </label>
         </div>
       </section>
@@ -223,7 +238,7 @@
 
           <label>
             <span>Rodzaj farb</span>
-            <input id="ppwrInkType" type="text" placeholder="Rodzaj farby">
+            <input id="ppwrInkType" type="text" value="Farba wodna" readonly>
           </label>
 
           <label class="ppwr-full">
@@ -273,7 +288,7 @@
         <div class="ppwr-card-head">
           <div>
             <span>06 · Załącznik</span>
-            <h2>Zdjęcie techniczne</h2>
+            <h2>Załączniki techniczne</h2>
           </div>
           <span class="ppwr-section-state">Do uzupełnienia</span>
         </div>
@@ -295,6 +310,15 @@
               <button class="ppwr-btn ppwr-btn-light" id="ppwrPhotoRemoveBtn" type="button">Usuń</button>
             </div>
           </div>
+        </div>
+
+        <div class="ppwr-project-attachment" id="ppwrProjectAttachment">
+          <span class="ppwr-project-attachment__icon">PDF</span>
+          <div>
+            <strong>Wzór i siatka projektu z Karty Produkcyjnej</strong>
+            <small id="ppwrProjectAttachmentName">Nie dodano załącznika.</small>
+          </div>
+          <button class="ppwr-btn ppwr-btn-light" id="ppwrProjectAttachmentOpen" type="button" disabled>Otwórz PDF</button>
         </div>
       </section>
 

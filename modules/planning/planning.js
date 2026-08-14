@@ -163,6 +163,7 @@ function initPlanning() {
 
   function mapStoreOrder(order) {
     const planningStatus = mapStoreStatus(order.status);
+    const maintenance = order.metadata?.maintenance || null;
 
     return {
       id: order.id,
@@ -194,7 +195,9 @@ function initPlanning() {
       progress: getProgress(order, planningStatus),
       note: order.planning?.notes || "",
       systemStatus: order.status,
-      disposition: order.metadata?.productionDisposition || null
+      disposition: order.metadata?.productionDisposition || null,
+      orderType: order.metadata?.orderType || "production",
+      maintenance
     };
   }
 
@@ -374,6 +377,7 @@ function initPlanning() {
 
   function renderCard(order) {
     const machine = order.machine || "Nieprzydzielona";
+    const isMaintenance = order.orderType === "maintenance";
     const days = daysUntil(order.deadline);
     let deadlineText = formatDate(order.deadline);
     const specialStatus = {
@@ -386,7 +390,7 @@ function initPlanning() {
     else if (days === 1 && order.status !== "completed") deadlineText += " · jutro";
 
     return `
-      <article class="planning-card"
+      <article class="planning-card ${isMaintenance ? "is-maintenance" : ""}"
         draggable="true"
         data-id="${escapeHtml(order.id)}"
         data-priority="${escapeHtml(order.priority)}">
@@ -399,13 +403,17 @@ function initPlanning() {
           ? `<span class="planning-card-state planning-card-state--${specialStatus[0]}">${escapeHtml(specialStatus[1])}</span>`
           : ""}
 
+        ${isMaintenance
+          ? `<span class="planning-maintenance-badge">Konserwacja · ${escapeHtml(order.maintenance?.type || "zadanie techniczne")}</span>`
+          : ""}
+
         <h3>${escapeHtml(order.product)}</h3>
         <p class="planning-card-client">${escapeHtml(order.client)} · indeks ${escapeHtml(order.index || "—")}</p>
 
         <div class="planning-card-meta">
           <div>
-            <span>Ilość</span>
-            <strong>${formatNumber(order.quantity)} szt.</strong>
+            <span>${isMaintenance ? "Czas" : "Ilość"}</span>
+            <strong>${isMaintenance ? `${formatNumber(order.maintenance?.durationMinutes || 0)} min` : `${formatNumber(order.quantity)} szt.`}</strong>
           </div>
           <div>
             <span>Maszyna</span>
@@ -590,14 +598,60 @@ function initPlanning() {
     return url;
   }
 
+  function maintenanceCardHtml(order) {
+    const maintenance = order.maintenance || {};
+    const tasks = Array.isArray(maintenance.tasks) ? maintenance.tasks : [];
+    const taskRows = tasks.length
+      ? tasks.map(task => `<li><span>✓</span>${escapeHtml(task)}</li>`).join("")
+      : "<li><span>○</span>Zakres czynności do ustalenia</li>";
+    const scheduled = [
+      formatDate(maintenance.scheduledDate || order.deadline),
+      maintenance.scheduledTime || ""
+    ].filter(Boolean).join(" · ");
+
+    return `<!doctype html>
+      <html lang="pl"><head><meta charset="utf-8"><title>${escapeHtml(order.order)} — konserwacja</title>
+      <style>
+        @page{size:A4;margin:15mm}*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{display:grid;place-items:center;padding:24px;background:#e8edf2;color:#172436;font:13px Arial,sans-serif}
+        .sheet{width:min(760px,100%);min-height:500px;padding:28px;border-top:7px solid #a56b0b;background:#fff;box-shadow:0 14px 35px rgba(20,35,50,.16)}
+        header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:16px;border-bottom:2px solid #172436}.eyebrow{display:block;color:#8a5b0b;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}h1{margin:5px 0 0;font-size:25px}.number{text-align:right}.number strong,.number span{display:block}.number strong{font-size:18px}.number span{margin-top:5px;color:#68778a}
+        .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}.meta div{padding:10px;border:1px solid #d9e1e7;background:#f8fafb}.meta span,.meta strong{display:block}.meta span{color:#738291;font-size:8px;text-transform:uppercase}.meta strong{margin-top:5px;font-size:13px}
+        h2{margin:20px 0 8px;color:#002855;font-size:12px;text-transform:uppercase}ul{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0;padding:0;list-style:none}li{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e3d2ae;background:#fffaf0}li span{display:grid;width:20px;height:20px;place-items:center;border-radius:50%;background:#a56b0b;color:#fff;font-weight:800}.note{min-height:76px;padding:12px;border:1px solid #d9e1e7;white-space:pre-wrap}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:70px;margin-top:50px}.signature{padding-top:8px;border-top:1px solid #172436;text-align:center;color:#68778a;font-size:10px}
+        button{display:block;margin:20px 0 0 auto;padding:10px 16px;border:0;background:#002855;color:#fff;font-weight:700;cursor:pointer}@media print{body{display:block;padding:0;background:#fff}.sheet{width:100%;min-height:0;padding:0;box-shadow:none}button{display:none}}
+      </style></head><body><main class="sheet">
+        <header><div><span class="eyebrow">Zlecenie utrzymania ruchu</span><h1>${escapeHtml(maintenance.type || order.product)}</h1></div><div class="number"><strong>${escapeHtml(order.order)}</strong><span>${escapeHtml(order.machine || maintenance.machine || "—")}</span></div></header>
+        <section class="meta"><div><span>Maszyna</span><strong>${escapeHtml(maintenance.machine || order.machine || "—")}</strong></div><div><span>Termin</span><strong>${escapeHtml(scheduled || "—")}</strong></div><div><span>Planowany czas</span><strong>${formatNumber(maintenance.durationMinutes || 0)} min</strong></div><div><span>Priorytet</span><strong>${escapeHtml(order.priority || "Normalny")}</strong></div></section>
+        <h2>Lista czynności</h2><ul>${taskRows}</ul>
+        <h2>Zakres i uwagi</h2><div class="note">${escapeHtml(maintenance.note || order.note || "Brak dodatkowych uwag.")}</div>
+        <section class="signatures"><div class="signature">Wykonał / data</div><div class="signature">Potwierdził / data</div></section>
+        <button type="button" onclick="window.print()">Drukuj / zapisz PDF</button>
+      </main></body></html>`;
+  }
+
   function openDetails(id) {
     const order = orders.find(item => item.id === id);
     if (!order) return;
 
     selectedOrderId = id;
+    const isMaintenance = order.orderType === "maintenance";
     $("planningDialogOrder").textContent = order.order;
     $("planningDialogProduct").textContent = `${order.client} · ${order.product}`;
-    $("planningProductionCardFrame").src = productionCardPreviewUrl(id).href;
+    $("planningDialogKind").textContent = isMaintenance
+      ? "Karta konserwacji maszyny"
+      : "Karta produkcyjna zlecenia";
+    const frame = $("planningProductionCardFrame");
+    if (isMaintenance) {
+      frame.removeAttribute("src");
+      frame.srcdoc = maintenanceCardHtml(order);
+    } else {
+      frame.removeAttribute("srcdoc");
+      frame.src = productionCardPreviewUrl(id).href;
+    }
+    $("planningOpenCardBtn").textContent = isMaintenance
+      ? "Otwórz kartę konserwacji"
+      : "Otwórz w nowym oknie";
+    const withdrawButton = ensureWithdrawButton();
+    if (withdrawButton) withdrawButton.hidden = isMaintenance;
     $("planningDialogNote").value = order.note || "";
     $("planningDetailsDialog").showModal();
   }
@@ -813,6 +867,124 @@ function initPlanning() {
     $("planningNewMaterial").value = "Dostępny";
   }
 
+  function maintenanceOrderNumber() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const sequence = String(Date.now()).slice(-6);
+    return `KON/${year}/${sequence}`;
+  }
+
+  function fillMaintenanceMachines() {
+    const machines = [...new Set(
+      orders.map(order => order.machine).filter(Boolean)
+    )].sort();
+
+    $("planningMaintenanceMachines").innerHTML = machines
+      .map(machine => `<option value="${escapeHtml(machine)}"></option>`)
+      .join("");
+  }
+
+  function clearMaintenanceForm() {
+    $("planningMaintenanceMachine").value = "";
+    $("planningMaintenanceType").value = "Czyszczenie standardowe";
+    $("planningMaintenanceDate").value = offsetDate(0);
+    $("planningMaintenanceTime").value = "06:00";
+    $("planningMaintenanceDuration").value = "60";
+    $("planningMaintenancePriority").value = "Normalny";
+    $("planningMaintenanceNote").value = "";
+    root.querySelectorAll('[name="maintenanceTask"]').forEach(input => {
+      input.checked = true;
+    });
+    fillMaintenanceMachines();
+  }
+
+  function createMaintenanceOrder() {
+    const machine = $("planningMaintenanceMachine").value.trim();
+    const type = $("planningMaintenanceType").value;
+    const date = $("planningMaintenanceDate").value;
+    const time = $("planningMaintenanceTime").value || "06:00";
+    const durationMinutes = Math.max(
+      15,
+      Number($("planningMaintenanceDuration").value) || 60
+    );
+    const note = $("planningMaintenanceNote").value.trim();
+    const priority = $("planningMaintenancePriority").value;
+    const tasks = Array.from(
+      root.querySelectorAll('[name="maintenanceTask"]:checked')
+    ).map(input => input.value);
+
+    if (!machine || !type || !date) {
+      alert("Uzupełnij maszynę, rodzaj konserwacji i datę.");
+      return;
+    }
+
+    const number = maintenanceOrderNumber();
+
+    try {
+      getStore().saveOrder(
+        {
+          id: `maintenance-${Date.now()}`,
+          status: "planned",
+          processStep: "planning",
+          order: {
+            externalNumber: number,
+            priority: mapPriorityToStore(priority),
+            quantity: 1,
+            dueDate: date,
+            notes: note
+          },
+          customer: {
+            name: "Utrzymanie ruchu"
+          },
+          product: {
+            code: "KONSERWACJA",
+            name: `${type} — ${machine}`,
+            quantity: 1,
+            description: note
+          },
+          planning: {
+            status: "planned",
+            machineId: machine,
+            machineName: machine,
+            plannedStart: `${date}T${time}`,
+            estimatedMinutes: durationMinutes,
+            notes: note
+          },
+          metadata: {
+            source: "planning",
+            orderType: "maintenance",
+            maintenance: {
+              type,
+              machine,
+              scheduledDate: date,
+              scheduledTime: time,
+              durationMinutes,
+              tasks,
+              note,
+              status: "planned"
+            },
+            planning: {
+              materialAvailability: "Dostępny",
+              progress: 0
+            }
+          }
+        },
+        {
+          module: "planning",
+          historyMessage: `Zaplanowano konserwację maszyny ${machine}: ${type}.`
+        }
+      );
+
+      refreshOrders();
+      $("planningMaintenanceDialog").close();
+      renderAll();
+      switchView("board");
+    } catch (error) {
+      console.error("[ProdFlow Planning] Nie udało się utworzyć konserwacji:", error);
+      alert("Nie udało się utworzyć zlecenia konserwacji.");
+    }
+  }
+
   root.querySelectorAll("[data-view]").forEach(button => {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
@@ -845,20 +1017,43 @@ function initPlanning() {
 
   $("planningCreateOrderBtn").addEventListener("click", createOrder);
 
+  $("planningMaintenanceBtn").addEventListener("click", () => {
+    clearMaintenanceForm();
+    $("planningMaintenanceDialog").showModal();
+  });
+
+  $("planningCreateMaintenanceBtn").addEventListener("click", createMaintenanceOrder);
+
   $("planningOpenCardBtn").addEventListener("click", () => {
     if (!selectedOrderId) return;
+    const order = orders.find(item => item.id === selectedOrderId);
+    if (order?.orderType === "maintenance") {
+      const cardWindow = window.open("", "_blank", "width=900,height=760");
+      if (!cardWindow) {
+        alert("Przeglądarka zablokowała otwarcie Karty Konserwacji.");
+        return;
+      }
+      cardWindow.document.open();
+      cardWindow.document.write(maintenanceCardHtml(order));
+      cardWindow.document.close();
+      cardWindow.opener = null;
+      return;
+    }
     const cardWindow = window.open(
       productionCardPreviewUrl(selectedOrderId, false).href,
-      "_blank",
-      "noopener,noreferrer"
+      "_blank"
     );
     if (!cardWindow) {
       alert("Przeglądarka zablokowała otwarcie Karty Produkcyjnej.");
+    } else {
+      cardWindow.opener = null;
     }
   });
 
   $("planningDetailsDialog").addEventListener("close", () => {
-    $("planningProductionCardFrame").src = "about:blank";
+    const frame = $("planningProductionCardFrame");
+    frame.removeAttribute("srcdoc");
+    frame.src = "about:blank";
   });
 
   ensureWithdrawButton()?.addEventListener(
@@ -915,6 +1110,7 @@ function initPlanning() {
   });
 
   clearAddForm();
+  clearMaintenanceForm();
   refreshOrders();
   renderAll();
   switchView(currentView);

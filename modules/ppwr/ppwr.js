@@ -55,6 +55,38 @@ function initPpwr() {
 
   let photoDataUrl = "";
   let photoName = "";
+  let projectAttachment = null;
+
+  function genericGlueName(value) {
+    const normalized = clean(value).toLowerCase();
+    if (!normalized) return "";
+    if (normalized.includes("eva") || normalized.includes("duocoll")) {
+      return "klej EVA (EVA glue)";
+    }
+    if (
+      normalized.includes("hotmelt") ||
+      normalized.includes("ivymelt") ||
+      normalized.includes("hm-") ||
+      normalized.includes("nova")
+    ) {
+      return "Hotmelt";
+    }
+    if (["klej żywy (psa glue)", "hotmelt", "klej eva (eva glue)"].includes(normalized)) {
+      return normalized === "hotmelt"
+        ? "Hotmelt"
+        : normalized.includes("eva")
+          ? "klej EVA (EVA glue)"
+          : "klej żywy (PSA Glue)";
+    }
+    return "klej żywy (PSA Glue)";
+  }
+
+  function normalizePpwrMaterials() {
+    fields.inkType.value = "Farba wodna";
+    [fields.glue1, fields.glue2, fields.glue3].forEach(field => {
+      field.value = genericGlueName(field.value);
+    });
+  }
 
   function getStore() {
     const store = window.ProdFlow?.store;
@@ -85,7 +117,8 @@ function initPpwr() {
     return getStore().getOrders({ archived: false }).filter(order =>
       order.processStep !== "card" &&
       order.status !== "draft" &&
-      order.status !== "cancelled"
+      order.status !== "cancelled" &&
+      order.metadata?.orderType !== "maintenance"
     );
   }
 
@@ -154,9 +187,9 @@ function initPpwr() {
           .filter(Boolean)
       : [];
     fields.siliconeStrip.value = siliconeNames.join(", ");
-    fields.glue1.value = glues[0]?.name || cardFields.glue1Select || "";
-    fields.glue2.value = glues[1]?.name || cardFields.glue2Select || "";
-    fields.glue3.value = glues[2]?.name || cardFields.glue3Select || "";
+    fields.glue1.value = genericGlueName(glues[0]?.name || cardFields.glue1Select);
+    fields.glue2.value = genericGlueName(glues[1]?.name || cardFields.glue2Select);
+    fields.glue3.value = genericGlueName(glues[2]?.name || cardFields.glue3Select);
     fields.width.value = dimensions.width || cardFields.ppwrWidth || "";
     fields.height.value = dimensions.height || cardFields.ppwrHeight || "";
     fields.flap.value = dimensions.length || cardFields.ppwrFlap || "";
@@ -171,7 +204,7 @@ function initPpwr() {
       cardFields.perforationSelect
     );
     fields.colorsCount.value = cardFields.colorCount || inks.length || "";
-    fields.inkType.value = inks.map(item => item.name || item.code).filter(Boolean).join(", ");
+    fields.inkType.value = "Farba wodna";
     fields.printTechnique.value =
       cardFields.printMethodSelect || order.technology?.instructions || "";
     fields.boxQuantity.value =
@@ -183,7 +216,13 @@ function initPpwr() {
       latest?.fields?.preparedBy ||
       loggedUserName();
 
+    projectAttachment = card.graphicAttachment?.dataUrl
+      ? { ...card.graphicAttachment }
+      : null;
+
     if (latest) applyDraft(latest);
+    normalizePpwrMaterials();
+    renderProjectAttachment();
     updateAll();
     root.querySelector(".ppwr-topbar")?.scrollIntoView({
       behavior: "smooth",
@@ -826,7 +865,9 @@ function initPpwr() {
       if (!field) return;
 
       if (field.type === "checkbox") field.checked = Boolean(value);
-      else field.value = value ?? "";
+      else if (["glue1", "glue2", "glue3"].includes(key)) {
+        field.value = genericGlueName(value);
+      } else field.value = value ?? "";
     });
 
     fields.tearStrip.value = normalizeTearType(
@@ -836,6 +877,7 @@ function initPpwr() {
     photoDataUrl = draft.photoDataUrl || "";
     photoName = draft.photoName || "";
 
+    normalizePpwrMaterials();
     renderPhotoState();
     updateAll();
   }
@@ -871,10 +913,15 @@ function initPpwr() {
 
   function loadDraft() {
     const order = resolveOrder();
+    const attachment = order?.metadata?.productionCard?.graphicAttachment;
+    projectAttachment = attachment?.dataUrl
+      ? { ...attachment }
+      : null;
     const records = Array.isArray(order?.ppwr) ? order.ppwr : [];
     const draft = [...records].reverse().find(item => item.status === "draft") ||
       records[records.length - 1];
     if (draft) applyDraft(draft);
+    renderProjectAttachment();
   }
 
   function clearModule() {
@@ -892,7 +939,10 @@ function initPpwr() {
 
     photoDataUrl = "";
     photoName = "";
+    projectAttachment = null;
+    normalizePpwrMaterials();
     renderPhotoState();
+    renderProjectAttachment();
     updateAll();
 
     root.scrollIntoView({
@@ -912,6 +962,32 @@ function initPpwr() {
       $("ppwrPhotoImage").removeAttribute("src");
       $("ppwrPhotoName").textContent = "";
     }
+  }
+
+  function renderProjectAttachment() {
+    const panel = $("ppwrProjectAttachment");
+    const name = $("ppwrProjectAttachmentName");
+    const button = $("ppwrProjectAttachmentOpen");
+    const hasFile = Boolean(projectAttachment?.dataUrl);
+
+    panel?.classList.toggle("has-file", hasFile);
+    if (name) {
+      name.textContent = hasFile
+        ? projectAttachment.name || "załącznik-projektu.pdf"
+        : "Nie dodano załącznika w Karcie Produkcyjnej.";
+    }
+    if (button) button.disabled = !hasFile;
+  }
+
+  function openProjectAttachment() {
+    if (!projectAttachment?.dataUrl) return;
+    const opened = window.open("", "_blank");
+    if (!opened) {
+      window.alert("Przeglądarka zablokowała otwarcie załącznika PDF.");
+      return;
+    }
+    opened.opener = null;
+    opened.location.href = projectAttachment.dataUrl;
   }
 
   function readPhoto(file) {
@@ -999,6 +1075,8 @@ function initPpwr() {
     renderPhotoState();
     updateAll();
   });
+
+  $("ppwrProjectAttachmentOpen").addEventListener("click", openProjectAttachment);
 
   $("ppwrClearBtn").addEventListener("click", clearModule);
   $("ppwrSaveDraftBtn").addEventListener("click", saveDraft);
@@ -1111,6 +1189,8 @@ function initPpwr() {
   loadDraft();
   renderOrderBrowser();
   renderPhotoState();
+  normalizePpwrMaterials();
+  renderProjectAttachment();
   setPreviewPage(1);
   updateAll();
 }

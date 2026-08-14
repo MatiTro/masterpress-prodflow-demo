@@ -1,9 +1,13 @@
 <section class="labels-module" id="labelsModule">
   <header class="labels-header">
     <div>
-      <span class="labels-kicker">Narzędzia produkcyjne</span>
-      <h1>Etykiety</h1>
-      <p>Znajdź zlecenie i wydrukuj etykiety bez importowania dodatkowych dokumentów.</p>
+      <span class="labels-kicker">Automatyczny wydruk 100 × 75 mm</span>
+      <h1>Etykiety kartonowe</h1>
+      <p>ProdFlow dobiera wzór klienta i liczbę etykiet na podstawie danych zapisanych w Karcie Produkcyjnej.</p>
+    </div>
+    <div class="labels-header-note">
+      <strong>Automat</strong>
+      <span>1 karton = 1 etykieta</span>
     </div>
   </header>
 
@@ -24,9 +28,9 @@
             <th>Zlecenie</th>
             <th>Klient</th>
             <th>Produkt / indeks</th>
-            <th>Ilość zlecenia</th>
-            <th>Rodzaj etykiety</th>
-            <th>Wydrukowano</th>
+            <th>Ilość</th>
+            <th>Automatyczny wzór</th>
+            <th>Etykiety</th>
             <th>Ostatni wydruk</th>
             <th>Akcja</th>
           </tr>
@@ -42,37 +46,32 @@
 
   <dialog class="labels-dialog" id="labelsPrintDialog">
     <button class="labels-dialog__close" id="labelsDialogClose" type="button" aria-label="Zamknij">×</button>
-    <span class="labels-kicker">Przygotowanie wydruku</span>
+    <span class="labels-kicker">Kontrola przed wydrukiem</span>
     <h2 id="labelsDialogTitle">Drukuj etykiety</h2>
     <p id="labelsDialogDescription"></p>
 
     <form id="labelsPrintForm">
-      <label>
-        <span>Rodzaj etykiety</span>
-        <select id="labelsTemplate" name="template" required>
-          <option value="pallet">Etykieta paletowa</option>
-          <option value="carton">Etykieta kartonowa</option>
-          <option value="product">Etykieta produktu</option>
-        </select>
-      </label>
-      <label>
-        <span>Liczba kopii</span>
-        <input id="labelsCopies" name="quantity" type="number" min="1" step="1" value="1" required>
-      </label>
-      <label>
-        <span>Drukarka</span>
-        <input id="labelsPrinter" name="printer" type="text" placeholder="Domyślna drukarka">
-      </label>
+      <div class="labels-auto-summary">
+        <div><span>Wzór</span><strong id="labelsDetectedTemplate">—</strong></div>
+        <div><span>Ilość w kartonie</span><strong id="labelsUnitsPerCarton">—</strong></div>
+        <div><span>Liczba kartonów</span><strong id="labelsCartonsCount">—</strong></div>
+        <div><span>Liczba palet</span><strong id="labelsPalletsCount">—</strong></div>
+      </div>
 
-      <div class="labels-preview" id="labelsPreview">
-        <strong id="labelsPreviewOrder">—</strong>
-        <span id="labelsPreviewProduct">—</span>
-        <small id="labelsPreviewCustomer">—</small>
+      <div class="labels-validation" id="labelsValidation" role="status"></div>
+
+      <div class="labels-mini-preview" id="labelsMiniPreview">
+        <div>
+          <small id="labelsPreviewKind">ETYKIETA KARTONOWA</small>
+          <strong id="labelsPreviewOrder">—</strong>
+          <span id="labelsPreviewProduct">—</span>
+        </div>
+        <b id="labelsPreviewCustomer">—</b>
       </div>
 
       <div class="labels-dialog__actions">
         <button class="label-btn label-btn-secondary" id="labelsCancelBtn" type="button">Anuluj</button>
-        <button class="label-btn label-btn-primary" type="submit">Drukuj</button>
+        <button class="label-btn label-btn-primary" id="labelsPrintSubmit" type="submit">Otwórz wydruk</button>
       </div>
     </form>
   </dialog>

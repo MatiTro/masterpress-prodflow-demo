@@ -603,6 +603,53 @@
   white-space: nowrap;
 }
 
+.ppwr-project-attachment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 0 18px 18px;
+  padding: 13px;
+  border: 1px solid #d8e1e8;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.ppwr-project-attachment.has-file {
+  border-color: #8dbca3;
+  background: #f3faf6;
+}
+
+.ppwr-project-attachment__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.ppwr-project-attachment div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ppwr-project-attachment strong {
+  font-size: 10px;
+}
+
+.ppwr-project-attachment small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ppwr-preview-column {
   position: sticky;
   top: 14px;

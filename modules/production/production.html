@@ -77,7 +77,7 @@
       </div>
       <div class="hmi-materials__footer">
         <button class="is-request" type="button" data-production-action="warehouse-request">Zgłoś zapotrzebowanie</button>
-        <button type="button" data-production-action="withdrawals">Pobrania i wyrób gotowy PDF</button>
+        <button id="productionDocumentBtn" type="button" data-production-action="withdrawals">Dokument zmiany · <span id="productionDocumentCount">0</span></button>
       </div>
     </section>
 
@@ -110,6 +110,9 @@
       </div>
       <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
         <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
+      </button>
+      <button class="hmi-action hmi-action--correct" id="productionCorrectReportBtn" type="button" data-production-action="correct-report">
+        <span>✎</span><div><strong>Korekta raportu</strong><small>Popraw błędną ilość</small></div>
       </button>
       <button class="hmi-action hmi-action--material" type="button" data-production-action="withdraw-material">
         <span>⇩</span><div><strong>Pobierz surowiec</strong><small>Produkt, ID i ilość</small></div>

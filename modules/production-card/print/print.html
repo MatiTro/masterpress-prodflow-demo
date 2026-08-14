@@ -48,16 +48,12 @@
           <strong id="productIndex">—</strong>
         </div>
         <div class="print-field field-span-2">
-          <span>Nazwa produktu</span>
+          <span>Nazwa produktu i wymiar koperty</span>
           <strong id="productName">—</strong>
         </div>
         <div class="print-field">
           <span>Ilość zamówiona</span>
           <strong><span id="orderQty">—</span> <small>szt.</small></strong>
-        </div>
-        <div class="print-field">
-          <span>Wymiary wyrobu</span>
-          <strong id="envelopeSize">—</strong>
         </div>
         <div class="print-field">
           <span>Termin realizacji</span>
@@ -121,6 +117,19 @@
         <div class="graphics-method">
           <div class="print-field"><span>Sposób zadruku</span><strong id="printMethod">—</strong></div>
           <div class="print-field"><span>Wałek do druku</span><strong id="printRoll">—</strong></div>
+        </div>
+
+        <div class="product-scheme" id="productScheme">
+          <div class="product-scheme__head">
+            <span>Schemat wyrobu</span>
+            <strong id="productSchemeCode">—</strong>
+          </div>
+          <svg viewBox="0 0 180 92" role="img" aria-label="Miejsce na schemat wyrobu">
+            <rect x="23" y="13" width="134" height="66" rx="5"></rect>
+            <path d="M23 30h134M48 13v66M132 13v66"></path>
+            <path class="scheme-dash" d="M23 63h134M90 13v66"></path>
+          </svg>
+          <small id="productSchemeNote">Miejsce na zatwierdzony schemat konstrukcji.</small>
         </div>
       </div>
     </section>

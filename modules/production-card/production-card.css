@@ -777,6 +777,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.pf-form-grid--2 .pf-field--wide {
+  grid-column: 1 / -1;
+}
+
 .pf-field {
   display: block;
   min-width: 0;
@@ -853,6 +857,69 @@
   cursor: not-allowed;
   color: var(--pf-text-muted);
   background: #f1f5f9;
+}
+
+.pf-graphic-attachment {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px dashed #aebdce;
+  border-radius: 12px;
+  background: #f7faff;
+}
+
+.pf-graphic-attachment.has-file {
+  border-style: solid;
+  border-color: #83b79e;
+  background: #f2faf6;
+}
+
+.pf-graphic-attachment__icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 10px;
+  background: #002855;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.pf-graphic-attachment__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pf-graphic-attachment__copy strong {
+  font-size: 0.82rem;
+}
+
+.pf-graphic-attachment__copy span,
+.pf-graphic-attachment__copy small {
+  overflow: hidden;
+  color: var(--pf-text-muted);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pf-graphic-attachment__actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pf-graphic-attachment__actions .pf-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.72rem;
 }
 
 .pf-input-unit {
@@ -1937,6 +2004,15 @@
   .pf-form-grid--2,
   .pf-form-grid--3 {
     grid-template-columns: 1fr;
+  }
+
+  .pf-graphic-attachment {
+    grid-template-columns: auto 1fr;
+  }
+
+  .pf-graphic-attachment__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 
   .pf-product-types,

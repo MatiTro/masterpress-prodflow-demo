@@ -36,6 +36,7 @@
             timeSegments: [],
             reports: [],
             withdrawals: [],
+            printBatches: [],
             events: []
         };
     }
@@ -225,6 +226,10 @@
                 Array.isArray(production.materialWithdrawals)
                     ? production.materialWithdrawals
                     : [],
+            printBatches:
+                Array.isArray(production.documentPrintBatches)
+                    ? production.documentPrintBatches
+                    : [],
             events:
                 Array.isArray(runtime.events)
                     ? runtime.events
@@ -314,7 +319,9 @@
                     reports:
                         state.reports,
                     materialWithdrawals:
-                        state.withdrawals
+                        state.withdrawals,
+                    documentPrintBatches:
+                        state.printBatches
                 },
                 metadata: {
                     productionRuntime: {
@@ -488,6 +495,20 @@
         $("#qualityIndicator").textContent = `${quality.toFixed(1).replace(".", ",")}%`;
         $("#qualityBar").style.width = `${quality}%`;
         $("#downtimeValue").textContent = `${state.downtimeMinutes} min`;
+        const pendingDocumentCount =
+            pendingWithdrawals().length + pendingGoodReports().length;
+        const documentCount = $("#productionDocumentCount");
+        const documentButton = $("#productionDocumentBtn");
+        if (documentCount) {
+            documentCount.textContent = formatNumber(pendingDocumentCount);
+        }
+        if (documentButton) {
+            documentButton.title = pendingDocumentCount
+                ? `${pendingDocumentCount} pozycji czeka na dokument zmiany`
+                : state.printBatches.length
+                    ? "Brak nowych pozycji; dostępny jest podgląd ostatniego wydruku"
+                    : "Brak pozycji do wydruku";
+        }
 
         const config = statusConfig();
         $("#statusBanner").dataset.state = state.status;
@@ -526,6 +547,10 @@
         }
         if (productionCardButton) {
             productionCardButton.disabled = !state.orderId;
+        }
+        const correctionButton = $("#productionCorrectReportBtn");
+        if (correctionButton) {
+            correctionButton.disabled = !state.orderId || !state.reports.length;
         }
         const startLabel = $("#productionStartLabel");
         if (startLabel) {
@@ -756,7 +781,21 @@
         }).format(new Date(value));
     }
 
-    function productionMovementDocumentHtml(withdrawals, reports) {
+    function isReportDocumentRelevant(record) {
+        return Number(record?.goodQuantity) > 0 || Boolean(record?.correctedAt);
+    }
+
+    function pendingWithdrawals() {
+        return state.withdrawals.filter(record => !record.documentPrintedAt);
+    }
+
+    function pendingGoodReports() {
+        return state.reports.filter(
+            record => isReportDocumentRelevant(record) && !record.documentPrintedAt
+        );
+    }
+
+    function productionMovementDocumentHtml(withdrawals, reports, documentMeta = {}) {
         const withdrawalRows = withdrawals.map((record, index) => `
             <tr>
                 <td>${index + 1}</td>
@@ -768,14 +807,16 @@
                 <td>${escapeHtml(formatDocumentDate(record.createdAt))}</td>
             </tr>`).join("");
 
-        const goodReports = reports.filter(record => Number(record.goodQuantity) > 0);
+        const goodReports = reports.filter(isReportDocumentRelevant);
         const reportRows = goodReports.map((record, index) => `
             <tr>
                 <td>${index + 1}</td>
                 <td>${escapeHtml(formatNumber(record.goodQuantity))} szt.</td>
                 <td>${escapeHtml(record.operator || state.operator || "—")}</td>
                 <td>${escapeHtml(record.shift || "—")}</td>
-                <td>${escapeHtml(record.note || "—")}</td>
+                <td>${record.correctedAt
+                    ? `<strong>KOREKTA:</strong> ${escapeHtml(record.correctionReason || "poprawiono ilość")}<br>${escapeHtml(record.note || "—")}`
+                    : escapeHtml(record.note || "—")}</td>
                 <td>${escapeHtml(formatDocumentDate(record.createdAt))}</td>
             </tr>`).join("");
 
@@ -819,12 +860,12 @@
           <body>
             <header>
               <div><h1>Raport pobrań i wyrobu gotowego</h1><p>Masterpress S.A.</p></div>
-              <div><strong>${escapeHtml(state.orderNumber)}</strong><p>${escapeHtml(state.product)}</p></div>
+              <div><strong>${escapeHtml(state.orderNumber)}</strong><p>${escapeHtml(state.product)}</p><p>${documentMeta.isCopy ? "KOPIA DOKUMENTU" : "NOWE POZYCJE"}</p></div>
             </header>
             <section class="meta">
               <div><span>Maszyna</span><strong>${escapeHtml(state.machine || "—")}</strong></div>
               <div><span>Operator</span><strong>${escapeHtml(state.operator || "—")}</strong></div>
-              <div><span>Zmiana</span><strong>${escapeHtml(getShiftInfo().number)}</strong></div>
+              <div><span>Zmiana</span><strong>${escapeHtml(documentMeta.shift || getShiftInfo().number)}</strong></div>
               <div><span>Data wydruku</span><strong>${escapeHtml(formatDocumentDate(new Date()))}</strong></div>
             </section>
             <section class="summary">
@@ -846,26 +887,84 @@
               <div class="signature">Operator / osoba zgłaszająca</div>
               <div class="signature">Magazyn / osoba przyjmująca zgłoszenie</div>
             </section>
-            <footer>Dokument wygenerowany dla Masterpress S.A.</footer>
+            <footer>Dokument ${escapeHtml(documentMeta.batchId || "roboczy")} · wygenerowany dla Masterpress S.A.</footer>
           </body></html>`;
     }
 
-    function printProductionDocument(withdrawals = state.withdrawals, reports = state.reports) {
-        const goodReports = reports.filter(record => Number(record.goodQuantity) > 0);
+    function createDocumentBatch(withdrawals, reports) {
+        const now = new Date().toISOString();
+        return {
+            id: `document-${Date.now()}`,
+            createdAt: now,
+            operator: state.operator,
+            shift: getShiftInfo().number,
+            withdrawals: withdrawals.map(record => ({ ...record })),
+            reports: reports.map(record => ({ ...record }))
+        };
+    }
+
+    function markDocumentBatchPrinted(batch) {
+        const withdrawalIds = new Set(batch.withdrawals.map(record => record.id));
+        const reportIds = new Set(batch.reports.map(record => record.id));
+        state.withdrawals = state.withdrawals.map(record =>
+            withdrawalIds.has(record.id)
+                ? {
+                    ...record,
+                    documentPrintedAt: batch.createdAt,
+                    documentBatchId: batch.id
+                }
+                : record
+        );
+        state.reports = state.reports.map(record =>
+            reportIds.has(record.id)
+                ? {
+                    ...record,
+                    documentPrintedAt: batch.createdAt,
+                    documentBatchId: batch.id
+                }
+                : record
+        );
+        state.printBatches = [...state.printBatches, batch].slice(-60);
+        addEvent(
+            "Przygotowano dokument zmiany",
+            `${batch.withdrawals.length} pobrań i ${batch.reports.length} zgłoszeń wyrobu oznaczono jako wydrukowane.`,
+            "info"
+        );
+    }
+
+    function printProductionDocument(options = {}) {
+        const reprintBatch = options.reprintBatch || null;
+        const withdrawals = reprintBatch?.withdrawals || pendingWithdrawals();
+        const reports = reprintBatch?.reports || pendingGoodReports();
+        const goodReports = reports.filter(isReportDocumentRelevant);
         if (!withdrawals.length && !goodReports.length) {
-            showToast("Brak pobrań i zgłoszeń dobrego wyrobu do wydrukowania.");
+            showToast("Brak nowych pobrań i zgłoszeń dobrego wyrobu do wydrukowania.");
             return;
         }
+        const batch = reprintBatch || createDocumentBatch(withdrawals, goodReports);
         const printWindow = window.open("", "_blank", "width=980,height=760");
         if (!printWindow) {
             showToast("Przeglądarka zablokowała okno wydruku.");
             return;
         }
         printWindow.document.open();
-        printWindow.document.write(productionMovementDocumentHtml(withdrawals, reports));
+        printWindow.document.write(productionMovementDocumentHtml(
+            withdrawals,
+            goodReports,
+            {
+                batchId: batch.id,
+                shift: batch.shift,
+                isCopy: Boolean(reprintBatch)
+            }
+        ));
         printWindow.document.close();
         printWindow.focus();
         window.setTimeout(() => printWindow.print(), 250);
+        if (!reprintBatch) {
+            markDocumentBatchPrinted(batch);
+        } else {
+            showToast(`Otwarto kopię dokumentu ${batch.id}.`);
+        }
     }
 
     function productionCardUrl(orderId, embedded = false) {
@@ -1255,7 +1354,9 @@
                         note: String(data.get("note") || "").trim(),
                         operator: state.operator,
                         shift: getShiftInfo().number,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        documentPrintedAt: "",
+                        documentBatchId: ""
                     };
                     state.withdrawals.push(record);
                     addEvent(
@@ -1266,7 +1367,7 @@
                     const shouldPrint = data.get("printAfterSave") === "yes";
                     closeModal();
                     if (shouldPrint) {
-                        printProductionDocument(state.withdrawals, state.reports);
+                        printProductionDocument();
                     }
                     showToast("Pobranie surowca zostało zapisane.");
                 }
@@ -1275,22 +1376,21 @@
 
         if (action === "withdrawals") {
             if (!requireActive()) return;
-            const goodReports = state.reports.filter(
-                record => Number(record.goodQuantity) > 0
-            );
-            const hasDocumentData = state.withdrawals.length || goodReports.length;
+            const withdrawals = pendingWithdrawals();
+            const goodReports = pendingGoodReports();
+            const lastBatch = state.printBatches.at(-1);
+            const hasDocumentData = withdrawals.length || goodReports.length;
             openModal({
                 eyebrow: "Dokument produkcyjny",
-                title: "Pobrania i wyrób gotowy",
+                title: "Dokument bieżącej zmiany",
                 description: hasDocumentData
-                    ? "Pobrania surowców i zgłoszenia dobrego wyrobu zostaną umieszczone na jednym dokumencie PDF."
-                    : "Dla tego zlecenia nie zapisano jeszcze pobrań ani dobrego wyrobu.",
+                    ? "Na PDF trafią tylko nowe pozycje. Po otwarciu wydruku zostaną oznaczone, więc nie wydrukujesz ich przypadkiem drugi raz."
+                    : "Brak nowych pozycji do rozliczenia. Wcześniejsze wydruki pozostają zapisane w historii.",
                 readOnly: true,
-                fields: hasDocumentData
-                    ? `<div class="operator-document-section">
+                fields: `<div class="operator-document-section">
                         <h3>Pobrania surowców</h3>
                         <div class="operator-withdrawal-list">
-                        ${state.withdrawals.slice().reverse().map(record => `
+                        ${withdrawals.slice().reverse().map(record => `
                             <div class="operator-withdrawal-item">
                                 <div>
                                     <strong>${escapeHtml(record.materialName)} · ${escapeHtml(formatNumber(record.quantity))} ${escapeHtml(record.unit)}</strong>
@@ -1308,9 +1408,13 @@
                               </div>
                             </div>`).join("") || '<div class="operator-history-list"><div><strong>Brak zgłoszeń</strong><small>Nie zapisano dobrego wyrobu.</small></div></div>'}
                         </div>
-                        <button class="operator-btn operator-btn--primary" type="button" data-print-production-document>Drukuj wspólny PDF</button>
+                        ${hasDocumentData
+                            ? '<button class="operator-btn operator-btn--primary" type="button" data-print-production-document>Drukuj nowe pozycje</button>'
+                            : '<div class="operator-history-list"><div><strong>Wszystko rozliczone</strong><small>Nowe pozycje pojawią się po pobraniu surowca lub raporcie wyniku.</small></div></div>'}
+                        ${lastBatch
+                            ? `<button class="operator-btn" type="button" data-reprint-production-document="${escapeHtml(lastBatch.id)}">Drukuj kopię ostatniego dokumentu</button>`
+                            : ""}
                       </div>`
-                    : "<div class=\"operator-history-list\"><div><strong>Brak danych</strong><small>Użyj „Pobierz surowiec” lub „Raport wyniku”.</small></div></div>"
             });
         }
 
@@ -1370,7 +1474,9 @@
                         note,
                         operator: state.operator,
                         shift: getShiftInfo().number,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        documentPrintedAt: "",
+                        documentBatchId: ""
                     });
                     const detail = [
                         good ? `Dobre: ${formatNumber(good)} szt.` : "",
@@ -1383,7 +1489,7 @@
                     const shouldPrint = data.get("printAfterSave") === "yes";
                     closeModal();
                     if (shouldPrint) {
-                        printProductionDocument(state.withdrawals, state.reports);
+                        printProductionDocument();
                     }
                     const overproduction = Math.max(0, state.good - state.planned);
                     showToast(
@@ -1393,6 +1499,119 @@
                     );
                 }
             });
+        }
+
+        if (action === "correct-report") {
+            if (!requireActive()) return;
+            if (!state.reports.length) {
+                showToast("Nie ma jeszcze raportu, który można poprawić.");
+                return;
+            }
+
+            const reports = state.reports.slice().reverse();
+            const reportOptions = reports.map(record => {
+                const label = `${formatDocumentDate(record.createdAt)} · dobre ${formatNumber(record.goodQuantity || 0)} · braki ${formatNumber(record.scrapQuantity || 0)}`;
+                return `<option value="${escapeHtml(record.id)}">${escapeHtml(label)}</option>`;
+            }).join("");
+
+            openModal({
+                eyebrow: "Korekta operatora",
+                title: "Popraw ilość w raporcie",
+                description: "Oryginalny wpis zostanie zachowany w historii korekt. Jeżeli był już drukowany, poprawiona wersja wróci do dokumentu zmiany.",
+                fields: `
+                    <div class="pf-field">
+                        <label for="correctionReportId">Raport do poprawienia</label>
+                        <select id="correctionReportId" name="reportId" required>${reportOptions}</select>
+                    </div>
+                    <div class="operator-details-grid">
+                        <div class="pf-field">
+                            <label for="correctionGood">Dobre sztuki po korekcie</label>
+                            <input id="correctionGood" name="good" type="number" min="0" step="1" required inputmode="numeric">
+                        </div>
+                        <div class="pf-field">
+                            <label for="correctionScrap">Braki po korekcie</label>
+                            <input id="correctionScrap" name="scrap" type="number" min="0" step="1" required inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="pf-field">
+                        <label for="correctionReason">Powód korekty</label>
+                        <select id="correctionReason" name="correctionReason" required>
+                            <option value="">Wybierz powód</option>
+                            <option>Pomyłka przy wpisywaniu</option>
+                            <option>Błędne przeliczenie</option>
+                            <option>Korekta po ponownym sprawdzeniu</option>
+                            <option>Inny powód</option>
+                        </select>
+                    </div>
+                    <div class="pf-field">
+                        <label for="correctionNote">Uwagi po korekcie</label>
+                        <textarea id="correctionNote" name="note" placeholder="Opcjonalnie..."></textarea>
+                    </div>`,
+                onSubmit: form => {
+                    const data = new FormData(form);
+                    const reportId = String(data.get("reportId") || "");
+                    const reportIndex = state.reports.findIndex(record => record.id === reportId);
+                    const report = state.reports[reportIndex];
+                    const good = Number(data.get("good"));
+                    const scrap = Number(data.get("scrap"));
+                    const correctionReason = String(data.get("correctionReason") || "").trim();
+                    const note = String(data.get("note") || "").trim();
+                    if (!report || !Number.isInteger(good) || good < 0 || !Number.isInteger(scrap) || scrap < 0 || !correctionReason) {
+                        showToast("Wpisz prawidłowe ilości i wybierz powód korekty.");
+                        return;
+                    }
+                    const previousGood = Number(report.goodQuantity) || 0;
+                    const previousScrap = Number(report.scrapQuantity) || 0;
+                    if (previousGood === good && previousScrap === scrap && (report.note || "") === note) {
+                        showToast("Nie zmieniono danych raportu.");
+                        return;
+                    }
+                    const correctedAt = new Date().toISOString();
+                    state.good = Math.max(0, state.good - previousGood + good);
+                    state.scrap = Math.max(0, state.scrap - previousScrap + scrap);
+                    state.reports[reportIndex] = {
+                        ...report,
+                        goodQuantity: good,
+                        scrapQuantity: scrap,
+                        note,
+                        correctedAt,
+                        correctedBy: state.operator,
+                        correctionReason,
+                        documentPrintedAt: "",
+                        documentBatchId: "",
+                        corrections: [
+                            ...(Array.isArray(report.corrections) ? report.corrections : []),
+                            {
+                                correctedAt,
+                                correctedBy: state.operator,
+                                reason: correctionReason,
+                                previousGoodQuantity: previousGood,
+                                previousScrapQuantity: previousScrap,
+                                goodQuantity: good,
+                                scrapQuantity: scrap
+                            }
+                        ]
+                    };
+                    closeModal();
+                    addEvent(
+                        "Skorygowano raport produkcji",
+                        `Dobre: ${formatNumber(previousGood)} → ${formatNumber(good)}; braki: ${formatNumber(previousScrap)} → ${formatNumber(scrap)}. ${correctionReason}.`,
+                        "warning"
+                    );
+                    showToast("Raport poprawiono. Korekta czeka na dokument zmiany.");
+                }
+            });
+
+            const reportSelect = $("#correctionReportId");
+            const fillCorrectionFields = () => {
+                const record = state.reports.find(item => item.id === reportSelect?.value);
+                if (!record) return;
+                $("#correctionGood").value = Number(record.goodQuantity) || 0;
+                $("#correctionScrap").value = Number(record.scrapQuantity) || 0;
+                $("#correctionNote").value = record.note || "";
+            };
+            reportSelect?.addEventListener("change", fillCorrectionFields);
+            fillCorrectionFields();
         }
 
         if (action === "production-card") {
@@ -1755,6 +1974,7 @@
                     const finishedSegments = [...state.timeSegments];
                     const finishedReports = [...state.reports];
                     const finishedWithdrawals = [...state.withdrawals];
+                    const finishedPrintBatches = [...state.printBatches];
                     const finishedEvents = [...state.events];
                     const order = store.getOrder(finishedOrderId);
                     const existingNotes =
@@ -1773,6 +1993,7 @@
                         timeSegments: finishedSegments,
                         reports: finishedReports,
                         materialWithdrawals: finishedWithdrawals,
+                        documentPrintBatches: finishedPrintBatches,
                         notes: [existingNotes, note]
                             .filter(Boolean)
                             .join("\n")
@@ -1842,9 +2063,17 @@
         }, { once: true });
 
         document.querySelector(".pf-production").addEventListener("click", event => {
+            const reprintDocument = event.target.closest("[data-reprint-production-document]");
+            if (reprintDocument) {
+                const batch = state.printBatches.find(
+                    item => item.id === reprintDocument.dataset.reprintProductionDocument
+                );
+                if (batch) printProductionDocument({ reprintBatch: batch });
+                return;
+            }
             const printDocument = event.target.closest("[data-print-production-document]");
             if (printDocument) {
-                printProductionDocument(state.withdrawals, state.reports);
+                printProductionDocument();
                 return;
             }
 
@@ -1864,8 +2093,12 @@
                 showToast("Najpierw zakończ aktywne zlecenie.");
                 return;
             }
+            const switchedFromSuspended = state.status === "suspended";
             loadStateFromStore(event.currentTarget.value);
             render();
+            if (switchedFromSuspended) {
+                showToast("Wybrano inne zlecenie. Zawieszone pozostaje na liście do późniejszego wznowienia.");
+            }
         });
 
         document.addEventListener("keydown", event => {

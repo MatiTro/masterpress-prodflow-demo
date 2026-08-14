@@ -207,20 +207,12 @@
                   </div>
                 </label>
 
-                <label class="pf-field">
-                  <span>Nazwa produktu</span>
+                <label class="pf-field pf-field--wide">
+                  <span>Nazwa produktu i wymiar koperty</span>
                   <input
                     type="text"
                     id="productName"
-                    placeholder="Nazwa produktu">
-                </label>
-
-                <label class="pf-field">
-                  <span>Wymiary koperty</span>
-                  <input
-                    type="text"
-                    id="envelopeSize"
-                    placeholder="Wymiary produktu">
+                    placeholder="np. Koperta papierowa Small 230 × 160 mm">
                 </label>
 
               </div>
@@ -805,6 +797,24 @@
                 id="plannedStartDate">
             </label>
 
+          </div>
+
+          <div class="pf-graphic-attachment" id="graphicAttachmentPanel">
+            <input id="graphicPdfInput" type="file" accept="application/pdf,.pdf" hidden>
+
+            <div class="pf-graphic-attachment__icon" aria-hidden="true">PDF</div>
+
+            <div class="pf-graphic-attachment__copy">
+              <strong>Wzór i siatka projektu</strong>
+              <span id="graphicPdfStatus">Nie dodano załącznika PDF.</span>
+              <small>Załącznik będzie dostępny na Karcie Produkcyjnej oraz w module PPWR.</small>
+            </div>
+
+            <div class="pf-graphic-attachment__actions">
+              <button class="pf-button pf-button--secondary" id="graphicPdfChooseBtn" type="button">Dodaj PDF</button>
+              <button class="pf-button pf-button--ghost" id="graphicPdfOpenBtn" type="button" hidden>Otwórz</button>
+              <button class="pf-button pf-button--ghost" id="graphicPdfRemoveBtn" type="button" hidden>Usuń</button>
+            </div>
           </div>
 
         </div>

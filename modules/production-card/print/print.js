@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
       )
     )
   );
-  setText("envelopeSize", fields.envelopeSize);
   setText("deliveryDate", formatDate(
     value(
       fields.deliveryDate,
@@ -142,6 +141,24 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   setText("productType", fields.productType);
+  setText("productSchemeCode", fields.productType);
+  const productScheme = document.getElementById("productScheme");
+  if (productScheme) {
+    productScheme.dataset.type = String(fields.productType || "").toLowerCase();
+  }
+  const productTypeNames = {
+    TDB: "Torba dolna bez uchwytu",
+    TDBH: "Torba dolna z dodatkowym zamknięciem",
+    TDBD: "Torba dolna dwustronna",
+    TVB: "Torba V-bottom"
+  };
+  const graphicAttachment = card.graphicAttachment;
+  setText(
+    "productSchemeNote",
+    graphicAttachment?.name
+      ? `Załącznik projektu: ${graphicAttachment.name}`
+      : productTypeNames[fields.productType] || "Miejsce na zatwierdzony schemat konstrukcji."
+  );
   setText("graphicNumber", fields.graphicNumber);
   setText("graphicVersion", fields.graphicVersion);
   setText("graphicStatus", fields.graphicStatus);

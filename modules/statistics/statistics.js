@@ -39,6 +39,7 @@ function initStatistics() {
     cutoff.setDate(cutoff.getDate() - periodDays + 1);
     const orders = store
       .getOrders({ archived: false })
+      .filter(order => order.metadata?.orderType !== "maintenance")
       .filter(order => {
         const value =
           order.updatedAt ||
@@ -215,7 +216,7 @@ function initStatistics() {
       ["Średnie wykorzystanie", `${utilization.toFixed(1)}%`],
       ["Terminowość", `${onTime.toFixed(1)}%`],
       ["Średni poziom odpadów", `${waste.toFixed(1)}%`],
-      ["Zrealizowane zlecenia", formatNumber(orders)]
+      ["Zlecenia w okresie", formatNumber(orders)]
     ];
 
     $("statisticsSummary").innerHTML = cards.map(([label, value]) => `
@@ -366,6 +367,7 @@ function initStatistics() {
 
   function drawProductionChart() {
     const canvas = $("statisticsProductionChart");
+    if (!canvas || !document.contains(root)) return;
     const { ctx, width, height } = canvasSize(canvas);
     const data = currentData.trend;
     const padding = { top: 18, right: 18, bottom: 32, left: 42 };
@@ -448,6 +450,7 @@ function initStatistics() {
 
   function drawDeliveryChart() {
     const canvas = $("statisticsDeliveryChart");
+    if (!canvas || !document.contains(root)) return;
     const { ctx, width, height } = canvasSize(canvas);
     const values = [
       currentData.delivery.onTime,
@@ -499,37 +502,131 @@ function initStatistics() {
     renderInsights();
 
     requestAnimationFrame(() => {
+      if (!document.contains(root)) return;
       drawProductionChart();
       drawDeliveryChart();
     });
   }
 
-  function exportCsv() {
-    const rows = [
-      ["Maszyna", "Wolumen", "Wykorzystanie", "Terminowość", "Odpady", "Ocena"],
-      ...filteredMachines().map(item => [
-        item.name,
-        item.volume,
-        item.utilization,
-        item.onTime,
-        item.waste,
-        item.score
-      ])
-    ];
+  function statisticsReportHtml() {
+    const machines = filteredMachines();
+    const clients = filteredClients();
+    const volume = machines.reduce((sum, item) => sum + item.volume, 0);
+    const utilization = machines.length
+      ? machines.reduce((sum, item) => sum + item.utilization, 0) / machines.length
+      : 0;
+    const onTime = machines.length
+      ? machines.reduce((sum, item) => sum + item.onTime, 0) / machines.length
+      : 0;
+    const waste = machines.length
+      ? machines.reduce((sum, item) => sum + item.waste, 0) / machines.length
+      : 0;
+    const orderCount = clients.reduce((sum, item) => sum + item.orders, 0);
+    const generatedAt = new Intl.DateTimeFormat("pl-PL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(new Date());
+    const period = $("statisticsPeriod").selectedOptions[0]?.textContent || "Wybrany okres";
+    const machineFilter = $("statisticsMachine").selectedOptions[0]?.textContent || "Wszystkie maszyny";
+    const clientFilter = $("statisticsClient").selectedOptions[0]?.textContent || "Wszyscy klienci";
+    const best = [...machines].sort((a, b) => b.score - a.score)[0];
+    const attention = [...machines].sort((a, b) => a.score - b.score)[0];
+    const machineRows = machines.map(item => `
+      <tr>
+        <td><strong>${escapeHtml(item.name)}</strong></td>
+        <td>${escapeHtml(formatNumber(item.volume))} szt.</td>
+        <td>${item.utilization}%</td>
+        <td>${item.onTime}%</td>
+        <td>${item.waste}%</td>
+        <td><strong>${item.score}/100</strong></td>
+      </tr>`).join("");
+    const clientRows = clients.slice(0, 12).map((item, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td><strong>${escapeHtml(item.name)}</strong></td>
+        <td>${escapeHtml(formatNumber(item.orders))}</td>
+        <td>${escapeHtml(formatNumber(item.volume))} szt.</td>
+      </tr>`).join("");
+    const complaintRows = currentData.complaints.map(item => `
+      <tr><td>${escapeHtml(item.name)}</td><td><strong>${item.value}%</strong></td></tr>`).join("");
 
-    const csv = rows
-      .map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(";"))
-      .join("\n");
+    return `<!doctype html>
+      <html lang="pl">
+      <head>
+        <meta charset="utf-8">
+        <title>ProdFlow — raport statystyczny</title>
+        <style>
+          @page{size:A4;margin:12mm 11mm 14mm}
+          *{box-sizing:border-box}
+          body{margin:0;color:#172436;background:#fff;font:10px Arial,sans-serif}
+          header{display:flex;justify-content:space-between;gap:20px;padding:0 0 13px;border-bottom:3px solid #002855}
+          .brand{display:flex;align-items:center;gap:10px}.mark{display:grid;width:38px;height:38px;place-items:center;background:#002855;color:#fff;font-weight:900}
+          h1{margin:0;font-size:21px;letter-spacing:-.02em}.subtitle{margin:3px 0 0;color:#657486}
+          .report-meta{text-align:right}.report-meta strong,.report-meta span{display:block}.report-meta span{margin-top:3px;color:#657486}
+          .filters{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:11px 0}.filters div{padding:7px 8px;border:1px solid #d7e0e7;background:#f8fafb}.filters span,.filters strong{display:block}.filters span{margin-bottom:3px;color:#758393;font-size:7px;font-weight:700;text-transform:uppercase}
+          .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 13px}.kpi{padding:9px 8px;border-left:4px solid #1f5f9f;background:#edf3f8}.kpi span,.kpi strong{display:block}.kpi span{color:#66778a;font-size:7px;font-weight:700;text-transform:uppercase}.kpi strong{margin-top:4px;font-size:15px}
+          h2{margin:15px 0 6px;color:#002855;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+          table{width:100%;border-collapse:collapse;break-inside:avoid}th,td{padding:6px;border:1px solid #cbd6df;text-align:left;vertical-align:top}th{background:#eaf0f5;font-size:7px;text-transform:uppercase}
+          .columns{display:grid;grid-template-columns:1.45fr .8fr;gap:10px;align-items:start;margin-top:2px}.columns table{break-inside:auto}
+          .delivery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 8px}.delivery div{padding:8px;text-align:center;background:#f2f5f7}.delivery strong,.delivery span{display:block}.delivery strong{font-size:15px}.delivery span{margin-top:2px;color:#6d7b89;font-size:7px;text-transform:uppercase}
+          .insights{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;break-inside:avoid}.insight{padding:9px;border:1px solid #d7e0e7;background:#fbfcfd}.insight strong{display:block;margin-bottom:3px;color:#002855}.insight p{margin:0;color:#5d6e7f;line-height:1.4}
+          .notice{margin-top:10px;padding:8px;border-left:4px solid #c18a2b;background:#fff8e9;color:#674c1e;break-inside:avoid}
+          footer{display:flex;justify-content:space-between;margin-top:12px;padding-top:6px;border-top:1px solid #d7e0e7;color:#8c99a5;font-size:7px}
+          .empty{padding:16px;text-align:center;color:#748392;font-style:italic}
+        </style>
+      </head>
+      <body>
+        <header>
+          <div class="brand"><div class="mark">MP</div><div><h1>Raport statystyczny ProdFlow</h1><p class="subtitle">Produkcja, terminowość, jakość i wykorzystanie maszyn</p></div></div>
+          <div class="report-meta"><strong>Masterpress S.A.</strong><span>Wygenerowano: ${escapeHtml(generatedAt)}</span></div>
+        </header>
+        <section class="filters">
+          <div><span>Zakres</span><strong>${escapeHtml(period)}</strong></div>
+          <div><span>Maszyna</span><strong>${escapeHtml(machineFilter)}</strong></div>
+          <div><span>Klient</span><strong>${escapeHtml(clientFilter)}</strong></div>
+        </section>
+        <section class="kpis">
+          <div class="kpi"><span>Wolumen</span><strong>${escapeHtml(formatNumber(volume))}</strong></div>
+          <div class="kpi"><span>Wykorzystanie</span><strong>${utilization.toFixed(1)}%</strong></div>
+          <div class="kpi"><span>Terminowość</span><strong>${onTime.toFixed(1)}%</strong></div>
+          <div class="kpi"><span>Odpady</span><strong>${waste.toFixed(1)}%</strong></div>
+          <div class="kpi"><span>Zlecenia</span><strong>${escapeHtml(formatNumber(orderCount))}</strong></div>
+        </section>
+        <h2>Wynik według maszyn</h2>
+        <table>
+          <thead><tr><th>Maszyna</th><th>Wolumen</th><th>Wykorzystanie</th><th>Terminowość</th><th>Odpady</th><th>Ocena</th></tr></thead>
+          <tbody>${machineRows || '<tr><td class="empty" colspan="6">Brak danych o maszynach dla wybranych filtrów.</td></tr>'}</tbody>
+        </table>
+        <div class="columns">
+          <section><h2>Klienci według wolumenu</h2><table><thead><tr><th>Lp.</th><th>Klient</th><th>Zlecenia</th><th>Wolumen</th></tr></thead><tbody>${clientRows || '<tr><td class="empty" colspan="4">Brak danych o klientach.</td></tr>'}</tbody></table></section>
+          <section><h2>Terminowość</h2><div class="delivery"><div><strong>${currentData.delivery.onTime}%</strong><span>na czas</span></div><div><strong>${currentData.delivery.delayed}%</strong><span>opóźnione</span></div><div><strong>${currentData.delivery.critical}%</strong><span>krytyczne</span></div></div><h2>Reklamacje</h2><table><thead><tr><th>Przyczyna</th><th>Udział</th></tr></thead><tbody>${complaintRows || '<tr><td class="empty" colspan="2">Brak reklamacji.</td></tr>'}</tbody></table></section>
+        </div>
+        <section class="insights">
+          <div class="insight"><strong>Najlepszy wynik</strong><p>${best ? `${escapeHtml(best.name)} — ocena ${best.score}/100, wykorzystanie ${best.utilization}%.` : "Brak danych do porównania."}</p></div>
+          <div class="insight"><strong>Obszar do sprawdzenia</strong><p>${attention ? `${escapeHtml(attention.name)} — ocena ${attention.score}/100, odpady ${attention.waste}%.` : "Brak danych do porównania."}</p></div>
+        </section>
+        <div class="notice"><strong>OEE:</strong> wskaźnik nie jest jeszcze liczony w tym raporcie. Definicję źródeł czasu, dostępności, wydajności i jakości trzeba zatwierdzić z biznesem.</div>
+        <footer><span>ProdFlow · raport operacyjny</span><span>${escapeHtml(generatedAt)}</span></footer>
+      </body></html>`;
+  }
 
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "prodflow-statystyka.csv";
-    link.click();
-
-    URL.revokeObjectURL(url);
+  function exportPdf() {
+    const html = statisticsReportHtml();
+    window.ProdFlow = window.ProdFlow || {};
+    window.ProdFlow.lastStatisticsReportHtml = html;
+    const reportWindow = window.open("", "_blank", "width=1000,height=780");
+    if (!reportWindow) {
+      window.alert("Przeglądarka zablokowała raport. Zezwól na wyskakujące okna i spróbuj ponownie.");
+      return;
+    }
+    reportWindow.document.open();
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+    reportWindow.focus();
+    window.setTimeout(() => reportWindow.print(), 300);
   }
 
   function clearFilters() {
@@ -555,7 +652,7 @@ function initStatistics() {
   });
 
   $("statisticsClearFilters").addEventListener("click", clearFilters);
-  $("statisticsExportBtn").addEventListener("click", exportCsv);
+  $("statisticsExportBtn").addEventListener("click", exportPdf);
 
   $("statisticsRefreshBtn").addEventListener("click", () => {
     loadStoreData();
@@ -570,13 +667,19 @@ function initStatistics() {
 
   let resizeTimer;
 
-  window.addEventListener("resize", () => {
+  const handleResize = () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       drawProductionChart();
       drawDeliveryChart();
     }, 120);
-  });
+  };
+
+  window.addEventListener("resize", handleResize);
+  window.addEventListener("prodflow:module-unload", () => {
+    clearTimeout(resizeTimer);
+    window.removeEventListener("resize", handleResize);
+  }, { once: true });
 
   [
     "store:order-created",

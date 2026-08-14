@@ -443,6 +443,10 @@
         goodQuantity: 0,
         rejectedQuantity: 0,
         downtimeMinutes: 0,
+        timeSegments: [],
+        reports: [],
+        materialWithdrawals: [],
+        documentPrintBatches: [],
         notes: ""
       },
 

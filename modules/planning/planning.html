@@ -7,6 +7,7 @@
     </div>
 
     <div class="planning-header-actions">
+      <button class="planning-btn planning-btn-maintenance" id="planningMaintenanceBtn" type="button">Konserwacja maszyny</button>
       <button class="planning-btn planning-btn-light" id="planningAddBtn" type="button">Dodaj zlecenie</button>
       <button class="planning-btn planning-btn-primary" id="planningSaveBtn" type="button">Zapisz plan</button>
     </div>
@@ -79,7 +80,7 @@
       <button class="planning-dialog-close" value="cancel" aria-label="Zamknij">×</button>
 
       <div class="planning-dialog-head">
-        <span>Karta produkcyjna zlecenia</span>
+        <span id="planningDialogKind">Karta produkcyjna zlecenia</span>
         <h2 id="planningDialogOrder">—</h2>
         <p id="planningDialogProduct">—</p>
       </div>
@@ -140,6 +141,63 @@
       <div class="planning-dialog-actions">
         <button class="planning-btn planning-btn-light" value="cancel">Anuluj</button>
         <button class="planning-btn planning-btn-primary" id="planningCreateOrderBtn" type="button">Dodaj zlecenie</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="planning-dialog planning-maintenance-dialog" id="planningMaintenanceDialog">
+    <form method="dialog" class="planning-dialog-card">
+      <button class="planning-dialog-close" value="cancel" aria-label="Zamknij">×</button>
+
+      <div class="planning-dialog-head planning-maintenance-head">
+        <span>Plan techniczny</span>
+        <h2>Zlecenie konserwacji maszyny</h2>
+        <p>Zaplanuj mycie, czyszczenie albo przegląd jako osobne zadanie widoczne na tablicy.</p>
+      </div>
+
+      <div class="planning-form-grid">
+        <label>
+          <span>Maszyna *</span>
+          <input id="planningMaintenanceMachine" type="text" list="planningMaintenanceMachines" placeholder="np. W&H 1">
+          <datalist id="planningMaintenanceMachines"></datalist>
+        </label>
+
+        <label>
+          <span>Rodzaj konserwacji *</span>
+          <select id="planningMaintenanceType">
+            <option value="Czyszczenie standardowe">Czyszczenie standardowe</option>
+            <option value="Mycie kompletne">Mycie kompletne</option>
+            <option value="Konserwacja prewencyjna">Konserwacja prewencyjna</option>
+            <option value="Przegląd techniczny">Przegląd techniczny</option>
+          </select>
+        </label>
+
+        <label><span>Data *</span><input id="planningMaintenanceDate" type="date"></label>
+        <label><span>Godzina rozpoczęcia</span><input id="planningMaintenanceTime" type="time" value="06:00"></label>
+        <label><span>Planowany czas</span><input id="planningMaintenanceDuration" type="number" min="15" step="15" value="60"></label>
+        <label>
+          <span>Priorytet</span>
+          <select id="planningMaintenancePriority">
+            <option>Normalny</option>
+            <option>Wysoki</option>
+            <option>Krytyczny</option>
+          </select>
+        </label>
+
+        <label class="planning-full"><span>Zakres / uwagi</span><textarea id="planningMaintenanceNote" rows="3" placeholder="Dodatkowe czynności, środki lub instrukcje..."></textarea></label>
+      </div>
+
+      <div class="planning-maintenance-checklist">
+        <strong>Lista kontrolna dla operatora</strong>
+        <label><input type="checkbox" name="maintenanceTask" value="Oczyścić prowadzenie materiału" checked> Oczyścić prowadzenie materiału</label>
+        <label><input type="checkbox" name="maintenanceTask" value="Umyć zespoły robocze" checked> Umyć zespoły robocze</label>
+        <label><input type="checkbox" name="maintenanceTask" value="Sprawdzić osłony i zabezpieczenia" checked> Sprawdzić osłony i zabezpieczenia</label>
+        <label><input type="checkbox" name="maintenanceTask" value="Wykonać próbę po konserwacji" checked> Wykonać próbę po konserwacji</label>
+      </div>
+
+      <div class="planning-dialog-actions">
+        <button class="planning-btn planning-btn-light" value="cancel">Anuluj</button>
+        <button class="planning-btn planning-btn-maintenance" id="planningCreateMaintenanceBtn" type="button">Dodaj do planu</button>
       </div>
     </form>
   </dialog>
