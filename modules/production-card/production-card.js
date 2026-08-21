@@ -71,6 +71,7 @@ let currentOrderId = sessionStorage.getItem(
   const FIELD_IDS = [
     "orderNumber",
     "clientOrderNumber",
+    "printOrderNumber",
     "priority",
     "client",
     "clientIndex",
@@ -1543,7 +1544,10 @@ let currentOrderId = sessionStorage.getItem(
     const openButton = getElement("graphicPdfOpenBtn");
     const removeButton = getElement("graphicPdfRemoveBtn");
 
-    const hasFile = Boolean(graphicPdfAttachment?.dataUrl);
+    const hasFile = Boolean(
+      graphicPdfAttachment?.dataUrl ||
+      graphicPdfAttachment?.url
+    );
     panel?.classList.toggle("has-file", hasFile);
 
     if (status) {
@@ -1557,7 +1561,11 @@ let currentOrderId = sessionStorage.getItem(
   }
 
   function openGraphicAttachment() {
-    if (!graphicPdfAttachment?.dataUrl) {
+    const attachmentUrl =
+      graphicPdfAttachment?.url ||
+      graphicPdfAttachment?.dataUrl;
+
+    if (!attachmentUrl) {
       showToast("Brak załącznika PDF.", "warning");
       return;
     }
@@ -1568,38 +1576,65 @@ let currentOrderId = sessionStorage.getItem(
       return;
     }
     opened.opener = null;
-    opened.location.href = graphicPdfAttachment.dataUrl;
+    opened.location.href = attachmentUrl;
   }
 
-  function readGraphicAttachment(file) {
+  async function readGraphicAttachment(file) {
     if (!file || (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"))) {
       showToast("Wybierz plik PDF.", "warning");
       return;
     }
 
-    const maxSize = 3 * 1024 * 1024;
+    const maxSize = 25 * 1024 * 1024;
     if (file.size > maxSize) {
-      showToast("W wersji testowej załącznik może mieć maksymalnie 3 MB.", "warning");
+      showToast("Załącznik może mieć maksymalnie 25 MB.", "warning");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
+    const api = window.ProdFlow?.api;
+    if (!api?.uploadAttachment) {
+      showToast("Usługa załączników nie jest dostępna.", "error");
+      return;
+    }
+
+    if (!currentOrderId) {
+      saveCard({
+        silent: true,
+        historyMessage: "Utworzono kartę przed dodaniem załącznika"
+      });
+    }
+
+    const status = getElement("graphicPdfStatus");
+    if (status) status.textContent = `Wysyłanie ${file.name}…`;
+
+    try {
+      const uploaded = await api.uploadAttachment(
+        file,
+        currentOrderId,
+        "production-graphic"
+      );
       graphicPdfAttachment = {
-        name: file.name,
-        type: "application/pdf",
-        size: file.size,
-        dataUrl: String(reader.result || ""),
-        addedAt: new Date().toISOString()
+        id: uploaded.id,
+        name: uploaded.name || file.name,
+        type: uploaded.type || "application/pdf",
+        size: uploaded.size || file.size,
+        url: uploaded.url,
+        addedAt: uploaded.createdAt || new Date().toISOString()
       };
       renderGraphicAttachment();
       addHistory("Dodano załącznik grafiki", file.name);
-      debounceAutoSave();
-    };
-    reader.onerror = () => {
-      showToast("Nie udało się odczytać pliku PDF.", "error");
-    };
-    reader.readAsDataURL(file);
+      saveCard({
+        silent: true,
+        historyMessage: "Zapisano załącznik grafiki"
+      });
+      showToast("Załącznik został zapisany na serwerze.", "success");
+    } catch (error) {
+      renderGraphicAttachment();
+      showToast(
+        error?.message || "Nie udało się wysłać pliku PDF.",
+        "error"
+      );
+    }
   }
 
   function bindGraphicAttachment() {
@@ -1612,12 +1647,27 @@ let currentOrderId = sessionStorage.getItem(
       input.value = "";
     });
     getElement("graphicPdfOpenBtn")?.addEventListener("click", openGraphicAttachment);
-    getElement("graphicPdfRemoveBtn")?.addEventListener("click", () => {
+    getElement("graphicPdfRemoveBtn")?.addEventListener("click", async () => {
       if (!graphicPdfAttachment) return;
+      const attachmentId = graphicPdfAttachment.id;
+      if (attachmentId && window.ProdFlow?.api?.deleteAttachment) {
+        try {
+          await window.ProdFlow.api.deleteAttachment(attachmentId);
+        } catch (error) {
+          showToast(
+            error?.message || "Nie udało się usunąć załącznika.",
+            "error"
+          );
+          return;
+        }
+      }
       graphicPdfAttachment = null;
       renderGraphicAttachment();
       addHistory("Usunięto załącznik grafiki", "Usunięto wzór i siatkę projektu.");
-      debounceAutoSave();
+      saveCard({
+        silent: true,
+        historyMessage: "Usunięto załącznik grafiki"
+      });
     });
 
     renderGraphicAttachment();
@@ -2018,6 +2068,7 @@ let currentOrderId = sessionStorage.getItem(
               )
             : 0,
         palletType: fields.palletTypeSelect || "",
+        unitsPerPallet: toNumber(fields.qtyPallet),
         palletsCount:
           toNumber(fields.qtyPallet) > 0
             ? Math.ceil(
@@ -2035,6 +2086,11 @@ let currentOrderId = sessionStorage.getItem(
         ...(existingOrder?.logistics || {}),
         deliveryDate: fields.deliveryDate || "",
         notes: fields.notes || ""
+      },
+
+      production: {
+        ...(existingOrder?.production || {}),
+        printOrderNumber: fields.printOrderNumber || ""
       },
 
       quality: existingOrder?.quality || {},
@@ -2066,7 +2122,7 @@ let currentOrderId = sessionStorage.getItem(
             ? cardData.silicone
             : [],
           graphicAttachment:
-            cardData.graphicAttachment?.dataUrl
+            (cardData.graphicAttachment?.dataUrl || cardData.graphicAttachment?.url)
               ? { ...cardData.graphicAttachment }
               : null,
           history: normalizeHistory(
@@ -2112,7 +2168,7 @@ let currentOrderId = sessionStorage.getItem(
             : [],
 
         graphicAttachment:
-          savedCard.graphicAttachment?.dataUrl
+          (savedCard.graphicAttachment?.dataUrl || savedCard.graphicAttachment?.url)
             ? { ...savedCard.graphicAttachment }
             : null,
 
@@ -2211,6 +2267,9 @@ let currentOrderId = sessionStorage.getItem(
         clientOrderNumber:
           order.order?.customerOrderNumber || "",
 
+        printOrderNumber:
+          order.production?.printOrderNumber || "",
+
         priority:
           order.order?.priority || "normal",
 
@@ -2308,7 +2367,7 @@ let currentOrderId = sessionStorage.getItem(
         qtyCarton:
           order.packing?.unitsPerPackage || "",
 
-        qtyPallet: "",
+        qtyPallet: order.packing?.unitsPerPallet || "",
         qtyLayer: "",
 
         labelTypeSelect:
@@ -2329,7 +2388,8 @@ let currentOrderId = sessionStorage.getItem(
       inks,
       silicone,
       graphicAttachment:
-        order.metadata?.productionCard?.graphicAttachment?.dataUrl
+        (order.metadata?.productionCard?.graphicAttachment?.dataUrl ||
+          order.metadata?.productionCard?.graphicAttachment?.url)
           ? { ...order.metadata.productionCard.graphicAttachment }
           : null,
       history: []
@@ -2343,7 +2403,7 @@ let currentOrderId = sessionStorage.getItem(
       silicone: Array.isArray(data?.silicone)
         ? data.silicone
         : [],
-      graphicAttachment: data?.graphicAttachment?.dataUrl
+      graphicAttachment: (data?.graphicAttachment?.dataUrl || data?.graphicAttachment?.url)
         ? { ...data.graphicAttachment }
         : null
     };
@@ -3177,7 +3237,7 @@ let currentOrderId = sessionStorage.getItem(
 
       isRestoringData = true;
 
-      graphicPdfAttachment = data.graphicAttachment?.dataUrl
+      graphicPdfAttachment = (data.graphicAttachment?.dataUrl || data.graphicAttachment?.url)
         ? { ...data.graphicAttachment }
         : null;
 

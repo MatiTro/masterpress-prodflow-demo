@@ -31,6 +31,7 @@
         <div class="hmi-job__tools">
           <span id="productionPriority">—</span>
           <button type="button" data-production-action="production-card">Karta produkcyjna</button>
+          <button type="button" data-production-action="pallet-history">Kontrole palet · <b id="productionPalletCount">0</b></button>
         </div>
       </div>
 
@@ -110,6 +111,9 @@
       </div>
       <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
         <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
+      </button>
+      <button class="hmi-action hmi-action--pallet" id="productionPalletBtn" type="button" data-production-action="pallet-check">
+        <span>▦</span><div><strong>Zakończ paletę</strong><small>Kontrola palety nr <b id="productionNextPallet">1</b></small></div>
       </button>
       <button class="hmi-action hmi-action--correct" id="productionCorrectReportBtn" type="button" data-production-action="correct-report">
         <span>✎</span><div><strong>Korekta raportu</strong><small>Popraw błędną ilość</small></div>

@@ -216,7 +216,7 @@ function initPpwr() {
       latest?.fields?.preparedBy ||
       loggedUserName();
 
-    projectAttachment = card.graphicAttachment?.dataUrl
+    projectAttachment = (card.graphicAttachment?.dataUrl || card.graphicAttachment?.url)
       ? { ...card.graphicAttachment }
       : null;
 
@@ -914,7 +914,7 @@ function initPpwr() {
   function loadDraft() {
     const order = resolveOrder();
     const attachment = order?.metadata?.productionCard?.graphicAttachment;
-    projectAttachment = attachment?.dataUrl
+    projectAttachment = (attachment?.dataUrl || attachment?.url)
       ? { ...attachment }
       : null;
     const records = Array.isArray(order?.ppwr) ? order.ppwr : [];
@@ -968,7 +968,7 @@ function initPpwr() {
     const panel = $("ppwrProjectAttachment");
     const name = $("ppwrProjectAttachmentName");
     const button = $("ppwrProjectAttachmentOpen");
-    const hasFile = Boolean(projectAttachment?.dataUrl);
+    const hasFile = Boolean(projectAttachment?.dataUrl || projectAttachment?.url);
 
     panel?.classList.toggle("has-file", hasFile);
     if (name) {
@@ -980,14 +980,15 @@ function initPpwr() {
   }
 
   function openProjectAttachment() {
-    if (!projectAttachment?.dataUrl) return;
+    const attachmentUrl = projectAttachment?.url || projectAttachment?.dataUrl;
+    if (!attachmentUrl) return;
     const opened = window.open("", "_blank");
     if (!opened) {
       window.alert("Przeglądarka zablokowała otwarcie załącznika PDF.");
       return;
     }
     opened.opener = null;
-    opened.location.href = projectAttachment.dataUrl;
+    opened.location.href = attachmentUrl;
   }
 
   function readPhoto(file) {

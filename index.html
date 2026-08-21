@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/sygnet2x.png">
     <title>ProdFlow</title>
-    <link rel="stylesheet" href="app.css?v=0.6.0-test-20260814">
+    <link rel="stylesheet" href="app.css?v=0.8.0-server">
 </head>
 
 <body>
@@ -68,7 +68,7 @@
                 </button>
 
                 <p class="pf-login__presentation">
-                    Dostęp prezentacyjny: <strong>admin</strong> / <strong>admin</strong>
+                    Zaloguj się kontem stanowiskowym nadanym przez administratora.
                 </p>
             </form>
         </div>
@@ -100,30 +100,44 @@
 
                 <div class="menu-title">Produkcja</div>
 
-                <a href="#" data-module="productionCard">Karta produkcyjna</a>
-                <a href="#" data-module="planning">Planowanie</a>
-                <a href="#" data-module="production">Produkcja</a>
+                <a href="#" data-module="productionCard" data-roles="admin,planner,operator,quality">Karta produkcyjna</a>
+                <a href="#" data-module="planning" data-roles="admin,planner">Planowanie</a>
+                <a href="#" data-module="production" data-roles="admin,planner,operator">Produkcja</a>
 
                 <div class="menu-title">Logistyka</div>
 
-                <a href="#" data-module="warehouse">Magazyn</a>
+                <a href="#" data-module="warehouse" data-roles="admin,warehouse,operator">Magazyn</a>
 
                 <div class="menu-title">Jakość</div>
 
-                <a href="#" data-module="complaints">Reklamacje</a>
-                <a href="#" data-module="ppwr">PPWR</a>
+                <a href="#" data-module="complaints" data-roles="admin,quality">Reklamacje</a>
+                <a href="#" data-module="ppwr" data-roles="admin,planner,quality">PPWR</a>
 
                 <div class="menu-title">Narzędzia</div>
 
-                <a href="#" data-module="labels">Etykiety</a>
-                <a href="#" data-module="history">Historia</a>
-                <a href="#" data-module="statistics">Statystyki</a>
+                <a href="#" data-module="labels" data-roles="admin,planner,operator,warehouse">Etykiety</a>
+                <a href="#" data-module="history" data-roles="admin,planner,quality,warehouse">Historia</a>
+                <a href="#" data-module="statistics" data-roles="admin,planner,viewer">Statystyki</a>
+
+                <div class="menu-title" data-roles="admin">Administracja</div>
+
+                <a href="#" data-module="admin" data-roles="admin">Konta i dostęp</a>
 
             </nav>
 
             <div class="sidebar-footer">
-                <strong>ProdFlow</strong><br>
-                <span>Wersja 0.6.0 TEST</span>
+                <div class="pf-session-user">
+                    <span class="pf-session-user__avatar" id="prodflowUserAvatar">PF</span>
+                    <span class="pf-session-user__copy">
+                        <strong id="prodflowUserName">—</strong>
+                        <small id="prodflowUserRole">—</small>
+                    </span>
+                    <button id="prodflowLogout" type="button" title="Wyloguj">↪</button>
+                </div>
+                <div class="pf-server-status" id="prodflowServerStatus">
+                    <i></i><span>Łączenie z serwerem…</span>
+                </div>
+                <span>ProdFlow 0.8.0 SERVER PILOT</span>
             </div>
 
         </aside>
@@ -134,15 +148,16 @@
         <main id="content"></main>
 
     </div>
-<script src="assets/js/core/prodflow-events.js?v=0.6.0-test-20260814"></script>
-<script src="assets/js/core/prodflow-utils.js?v=0.6.0-test-20260814"></script>
-<script src="assets/js/core/prodflow-store.js?v=0.6.0-test-20260814"></script>
-<script src="assets/js/core/prodflow-core.js?v=0.6.0-test-20260814"></script>
+<script src="assets/js/core/prodflow-events.js?v=0.8.0-server"></script>
+<script src="assets/js/core/prodflow-utils.js?v=0.8.0-server"></script>
+<script src="assets/js/core/prodflow-api.js?v=0.8.0-server"></script>
+<script src="assets/js/core/prodflow-store.js?v=0.8.0-server"></script>
+<script src="assets/js/core/prodflow-core.js?v=0.8.0-server"></script>
 <script src="assets/vendor/jsbarcode/jsbarcode.all.min.js?v=3.12.3"></script>
     
-<script src="assets/js/modules.js?v=0.6.0-test-20260814"></script>
-<script src="assets/js/router.js?v=0.6.0-test-20260814"></script>
-<script src="app.js?v=0.6.0-test-20260814"></script>
+<script src="assets/js/modules.js?v=0.8.0-server"></script>
+<script src="assets/js/router.js?v=0.8.0-server"></script>
+<script src="app.js?v=0.8.0-server"></script>
 
 </body>
 

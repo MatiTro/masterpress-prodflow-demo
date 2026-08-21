@@ -1,7 +1,7 @@
 let currentCss = null;
 let currentScript = null;
 let navigationRequestId = 0;
-const PROD_FLOW_ASSET_VERSION = "0.6.0-test-20260814";
+const PROD_FLOW_ASSET_VERSION = "0.8.0-server-20260821";
 
 function versionedAsset(path) {
     const separator = path.includes("?") ? "&" : "?";
@@ -20,6 +20,18 @@ async function loadModule(moduleKey) {
 
     if (!content) {
         console.error("Nie znaleziono kontenera #content.");
+        return;
+    }
+
+    const permissionLink = document.querySelector(`[data-module="${moduleKey}"]`);
+    const allowedRoles = String(permissionLink?.dataset.roles || "")
+        .split(",")
+        .map(role => role.trim())
+        .filter(Boolean);
+    const currentRole = window.ProdFlow?.currentUser?.role || "";
+    if (allowedRoles.length && !allowedRoles.includes(currentRole)) {
+        window.alert("Twoje konto nie ma dostępu do tego modułu.");
+        if (moduleKey !== "dashboard") loadModule("dashboard");
         return;
     }
 

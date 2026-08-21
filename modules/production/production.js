@@ -33,10 +33,22 @@
             elapsedSeconds: 0,
             downtimeMinutes: 0,
             materials: [],
+            productCode: "",
+            printOrderNumber: "",
+            nominalDimensions: {
+                width: 0,
+                length: 0,
+                bottom: 0,
+                flap: 0
+            },
+            plannedPallets: 0,
+            unitsPerPallet: 0,
             timeSegments: [],
             reports: [],
             withdrawals: [],
             printBatches: [],
+            lineClearance: null,
+            palletChecks: [],
             events: []
         };
     }
@@ -121,6 +133,7 @@
             order.metadata?.productionCard?.fields || {};
         const settings =
             order.metadata?.productionSettings || {};
+        const dimensions = order.product?.dimensions || {};
         const firstMaterial =
             Array.isArray(order.materials)
                 ? order.materials.find(item =>
@@ -214,6 +227,23 @@
             downtimeMinutes:
                 Number(production.downtimeMinutes) || 0,
             materials,
+            productCode: order.product?.code || "",
+            printOrderNumber:
+                cardFields.printOrderNumber ||
+                order.production?.printOrderNumber ||
+                "",
+            nominalDimensions: {
+                width: Number(dimensions.width) || 0,
+                length: Number(dimensions.height) || 0,
+                bottom: Number(dimensions.bottomGusset) || 0,
+                flap: Number(dimensions.length) || 0
+            },
+            plannedPallets:
+                Number(order.packing?.palletsCount) ||
+                (Number(order.packing?.unitsPerPallet) > 0
+                    ? Math.ceil(planned / Number(order.packing.unitsPerPallet))
+                    : 0),
+            unitsPerPallet: Number(order.packing?.unitsPerPallet) || 0,
             timeSegments:
                 Array.isArray(production.timeSegments)
                     ? production.timeSegments
@@ -229,6 +259,14 @@
             printBatches:
                 Array.isArray(production.documentPrintBatches)
                     ? production.documentPrintBatches
+                    : [],
+            lineClearance:
+                production.lineClearance && typeof production.lineClearance === "object"
+                    ? production.lineClearance
+                    : null,
+            palletChecks:
+                Array.isArray(production.palletChecks)
+                    ? production.palletChecks
                     : [],
             events:
                 Array.isArray(runtime.events)
@@ -321,7 +359,11 @@
                     materialWithdrawals:
                         state.withdrawals,
                     documentPrintBatches:
-                        state.printBatches
+                        state.printBatches,
+                    lineClearance:
+                        state.lineClearance,
+                    palletChecks:
+                        state.palletChecks
                 },
                 metadata: {
                     productionRuntime: {
@@ -552,6 +594,22 @@
         if (correctionButton) {
             correctionButton.disabled = !state.orderId || !state.reports.length;
         }
+        const palletButton = $("#productionPalletBtn");
+        const palletHistoryButton = $("[data-production-action=\"pallet-history\"]");
+        const palletCount = $("#productionPalletCount");
+        const nextPallet = $("#productionNextPallet");
+        const completedPallets = state.palletChecks.length;
+        if (palletButton) {
+            palletButton.disabled = !state.orderId || state.status === "finished";
+        }
+        if (palletHistoryButton) {
+            palletHistoryButton.disabled = !state.orderId;
+            palletHistoryButton.title = completedPallets
+                ? `${completedPallets} zapisanych kontroli palet`
+                : "Nie zapisano jeszcze żadnej kontroli palety";
+        }
+        if (palletCount) palletCount.textContent = formatNumber(completedPallets);
+        if (nextPallet) nextPallet.textContent = formatNumber(nextPalletNumber());
         const startLabel = $("#productionStartLabel");
         if (startLabel) {
             startLabel.textContent =
@@ -678,6 +736,10 @@
         const submitButton = $("#productionModalForm")
             .querySelector('[type="submit"]');
         submitButton.hidden = Boolean(config.readOnly);
+        submitButton.textContent = config.submitLabel || "Zapisz";
+
+        const dialog = $("#productionModal .hmi-modal__dialog");
+        dialog?.classList.toggle("is-wide", Boolean(config.wide));
 
         const modal = $("#productionModal");
         modal.classList.add("is-open");
@@ -697,6 +759,11 @@
         $("#productionModalForm")
             .querySelector('[type="submit"]')
             .hidden = false;
+        $("#productionModalForm")
+            .querySelector('[type="submit"]')
+            .textContent = "Zapisz";
+        $("#productionModal .hmi-modal__dialog")
+            ?.classList.remove("is-wide");
         $("#productionModalForm").reset();
     }
 
@@ -779,6 +846,334 @@
             hour: "2-digit",
             minute: "2-digit"
         }).format(new Date(value));
+    }
+
+    function nextPalletNumber() {
+        const highest = state.palletChecks.reduce(
+            (value, record) => Math.max(value, Number(record?.palletNumber) || 0),
+            0
+        );
+        return highest + 1;
+    }
+
+    function dimensionText(dimensions = state.nominalDimensions) {
+        const values = [
+            dimensions?.width,
+            dimensions?.length,
+            dimensions?.bottom,
+            dimensions?.flap
+        ];
+        return values.some(value => Number(value) > 0)
+            ? values.map(value => Number(value) || 0).join(" × ") + " mm"
+            : "brak wymiarów w Karcie Produkcyjnej";
+    }
+
+    function palletResultControl(name, title, description) {
+        return `
+            <fieldset class="pallet-check-field">
+                <legend>${escapeHtml(title)}</legend>
+                <small>${escapeHtml(description)}</small>
+                <div class="pallet-check-options">
+                    <label class="pallet-check-option is-pass">
+                        <input type="radio" name="${escapeHtml(name)}" value="P" required>
+                        <span><b>✓</b>Zgodne</span>
+                    </label>
+                    <label class="pallet-check-option is-fail">
+                        <input type="radio" name="${escapeHtml(name)}" value="N" required>
+                        <span><b>×</b>Niezgodne</span>
+                    </label>
+                </div>
+            </fieldset>`;
+    }
+
+    function openLineClearanceModal(afterConfirmation) {
+        const nominal = dimensionText();
+        openModal({
+            eyebrow: "Kontrola przed rozpoczęciem",
+            title: "Potwierdź przygotowanie linii",
+            description: "To potwierdzenie jest wymagane jeden raz przed rozpoczęciem zlecenia.",
+            submitLabel: "Potwierdź i rozpocznij",
+            fields: `
+                <div class="pallet-order-summary">
+                    <div><span>Zlecenie</span><strong>${escapeHtml(state.orderNumber || "—")}</strong></div>
+                    <div><span>Produkt</span><strong>${escapeHtml(state.product || "—")}</strong></div>
+                    <div><span>Wymiar nominalny</span><strong>${escapeHtml(nominal)}</strong></div>
+                    <div><span>Operator</span><strong>${escapeHtml(state.operator || "—")}</strong></div>
+                </div>
+                <label class="line-clearance-confirmation">
+                    <input type="checkbox" name="lineCleaned" value="yes" required>
+                    <span>
+                        <strong>Linia została oczyszczona</strong>
+                        <small>Brak zbędnych komponentów, czyste stoły, maszyna i podłoga.</small>
+                    </span>
+                </label>
+                <div class="pf-field">
+                    <label for="lineClearanceNote">Uwagi</label>
+                    <textarea id="lineClearanceNote" name="note" placeholder="Opcjonalnie..."></textarea>
+                </div>`,
+            onSubmit: form => {
+                const data = new FormData(form);
+                if (data.get("lineCleaned") !== "yes") {
+                    showToast("Potwierdź oczyszczenie linii przed rozpoczęciem.");
+                    return;
+                }
+                const now = new Date();
+                state.lineClearance = {
+                    confirmed: true,
+                    confirmedAt: now.toISOString(),
+                    operator: state.operator,
+                    shift: getShiftInfo(now).number,
+                    note: String(data.get("note") || "").trim()
+                };
+                closeModal();
+                addEvent(
+                    "Potwierdzono oczyszczenie linii",
+                    `${state.operator || "Operator"} · zmiana ${state.lineClearance.shift}.`,
+                    "success"
+                );
+                showToast("Przygotowanie linii zostało zapisane.");
+                if (typeof afterConfirmation === "function") {
+                    window.setTimeout(afterConfirmation, 0);
+                }
+            }
+        });
+    }
+
+    function openPalletCheckModal() {
+        if (!requireActive()) return;
+        if (!state.lineClearance?.confirmedAt) {
+            openLineClearanceModal(openPalletCheckModal);
+            return;
+        }
+
+        const palletNumber = nextPalletNumber();
+        const previous = state.palletChecks[state.palletChecks.length - 1] || {};
+        const nominal = state.nominalDimensions;
+        openModal({
+            eyebrow: "Lista kontrolna JB",
+            title: `Kontrola palety nr ${palletNumber}`,
+            description: "Zmierz gotowy wyrób i potwierdź każdą pozycję. Niezgodność wymaga wpisania uwagi.",
+            wide: true,
+            submitLabel: "Zatwierdź paletę",
+            fields: `
+                <div class="pallet-order-summary">
+                    <div><span>Zlecenie</span><strong>${escapeHtml(state.orderNumber || "—")}</strong></div>
+                    <div><span>Produkt</span><strong>${escapeHtml(state.product || "—")}</strong></div>
+                    <div><span>Indeks</span><strong>${escapeHtml(state.productCode || "—")}</strong></div>
+                    <div><span>Wymiar nominalny</span><strong>${escapeHtml(dimensionText())}</strong></div>
+                    <div><span>Paleta</span><strong>${escapeHtml(palletNumber)}${state.plannedPallets ? ` / ${escapeHtml(state.plannedPallets)}` : ""}</strong></div>
+                    <div><span>Operator / zmiana</span><strong>${escapeHtml(state.operator || "—")} · ${escapeHtml(getShiftInfo().number)}</strong></div>
+                </div>
+                <section class="pallet-form-section">
+                    <header><span>1</span><div><strong>Identyfikacja materiałów</strong><small>Numery są przenoszone z poprzedniej palety — zmień je, jeśli partia się zmieniła.</small></div></header>
+                    <div class="operator-details-grid">
+                        <div class="pf-field">
+                            <label for="palletGlueBatch">Numer partii kleju</label>
+                            <input id="palletGlueBatch" name="glueBatch" value="${escapeHtml(previous.glueBatch || "")}" autocomplete="off" required>
+                        </div>
+                        <div class="pf-field">
+                            <label for="palletTapeBatch">Numer partii taśmy silikonowej</label>
+                            <input id="palletTapeBatch" name="siliconeBatch" value="${escapeHtml(previous.siliconeBatch || "")}" autocomplete="off" required>
+                        </div>
+                    </div>
+                </section>
+                <section class="pallet-form-section">
+                    <header><span>2</span><div><strong>Zmierzony wymiar koperty</strong><small>Szerokość × długość × dno × klapa, w milimetrach.</small></div></header>
+                    <div class="pallet-dimensions-grid">
+                        <label><span>Szerokość</span><input name="width" type="number" min="0" step="0.1" inputmode="decimal" placeholder="${escapeHtml(nominal.width || "0")}" required><small>nominalnie ${escapeHtml(nominal.width || "—")} mm</small></label>
+                        <label><span>Długość</span><input name="length" type="number" min="0" step="0.1" inputmode="decimal" placeholder="${escapeHtml(nominal.length || "0")}" required><small>nominalnie ${escapeHtml(nominal.length || "—")} mm</small></label>
+                        <label><span>Dno</span><input name="bottom" type="number" min="0" step="0.1" inputmode="decimal" placeholder="${escapeHtml(nominal.bottom || "0")}" required><small>nominalnie ${escapeHtml(nominal.bottom || "—")} mm</small></label>
+                        <label><span>Klapa</span><input name="flap" type="number" min="0" step="0.1" inputmode="decimal" placeholder="${escapeHtml(nominal.flap || "0")}" required><small>nominalnie ${escapeHtml(nominal.flap || "—")} mm</small></label>
+                    </div>
+                </section>
+                <section class="pallet-form-section">
+                    <header><span>3</span><div><strong>Kontrola zgodności</strong><small>Każdy punkt musi zostać oceniony.</small></div></header>
+                    <div class="pallet-check-grid">
+                        ${palletResultControl("gluePosition", "Klej i taśma", "Obecność i właściwe pozycjonowanie")}
+                        ${palletResultControl("closure", "Sklejenie i zamknięcie", "Poprawność wykonania koperty")}
+                        ${palletResultControl("barcode", "Kod kreskowy", "Poprawność i czytelność kodu")}
+                        ${palletResultControl("packaging", "Pakowanie", "Zgodność ze specyfikacją")}
+                        ${palletResultControl("labelPrint", "Etykieta i druk", "Właściwa etykieta oraz jakość druku")}
+                    </div>
+                </section>
+                <div class="pf-field">
+                    <label for="palletComments">Uwagi</label>
+                    <textarea id="palletComments" name="comments" placeholder="Obowiązkowe, jeśli zaznaczono niezgodność..."></textarea>
+                </div>`,
+            onSubmit: form => {
+                const data = new FormData(form);
+                const readMeasurement = name => Number(data.get(name));
+                const dimensions = {
+                    width: readMeasurement("width"),
+                    length: readMeasurement("length"),
+                    bottom: readMeasurement("bottom"),
+                    flap: readMeasurement("flap")
+                };
+                if (Object.values(dimensions).some(value => !Number.isFinite(value) || value < 0)) {
+                    showToast("Uzupełnij prawidłowe wymiary palety.");
+                    return;
+                }
+
+                const checks = {
+                    gluePosition: String(data.get("gluePosition") || ""),
+                    closure: String(data.get("closure") || ""),
+                    barcode: String(data.get("barcode") || ""),
+                    packaging: String(data.get("packaging") || ""),
+                    labelPrint: String(data.get("labelPrint") || "")
+                };
+                if (Object.values(checks).some(value => !["P", "N"].includes(value))) {
+                    showToast("Oceń wszystkie punkty kontroli.");
+                    return;
+                }
+
+                const comments = String(data.get("comments") || "").trim();
+                const nonconforming = Object.values(checks).includes("N");
+                if (nonconforming && !comments) {
+                    $("#palletComments")?.focus();
+                    showToast("Przy niezgodności wpisz wyjaśnienie w uwagach.");
+                    return;
+                }
+
+                const now = new Date();
+                const record = {
+                    id: `pallet-check-${Date.now()}`,
+                    palletNumber,
+                    status: nonconforming ? "nonconforming" : "accepted",
+                    orderNumber: state.orderNumber,
+                    printOrderNumber: state.printOrderNumber,
+                    product: state.product,
+                    productCode: state.productCode,
+                    nominalDimensions: { ...state.nominalDimensions },
+                    dimensions,
+                    glueBatch: String(data.get("glueBatch") || "").trim(),
+                    siliconeBatch: String(data.get("siliconeBatch") || "").trim(),
+                    checks,
+                    comments,
+                    operator: state.operator,
+                    shift: getShiftInfo(now).number,
+                    completedAt: now.toISOString()
+                };
+                state.palletChecks = [...state.palletChecks, record];
+                closeModal();
+                addEvent(
+                    `Zakończono kontrolę palety nr ${palletNumber}`,
+                    nonconforming
+                        ? `Paleta wstrzymana — wykryto niezgodność: ${comments}`
+                        : `Wszystkie punkty kontroli są zgodne. Wymiar: ${dimensionText(dimensions)}.`,
+                    nonconforming ? "warning" : "success"
+                );
+                showToast(nonconforming
+                    ? `Paleta nr ${palletNumber} została oznaczona jako niezgodna.`
+                    : `Paleta nr ${palletNumber} została zatwierdzona.`);
+            }
+        });
+    }
+
+    function palletStatusLabel(record) {
+        return record?.status === "nonconforming" ? "Niezgodna" : "Zgodna";
+    }
+
+    function openPalletHistory() {
+        if (!state.orderId) {
+            showToast("Najpierw wybierz zlecenie.");
+            return;
+        }
+        const rows = state.palletChecks.length
+            ? [...state.palletChecks].reverse().map(record => `
+                <article class="pallet-history-item ${record.status === "nonconforming" ? "is-fail" : "is-pass"}">
+                    <div class="pallet-history-number"><small>PALETA</small><strong>${escapeHtml(record.palletNumber)}</strong></div>
+                    <div>
+                        <strong>${escapeHtml(palletStatusLabel(record))}</strong>
+                        <small>${escapeHtml(dimensionText(record.dimensions))} · klej ${escapeHtml(record.glueBatch || "—")} · taśma ${escapeHtml(record.siliconeBatch || "—")}</small>
+                        <small>${escapeHtml(record.operator || "—")} · zmiana ${escapeHtml(record.shift || "—")} · ${escapeHtml(formatDocumentDate(record.completedAt))}</small>
+                        ${record.comments ? `<p>${escapeHtml(record.comments)}</p>` : ""}
+                    </div>
+                </article>`).join("")
+            : '<div class="pallet-history-empty">Nie zapisano jeszcze żadnej kontroli palety.</div>';
+        const clearance = state.lineClearance?.confirmedAt
+            ? `Potwierdzono ${formatDocumentDate(state.lineClearance.confirmedAt)} przez ${state.lineClearance.operator || "—"}`
+            : "Nie potwierdzono jeszcze oczyszczenia linii";
+        openModal({
+            eyebrow: "Dokumentacja zlecenia",
+            title: "Kontrole skompletowanych palet",
+            description: `${state.orderNumber} · ${state.product || "—"}`,
+            wide: true,
+            readOnly: true,
+            fields: `
+                <div class="pallet-history-toolbar">
+                    <div><span>Przygotowanie linii</span><strong>${escapeHtml(clearance)}</strong></div>
+                    <button type="button" data-production-action="print-pallet-checklist" ${state.palletChecks.length ? "" : "disabled"}>Drukuj / zapisz PDF</button>
+                </div>
+                <div class="pallet-history-list">${rows}</div>`
+        });
+    }
+
+    function palletChecklistHtml() {
+        const logoUrl = new URL("assets/images/logo_firmowe.png", document.baseURI).href;
+        const checkValue = (record, key) => record.checks?.[key] === "P" ? "P" : "N";
+        const rows = state.palletChecks.map(record => `
+            <tr class="${record.status === "nonconforming" ? "fail" : ""}">
+                <td><strong>${escapeHtml(record.palletNumber)}</strong></td>
+                <td>${escapeHtml(record.glueBatch || "—")}</td>
+                <td>${escapeHtml(record.siliconeBatch || "—")}</td>
+                <td>${escapeHtml(dimensionText(record.dimensions))}</td>
+                <td>${checkValue(record, "gluePosition")}</td>
+                <td>${checkValue(record, "closure")}</td>
+                <td>${checkValue(record, "barcode")}</td>
+                <td>${checkValue(record, "packaging")}</td>
+                <td>${checkValue(record, "labelPrint")}</td>
+                <td>${escapeHtml(record.comments || "—")}</td>
+                <td>${escapeHtml(formatDocumentDate(record.completedAt))}<br>Zm. ${escapeHtml(record.shift || "—")}</td>
+                <td>${escapeHtml(record.operator || "—")}</td>
+            </tr>`).join("");
+        const clearance = state.lineClearance || {};
+        return `<!doctype html>
+        <html lang="pl"><head><meta charset="utf-8"><title>Lista kontrolna JB - ${escapeHtml(state.orderNumber)}</title>
+        <style>
+          @page{size:A4 landscape;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#17283a;font:8px Arial,sans-serif}
+          header{display:grid;grid-template-columns:150px 1fr 175px;align-items:center;border:1.5px solid #173e63}header>div{min-height:54px;padding:8px;border-left:1px solid #9aabb9}header>div:first-child{border-left:0}header img{display:block;max-width:126px;max-height:34px;margin:auto}h1{margin:0;color:#002855;font-size:18px;text-align:center}header p{margin:3px 0 0;color:#53687a;text-align:center}.doc{text-align:right}.doc strong,.doc span{display:block}.doc span{margin-top:4px;color:#627585}
+          .meta{display:grid;grid-template-columns:1fr 1fr 1.35fr 1.4fr;gap:0;margin-top:6px;border:1px solid #70889b}.meta div{min-height:48px;padding:7px;border-left:1px solid #a8b6c1}.meta div:first-child{border-left:0}.meta span,.meta strong{display:block}.meta span{color:#617485;font-size:7px;text-transform:uppercase}.meta strong{margin-top:5px;font-size:10px}
+          .clearance{display:grid;grid-template-columns:1.5fr 3fr 1fr 1fr;margin:6px 0;border:1px solid #70889b}.clearance div{padding:7px;border-left:1px solid #a8b6c1}.clearance div:first-child{border-left:0}.clearance span,.clearance strong{display:block}.clearance span{color:#617485;font-size:7px;text-transform:uppercase}.clearance strong{margin-top:4px;font-size:9px}
+          table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th,td{padding:5px 3px;border:1px solid #7890a3;vertical-align:middle;text-align:center;overflow-wrap:anywhere}th{background:#e8eef3;color:#173e63;font-size:6.5px;line-height:1.25;text-transform:uppercase}td:nth-child(10){text-align:left}tr.fail td{background:#fff0f1;color:#8b2731}tbody tr{break-inside:avoid;height:28px}
+          .legend{display:flex;justify-content:space-between;margin-top:6px;color:#617485}.legend strong{color:#173e63}footer{position:fixed;right:0;bottom:0;color:#8292a0;font-size:7px}
+        </style></head><body>
+          <header><div><img src="${logoUrl}" alt="Masterpress"></div><div><h1>Lista kontrolna JB</h1><p>Checklist JB · elektroniczna kontrola skompletowanych palet</p></div><div class="doc"><strong>DOKUMENT ELEKTRONICZNY</strong><span>Wygenerowano: ${escapeHtml(formatDocumentDate(new Date()))}</span></div></header>
+          <section class="meta">
+            <div><span>Numer zlecenia JB</span><strong>${escapeHtml(state.orderNumber || "—")}</strong></div>
+            <div><span>Numer zlecenia z druku</span><strong>${escapeHtml(state.printOrderNumber || "—")}</strong></div>
+            <div><span>Wyrób / indeks</span><strong>${escapeHtml(state.product || "—")} ${state.productCode ? `· ${escapeHtml(state.productCode)}` : ""}</strong></div>
+            <div><span>Wymiar nominalny</span><strong>${escapeHtml(dimensionText())}</strong></div>
+          </section>
+          <section class="clearance">
+            <div><span>Oczyszczenie linii</span><strong>${clearance.confirmed ? "TAK / YES" : "NIE / NO"}</strong></div>
+            <div><span>Potwierdzenie</span><strong>Linia oczyszczona, brak zbędnych komponentów, czyste stoły, maszyna i podłoga</strong></div>
+            <div><span>Data / zmiana</span><strong>${clearance.confirmedAt ? escapeHtml(formatDocumentDate(clearance.confirmedAt)) : "—"}<br>${clearance.shift ? `Zm. ${escapeHtml(clearance.shift)}` : ""}</strong></div>
+            <div><span>Operator</span><strong>${escapeHtml(clearance.operator || "—")}</strong></div>
+          </section>
+          <table><colgroup><col style="width:4%"><col style="width:7%"><col style="width:8%"><col style="width:13%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:7%"><col style="width:14%"><col style="width:11%"><col style="width:12%"></colgroup>
+            <thead><tr><th>Paleta</th><th>Nr partii kleju</th><th>Nr partii taśmy silikonowej</th><th>Wymiary koperty<br>szer. × dł. × dno × klapa</th><th>Klej i taśma</th><th>Sklejenie i zamknięcie</th><th>Kod kreskowy</th><th>Pakowanie</th><th>Etykieta i jakość druku</th><th>Uwagi</th><th>Data / zmiana</th><th>Operator</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <div class="legend"><span><strong>P</strong> — poprawne / zgodne · <strong>N</strong> — niepoprawne / niezgodne</span><span>Palety: ${escapeHtml(state.palletChecks.length)}${state.plannedPallets ? ` / plan ${escapeHtml(state.plannedPallets)}` : ""}</span></div>
+          <footer>Dokument elektroniczny · Masterpress S.A.</footer>
+        </body></html>`;
+    }
+
+    function printPalletChecklist() {
+        if (!state.palletChecks.length) {
+            showToast("Brak zapisanych kontroli palet do wydrukowania.");
+            return;
+        }
+        const printWindow = window.open("", "_blank", "width=1240,height=820");
+        if (!printWindow) {
+            showToast("Przeglądarka zablokowała okno wydruku.");
+            return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(palletChecklistHtml());
+        printWindow.document.close();
+        printWindow.focus();
+        window.setTimeout(() => printWindow.print(), 350);
     }
 
     function isReportDocumentRelevant(record) {
@@ -995,43 +1390,23 @@
         }
     }
 
-    function prepareWarehouseEmail(issue) {
-        const recipient = String(
-            window.PRODFLOW_CONFIG?.warehouseEmail || ""
-        ).trim();
-        const subject = `Zapotrzebowanie na surowiec - ${state.orderNumber} - ${state.machine || "bez maszyny"}`;
-        const body = [
-            "Zapotrzebowanie materiałowe z panelu operatora",
-            "",
-            `Zlecenie: ${state.orderNumber}`,
-            `Maszyna: ${state.machine || "—"}`,
-            `Materiał: ${issue.material}${issue.materialCode ? ` (${issue.materialCode})` : ""}`,
-            `Ilość: ${issue.quantity}`,
-            `Priorytet: ${issue.priority}`,
-            `Operator: ${state.operator || "—"}`,
-            `Zmiana: ${issue.shift}`,
-            `Data zgłoszenia: ${formatDocumentDate(issue.createdAt)}`
-        ].join("\n");
-        const mailto = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-        window.ProdFlow = window.ProdFlow || {};
-        window.ProdFlow.lastWarehouseEmail = {
-            recipient,
-            subject,
-            body,
-            mailto
-        };
-
-        if (!window.PRODFLOW_TEST_DISABLE_MAILTO) {
-            const link = document.createElement("a");
-            link.href = mailto;
-            link.hidden = true;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+    async function sendWarehouseEmail(issue) {
+        const api = window.ProdFlow?.api;
+        if (!api?.sendMaterialRequest) {
+            throw new Error("Usługa wysyłania wiadomości nie jest dostępna.");
         }
 
-        return recipient;
+        return api.sendMaterialRequest({
+            orderId: state.orderId,
+            orderNumber: state.orderNumber,
+            materialId: issue.materialId,
+            material: `${issue.material}${issue.materialCode ? ` (${issue.materialCode})` : ""}`,
+            quantity: issue.quantityValue,
+            unit: issue.unit,
+            machine: state.machine || "",
+            shift: String(issue.shift || ""),
+            notes: `Priorytet: ${issue.priority}. Operator: ${state.operator || "—"}.`
+        });
     }
 
     function handleAction(action, button) {
@@ -1043,6 +1418,10 @@
             }
 
             const firstStart = state.status === "waiting";
+            if (firstStart && !state.lineClearance?.confirmedAt) {
+                openLineClearanceModal(() => handleAction("start"));
+                return;
+            }
             const resumeSuspended = state.status === "suspended";
             if (firstStart || resumeSuspended) {
                 const store = getStore();
@@ -1083,6 +1462,18 @@
                 "success"
             );
             showToast(firstStart ? "Produkcja rozpoczęta." : "Produkcja wznowiona.");
+        }
+
+        if (action === "pallet-check") {
+            openPalletCheckModal();
+        }
+
+        if (action === "pallet-history") {
+            openPalletHistory();
+        }
+
+        if (action === "print-pallet-checklist") {
+            printPalletChecklist();
         }
 
         if (action === "stop") {
@@ -1738,7 +2129,7 @@
             }
             openModal({
                 title: "Zapotrzebowanie materiałowe",
-                description: "Wybierz surowiec przypisany do zlecenia. Po zapisaniu otworzy się gotowa wiadomość e-mail do magazynu.",
+                description: "Wybierz surowiec przypisany do zlecenia. System zapisze zgłoszenie i automatycznie wyśle e-mail do magazynu.",
                 fields: `
                     <div class="pf-field">
                         <label for="warehouseMaterial">Materiał z Karty Produkcyjnej</label>
@@ -1771,7 +2162,7 @@
                         </select>
                     </div>
                 `,
-                onSubmit: form => {
+                onSubmit: async form => {
                     const data = new FormData(form);
                     const material = state.materials.find(
                         item => item.id === String(data.get("materialId") || "")
@@ -1826,13 +2217,16 @@
 
                     state.status = "issue";
                     addEvent("Zgłoszono brak materiału", `${issue.material} · ${issue.quantity} · priorytet ${issue.priority.toLowerCase()}.`, "warning");
-                    const recipient = prepareWarehouseEmail(issue);
                     closeModal();
-                    showToast(
-                        recipient
-                            ? `Zapisano zgłoszenie i przygotowano e-mail do ${recipient}.`
-                            : "Zapisano zgłoszenie i przygotowano wiadomość e-mail."
-                    );
+                    showToast("Zapisano zgłoszenie. Wysyłanie wiadomości do magazynu…");
+                    try {
+                        const result = await sendWarehouseEmail(issue);
+                        showToast(result?.message || "Wiadomość została przekazana do magazynu.");
+                    } catch (error) {
+                        showToast(
+                            `Zgłoszenie zapisano, ale e-mail nie został wysłany: ${error?.message || "błąd serwera"}`
+                        );
+                    }
                 }
             });
         }
@@ -1975,6 +2369,10 @@
                     const finishedReports = [...state.reports];
                     const finishedWithdrawals = [...state.withdrawals];
                     const finishedPrintBatches = [...state.printBatches];
+                    const finishedLineClearance = state.lineClearance
+                        ? { ...state.lineClearance }
+                        : null;
+                    const finishedPalletChecks = state.palletChecks.map(record => ({ ...record }));
                     const finishedEvents = [...state.events];
                     const order = store.getOrder(finishedOrderId);
                     const existingNotes =
@@ -1994,6 +2392,8 @@
                         reports: finishedReports,
                         materialWithdrawals: finishedWithdrawals,
                         documentPrintBatches: finishedPrintBatches,
+                        lineClearance: finishedLineClearance,
+                        palletChecks: finishedPalletChecks,
                         notes: [existingNotes, note]
                             .filter(Boolean)
                             .join("\n")

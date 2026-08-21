@@ -695,6 +695,117 @@ body{
 
 }
 
+.sidebar [hidden]{
+    display:none !important;
+}
+
+.pf-session-user{
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) 30px;
+    gap:9px;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.pf-session-user__avatar{
+    display:grid;
+    width:34px;
+    height:34px;
+    place-items:center;
+    border-radius:10px;
+    background:rgba(255,255,255,.14);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.04em;
+}
+
+.pf-session-user__copy{
+    min-width:0;
+}
+
+.pf-session-user__copy strong,
+.pf-session-user__copy small{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.pf-session-user__copy strong{
+    margin:0;
+    font-size:12px;
+}
+
+.pf-session-user__copy small{
+    margin-top:2px;
+    color:rgba(255,255,255,.62);
+    font-size:10px;
+}
+
+.pf-session-user button{
+    display:grid;
+    width:30px;
+    height:30px;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:9px;
+    color:#fff;
+    background:transparent;
+    cursor:pointer;
+}
+
+.pf-session-user button:hover{
+    background:rgba(255,255,255,.12);
+}
+
+.pf-server-status{
+    display:flex;
+    min-width:0;
+    align-items:center;
+    gap:7px;
+    margin-bottom:8px;
+    color:rgba(255,255,255,.72);
+    font-size:10px;
+}
+
+.pf-server-status i{
+    width:7px;
+    height:7px;
+    flex:0 0 7px;
+    border-radius:50%;
+    background:#f3b33d;
+    box-shadow:0 0 0 3px rgba(243,179,61,.12);
+}
+
+.pf-server-status span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.pf-server-status.is-online i{
+    background:#55d89b;
+    box-shadow:0 0 0 3px rgba(85,216,155,.13);
+}
+
+.pf-server-status.is-saving i{
+    animation:pf-server-pulse 1s ease-in-out infinite;
+}
+
+.pf-server-status.is-error{
+    color:#ffd7d7;
+}
+
+.pf-server-status.is-error i{
+    background:#ff7c82;
+    box-shadow:0 0 0 3px rgba(255,124,130,.14);
+}
+
+@keyframes pf-server-pulse{
+    50%{opacity:.35;transform:scale(.82)}
+}
+
 /* Nawigacja adaptacyjna */
 .pf-mobile-nav-toggle,
 .pf-mobile-nav-backdrop,

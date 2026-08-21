@@ -48,6 +48,11 @@ const MODULES = {
     statistics: {
         folder: "statistics",
         title: "Statystyki"
+    },
+
+    admin: {
+        folder: "admin",
+        title: "Konta i dostęp"
     }
 
 };

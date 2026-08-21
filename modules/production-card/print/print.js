@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const previewMode = params.get("preview") === "1";
   const embeddedMode = params.get("embedded") === "1";
@@ -9,6 +9,19 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.getItem("prodflow.activeOrderId") ||
     "";
   const store = window.ProdFlow?.store;
+  try {
+    await store?.connect?.();
+  } catch (error) {
+    const main = document.createElement("main");
+    main.style.cssText = "padding:40px;font-family:Arial,sans-serif";
+    const heading = document.createElement("h1");
+    heading.textContent = "Nie udało się pobrać Karty Produkcyjnej";
+    const message = document.createElement("p");
+    message.textContent = String(error?.message || error || "Błąd serwera");
+    main.append(heading, message);
+    document.body.replaceChildren(main);
+    return;
+  }
   const order = orderId && store?.getOrder
     ? store.getOrder(orderId)
     : null;

@@ -1,0 +1,118 @@
+<section class="admin-page" id="prodflowAdmin">
+  <header class="admin-hero">
+    <div>
+      <span class="admin-eyebrow">Administracja systemem</span>
+      <h1>Konta i dostęp</h1>
+      <p>Twórz ogólne konta stanowiskowe i określaj moduły dostępne dla każdej roli.</p>
+    </div>
+    <button class="admin-button is-primary" id="adminAddUser" type="button">+ Dodaj konto</button>
+  </header>
+
+  <div class="admin-metrics">
+    <article><small>Wszystkie konta</small><strong id="adminUsersTotal">—</strong></article>
+    <article><small>Aktywne</small><strong id="adminUsersActive">—</strong></article>
+    <article><small>Administratorzy</small><strong id="adminUsersAdmins">—</strong></article>
+  </div>
+
+  <section class="admin-panel">
+    <div class="admin-panel__head">
+      <div>
+        <h2>Użytkownicy stanowiskowi</h2>
+        <p>Wyłączenie konta blokuje kolejne logowanie, ale zachowuje historię działań.</p>
+      </div>
+      <label class="admin-search">
+        <span>⌕</span>
+        <input id="adminUserSearch" type="search" placeholder="Szukaj konta…">
+      </label>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Konto</th>
+            <th>Rola</th>
+            <th>Status</th>
+            <th>Ostatnie logowanie</th>
+            <th><span class="sr-only">Akcje</span></th>
+          </tr>
+        </thead>
+        <tbody id="adminUsersBody"></tbody>
+      </table>
+      <div class="admin-empty" id="adminUsersEmpty" hidden>Nie znaleziono kont.</div>
+    </div>
+  </section>
+
+  <section class="admin-role-guide">
+    <h2>Zakres ról</h2>
+    <div>
+      <article><strong>Administrator</strong><span>Pełny dostęp, konta i konfiguracja.</span></article>
+      <article><strong>Planowanie</strong><span>Karty, planowanie, produkcja, PPWR i raporty.</span></article>
+      <article><strong>Operator</strong><span>Panel produkcji, karty i etykiety.</span></article>
+      <article><strong>Magazyn</strong><span>Zapotrzebowania, etykiety i historia.</span></article>
+      <article><strong>Jakość</strong><span>Reklamacje, PPWR i karty produkcyjne.</span></article>
+      <article><strong>Podgląd</strong><span>Dashboard oraz statystyki bez zapisu.</span></article>
+    </div>
+  </section>
+
+  <dialog class="admin-dialog" id="adminUserDialog">
+    <form id="adminUserForm" method="dialog">
+      <header>
+        <div>
+          <span class="admin-eyebrow">Konto stanowiskowe</span>
+          <h2 id="adminDialogTitle">Dodaj konto</h2>
+        </div>
+        <button class="admin-dialog__close" data-dialog-close type="button" aria-label="Zamknij">×</button>
+      </header>
+
+      <input id="adminUserId" type="hidden">
+
+      <label>
+        <span>Login</span>
+        <input id="adminUsername" type="text" maxlength="80" autocomplete="off" required
+          pattern="[a-zA-Z0-9._\-]{2,80}" placeholder="np. operator.m1">
+        <small>Litery, cyfry, kropka, myślnik lub podkreślenie.</small>
+      </label>
+
+      <label>
+        <span>Nazwa wyświetlana</span>
+        <input id="adminDisplayName" type="text" maxlength="160" required
+          placeholder="np. Operator maszyny M1">
+      </label>
+
+      <label>
+        <span>Rola</span>
+        <select id="adminRole" required>
+          <option value="operator">Operator</option>
+          <option value="planner">Planowanie</option>
+          <option value="warehouse">Magazyn</option>
+          <option value="quality">Jakość</option>
+          <option value="viewer">Podgląd</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </label>
+
+      <label>
+        <span id="adminPasswordLabel">Hasło początkowe</span>
+        <input id="adminPassword" type="password" minlength="10" maxlength="200"
+          autocomplete="new-password" placeholder="Minimum 10 znaków">
+        <small id="adminPasswordHint">Użytkownik poda je podczas logowania.</small>
+      </label>
+
+      <label class="admin-switch" id="adminActiveRow" hidden>
+        <input id="adminIsActive" type="checkbox" checked>
+        <span><i></i></span>
+        <strong>Konto aktywne</strong>
+      </label>
+
+      <p class="admin-form-error" id="adminFormError" role="alert"></p>
+
+      <footer>
+        <button class="admin-button" data-dialog-close type="button">Anuluj</button>
+        <button class="admin-button is-primary" id="adminSaveUser" type="submit">Zapisz konto</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="admin-toast" id="adminToast" role="status"></div>
+</section>

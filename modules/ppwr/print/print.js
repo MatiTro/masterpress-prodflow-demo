@@ -1,8 +1,18 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("orderId") || "";
   const recordId = params.get("recordId") || "";
   const store = window.ProdFlow?.store;
+  try {
+    await store?.connect?.();
+  } catch (error) {
+    const target = document.getElementById("printError");
+    if (target) {
+      target.hidden = false;
+      target.textContent = error?.message || "Nie udało się połączyć z serwerem.";
+    }
+    return;
+  }
   const order = orderId && store?.getOrder ? store.getOrder(orderId) : null;
   const records = Array.isArray(order?.ppwr) ? order.ppwr : [];
   const record = records.find((item) => item.id === recordId) || records.at(-1);

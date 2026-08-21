@@ -4,7 +4,7 @@
  *
  * Odpowiada za:
  * - tworzenie i przechowywanie zleceń,
- * - zapis do localStorage,
+ * - synchronizację z API i bazą Microsoft SQL Server,
  * - historię zmian,
  * - zmianę statusów,
  * - dane etykiet,
@@ -20,8 +20,9 @@
 (function (global) {
   "use strict";
 
-  const STORAGE_KEY = "prodflow.database";
+  const STORAGE_KEY = "prodflow.server.database";
   const DATABASE_VERSION = 1;
+  const SYNC_DELAY = 180;
 
   const ORDER_STATUS = Object.freeze({
     DRAFT: "draft",
@@ -65,6 +66,13 @@
   });
 
   let database = null;
+  let serverRevision = 0;
+  let connected = false;
+  let syncTimer = null;
+  let syncPromise = Promise.resolve();
+  let localGeneration = 0;
+  let lastSyncedGeneration = 0;
+  let lastSyncError = null;
 
   function requireDependencies() {
     if (!global.ProdFlow) {
@@ -178,26 +186,7 @@
   }
 
   function loadDatabase() {
-    const rawValue = global.localStorage.getItem(
-      STORAGE_KEY
-    );
-
-    if (!rawValue) {
-      database = createEmptyDatabase();
-      persistDatabase({
-        emitEvent: false
-      });
-
-      return database;
-    }
-
-    const parsed = getUtils().safeParseJson(
-      rawValue,
-      null
-    );
-
-    database = normalizeDatabase(parsed);
-
+    database = database || createEmptyDatabase();
     return database;
   }
 
@@ -213,10 +202,11 @@
 
     database.meta.updatedAt = getUtils().nowIso();
 
-    global.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(database)
-    );
+    localGeneration += 1;
+
+    if (connected) {
+      scheduleSync();
+    }
 
     if (settings.emitEvent) {
       emit(EVENT.DATABASE_CHANGED, {
@@ -225,6 +215,131 @@
     }
 
     return true;
+  }
+
+  function requireApi() {
+    const api = global.ProdFlow && global.ProdFlow.api;
+    if (!api || typeof api.getState !== "function") {
+      throw new Error("ProdFlow Store: klient API nie jest dostępny.");
+    }
+    return api;
+  }
+
+  async function connect() {
+    const envelope = await requireApi().getState();
+    database = normalizeDatabase(envelope && envelope.database);
+    serverRevision = Number(envelope && envelope.revision) || 0;
+    connected = true;
+    lastSyncedGeneration = localGeneration;
+    lastSyncError = null;
+
+    emit(EVENT.DATABASE_READY, getDatabaseSnapshot());
+    emit(EVENT.DATABASE_CHANGED, {
+      updatedAt: database.meta.updatedAt,
+      source: "server",
+      revision: serverRevision
+    });
+
+    return getDatabaseSnapshot();
+  }
+
+  async function refresh() {
+    if (!connected) {
+      return connect();
+    }
+
+    await flush();
+    return connect();
+  }
+
+  function scheduleSync() {
+    global.clearTimeout(syncTimer);
+    syncTimer = global.setTimeout(function () {
+      syncTimer = null;
+      queueSync(false);
+    }, SYNC_DELAY);
+  }
+
+  function queueSync(keepalive) {
+    syncPromise = syncPromise
+      .catch(function () {
+        return null;
+      })
+      .then(function () {
+        return syncNow(Boolean(keepalive));
+      });
+
+    return syncPromise;
+  }
+
+  async function syncNow(keepalive) {
+    if (!connected) {
+      return null;
+    }
+
+    if (localGeneration === lastSyncedGeneration) {
+      return getDatabaseSnapshot();
+    }
+
+    const generation = localGeneration;
+    const snapshot = getDatabaseSnapshot();
+
+    try {
+      const envelope = await requireApi().saveState(
+        serverRevision,
+        snapshot,
+        keepalive
+      );
+
+      serverRevision = Number(envelope && envelope.revision) || serverRevision;
+      lastSyncedGeneration = generation;
+      lastSyncError = null;
+
+      if (generation === localGeneration && envelope && envelope.database) {
+        database = normalizeDatabase(envelope.database);
+      } else if (generation !== localGeneration) {
+        scheduleSync();
+      }
+
+      emit(EVENT.DATABASE_CHANGED, {
+        updatedAt: database.meta.updatedAt,
+        source: "server-sync",
+        revision: serverRevision
+      });
+
+      return getDatabaseSnapshot();
+    } catch (error) {
+      lastSyncError = error;
+      emit("store:sync-error", {
+        message: error && error.message
+          ? error.message
+          : "Nie udało się zapisać danych na serwerze."
+      });
+
+      global.setTimeout(function () {
+        if (connected) scheduleSync();
+      }, 3000);
+
+      throw error;
+    }
+  }
+
+  function flush(options) {
+    const settings = Object.assign({ keepalive: false }, options || {});
+    global.clearTimeout(syncTimer);
+    syncTimer = null;
+    return queueSync(settings.keepalive);
+  }
+
+  function getSyncStatus() {
+    return {
+      connected: connected,
+      revision: serverRevision,
+      pending: Boolean(syncTimer),
+      error: lastSyncError
+        ? String(lastSyncError.message || lastSyncError)
+        : ""
+    };
   }
 
   function ensureDatabase() {
@@ -447,6 +562,8 @@
         reports: [],
         materialWithdrawals: [],
         documentPrintBatches: [],
+        lineClearance: null,
+        palletChecks: [],
         notes: ""
       },
 
@@ -1820,12 +1937,6 @@
   function initialize() {
     requireDependencies();
     loadDatabase();
-
-    emit(
-      EVENT.DATABASE_READY,
-      getDatabaseSnapshot()
-    );
-
     return api;
   }
 
@@ -1838,6 +1949,10 @@
     Event: EVENT,
 
     initialize,
+    connect,
+    refresh,
+    flush,
+    getSyncStatus,
 
     createOrder,
     saveOrder,
@@ -1874,6 +1989,14 @@
 
   global.ProdFlow = global.ProdFlow || {};
   global.ProdFlow.store = api;
+
+  global.addEventListener("pagehide", function () {
+    if (connected && syncTimer) {
+      flush({ keepalive: true }).catch(function () {
+        return null;
+      });
+    }
+  });
 
   initialize();
 })(window);
