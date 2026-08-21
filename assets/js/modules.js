@@ -20,6 +20,11 @@ const MODULES = {
         title: "Reklamacje"
     },
 
+    barcodeQuality: {
+        folder: "barcode-quality",
+        title: "Kontrola kodów"
+    },
+
     history: {
         folder: "history",
         title: "Historia"

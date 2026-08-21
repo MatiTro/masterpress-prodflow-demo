@@ -1,0 +1,219 @@
+<section class="barcode-quality" id="barcodeQualityModule" aria-label="Kontrola odczytu kodów kreskowych">
+  <header class="bq-header">
+    <div>
+      <span class="bq-kicker">Jakość · dokumentacja klienta</span>
+      <h1>Kontrola odczytu kodów</h1>
+      <p>Niezależny rejestr kontroli wykonywanych skanerem USB.</p>
+    </div>
+    <button class="bq-button bq-button--secondary" id="barcodeNewProtocol" type="button">
+      + Nowa kontrola
+    </button>
+  </header>
+
+  <section class="bq-metrics" aria-label="Podsumowanie protokołów">
+    <article>
+      <span>Wszystkie protokoły</span>
+      <strong id="barcodeMetricTotal">0</strong>
+      <small>zapisanych kontroli</small>
+    </article>
+    <article class="is-pass">
+      <span>Odczyt poprawny</span>
+      <strong id="barcodeMetricPass">0</strong>
+      <small>pozytywne protokoły</small>
+    </article>
+    <article class="is-fail">
+      <span>Odczyt niepoprawny</span>
+      <strong id="barcodeMetricFail">0</strong>
+      <small>protokoły z niezgodnością</small>
+    </article>
+    <article>
+      <span>Dzisiaj</span>
+      <strong id="barcodeMetricToday">0</strong>
+      <small>wykonanych kontroli</small>
+    </article>
+  </section>
+
+  <form class="bq-workspace" id="barcodeProtocolForm" autocomplete="off">
+    <section class="bq-card bq-details-card">
+      <header class="bq-card__header">
+        <span class="bq-step">1</span>
+        <div>
+          <h2>Dane kontroli</h2>
+          <p>Protokół nie wymaga zlecenia produkcyjnego.</p>
+        </div>
+      </header>
+
+      <div class="bq-document-strip">
+        <div>
+          <span>Numer protokołu</span>
+          <strong id="barcodeProtocolNumber">BK/—</strong>
+        </div>
+        <div>
+          <span>Kontrolujący</span>
+          <strong id="barcodeInspector">—</strong>
+        </div>
+      </div>
+
+      <div class="bq-fields">
+        <label class="bq-field">
+          <span>Klient <b>*</b></span>
+          <input id="barcodeClient" name="client" list="barcodeClients" required
+            placeholder="Wpisz lub wybierz klienta">
+          <datalist id="barcodeClients"></datalist>
+        </label>
+
+        <label class="bq-field">
+          <span>Nazwa wyrobu gotowego <b>*</b></span>
+          <input id="barcodeProduct" name="product" list="barcodeProducts" required
+            placeholder="Wpisz lub wybierz wyrób">
+          <datalist id="barcodeProducts"></datalist>
+        </label>
+
+        <label class="bq-field">
+          <span>Indeks wyrobu</span>
+          <input id="barcodeProductIndex" name="productIndex" placeholder="Opcjonalnie">
+        </label>
+
+        <label class="bq-field">
+          <span>Partia / numer odniesienia</span>
+          <input id="barcodeBatch" name="batch" placeholder="Opcjonalnie">
+        </label>
+
+        <label class="bq-field">
+          <span>Rodzaj kontroli <b>*</b></span>
+          <select id="barcodeControlReason" name="reason" required>
+            <option value="first_piece">Pierwsza sztuka</option>
+            <option value="periodic" selected>Kontrola okresowa</option>
+            <option value="customer_request">Na prośbę klienta</option>
+            <option value="complaint">Kontrola reklamacyjna</option>
+            <option value="other">Inna kontrola</option>
+          </select>
+        </label>
+
+        <label class="bq-field">
+          <span>Liczba próbek <b>*</b></span>
+          <select id="barcodeSampleTarget" name="sampleTarget" required>
+            <option value="1">1 próbka</option>
+            <option value="3" selected>3 próbki</option>
+            <option value="5">5 próbek</option>
+            <option value="10">10 próbek</option>
+          </select>
+        </label>
+
+        <label class="bq-field bq-field--wide">
+          <span>Uwagi do kontroli</span>
+          <textarea id="barcodeNotes" name="notes" rows="3"
+            placeholder="Opcjonalne informacje dla klienta lub działu jakości..."></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="bq-card bq-scanner-card">
+      <header class="bq-card__header">
+        <span class="bq-step">2</span>
+        <div>
+          <h2>Skanowanie próbek</h2>
+          <p>Skaner USB wpisuje kod i zatwierdza go klawiszem Enter.</p>
+        </div>
+        <span class="bq-scanner-ready"><i></i> Skaner gotowy</span>
+      </header>
+
+      <div class="bq-scan-zone" id="barcodeScanZone">
+        <span class="bq-scan-icon" aria-hidden="true">▥</span>
+        <label for="barcodeScanInput">Zeskanuj kod kreskowy</label>
+        <input id="barcodeScanInput" type="text" maxlength="250" spellcheck="false"
+          inputmode="text" placeholder="Kliknij tutaj i użyj skanera">
+        <small>Możesz również wpisać wartość ręcznie i nacisnąć Enter.</small>
+        <div class="bq-scan-actions">
+          <button class="bq-button bq-button--primary" id="barcodeAddScan" type="button">Dodaj odczyt</button>
+          <button class="bq-button bq-button--danger" id="barcodeNoRead" type="button">Brak odczytu</button>
+          <button class="bq-button bq-button--quiet" id="barcodeUndoScan" type="button" disabled>Cofnij ostatni</button>
+        </div>
+      </div>
+
+      <div class="bq-progress-head">
+        <span>Postęp kontroli</span>
+        <strong id="barcodeScanProgress">0 / 3</strong>
+      </div>
+      <div class="bq-progress"><span id="barcodeScanProgressBar"></span></div>
+
+      <div class="bq-samples" id="barcodeSamples">
+        <div class="bq-samples-empty">Nie zarejestrowano jeszcze żadnej próbki.</div>
+      </div>
+
+      <section class="bq-live-result" id="barcodeLiveResult" data-status="waiting" aria-live="polite">
+        <span class="bq-live-result__icon">…</span>
+        <div>
+          <small>WYNIK KONTROLI</small>
+          <strong>Oczekuje na próbki</strong>
+          <p>Zeskanuj wymaganą liczbę próbek.</p>
+        </div>
+      </section>
+
+      <div class="bq-save-actions">
+        <button class="bq-button bq-button--secondary" id="barcodeResetControl" type="button">Wyczyść</button>
+        <button class="bq-button bq-button--save" id="barcodeSaveProtocol" type="submit" disabled>
+          Zapisz protokół
+        </button>
+      </div>
+    </section>
+  </form>
+
+  <section class="bq-card bq-history-card">
+    <header class="bq-history-header">
+      <div>
+        <span class="bq-kicker">Dokumentacja</span>
+        <h2>Rejestr kontroli kodów kreskowych</h2>
+        <p>Każdy zapisany protokół można ponownie otworzyć i zapisać jako PDF.</p>
+      </div>
+      <div class="bq-history-filters">
+        <input id="barcodeHistorySearch" type="search" placeholder="Szukaj klienta, wyrobu lub kodu...">
+        <select id="barcodeHistoryStatus" aria-label="Filtr wyniku">
+          <option value="all">Wszystkie wyniki</option>
+          <option value="pass">Odczyt poprawny</option>
+          <option value="fail">Odczyt niepoprawny</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="bq-table-wrap">
+      <table class="bq-table">
+        <thead>
+          <tr>
+            <th>Protokół / data</th>
+            <th>Klient i wyrób</th>
+            <th>Odczytana wartość</th>
+            <th>Próbki</th>
+            <th>Kontrolujący</th>
+            <th>Wynik</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="barcodeHistoryBody"></tbody>
+      </table>
+      <div class="bq-history-empty" id="barcodeHistoryEmpty" hidden>
+        Brak zapisanych protokołów spełniających wybrane kryteria.
+      </div>
+    </div>
+  </section>
+
+  <div class="bq-modal" id="barcodeProtocolModal" hidden aria-hidden="true">
+    <button class="bq-modal__backdrop" type="button" data-barcode-close aria-label="Zamknij podgląd"></button>
+    <article class="bq-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="barcodeModalTitle">
+      <header>
+        <div>
+          <span class="bq-kicker">Podgląd dokumentu</span>
+          <h2 id="barcodeModalTitle">Protokół kontroli</h2>
+        </div>
+        <button class="bq-modal__close" type="button" data-barcode-close aria-label="Zamknij">×</button>
+      </header>
+      <div class="bq-document-preview" id="barcodeProtocolPreview"></div>
+      <footer>
+        <button class="bq-button bq-button--secondary" type="button" data-barcode-close>Zamknij</button>
+        <button class="bq-button bq-button--save" id="barcodePrintProtocol" type="button">Drukuj / zapisz PDF</button>
+      </footer>
+    </article>
+  </div>
+
+  <div class="bq-toast" id="barcodeToast" role="status" aria-live="polite"></div>
+</section>

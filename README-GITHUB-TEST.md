@@ -1,4 +1,4 @@
-# ProdFlow 0.8.0 — GITHUB TEST
+# ProdFlow 0.9.0 — GITHUB TEST
 
 Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pages. Nie wymaga ASP.NET Core ani SQL Servera.
 
@@ -8,6 +8,16 @@ Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pag
 - hasło: `admin`
 
 W module `Konta i dostęp` można utworzyć dodatkowe konta testowe, np. konto operatora.
+
+## Nowości w wersji 0.9.0
+
+- osobny moduł `Jakość → Kontrola kodów`, bez połączenia ze zleceniem,
+- obsługa skanera USB działającego jak klawiatura,
+- wybór 1, 3, 5 albo 10 próbek,
+- kontrola powtarzalności odczytanych wartości,
+- walidacja cyfry kontrolnej EAN-8, EAN-13, UPC-A i GTIN-14,
+- rejestrowanie braku odczytu i wyniku negatywnego,
+- historia protokołów oraz dokument do wydruku lub zapisu jako PDF.
 
 ## Publikacja na GitHub Pages
 
@@ -29,6 +39,16 @@ Po aktualizacji plików odczekaj chwilę i odśwież stronę skrótem `Ctrl+F5`.
 6. Wejdź w `Kontrole palet`, aby zobaczyć historię i użyć `Drukuj / zapisz PDF`.
 
 Przy zaznaczeniu dowolnej niezgodności `N` system wymaga komentarza i oznacza paletę na czerwono.
+
+## Test kontroli kodu kreskowego
+
+1. Otwórz `Jakość → Kontrola kodów`.
+2. Wpisz klienta, nazwę wyrobu i wybierz rodzaj kontroli oraz liczbę próbek.
+3. Kliknij pole skanowania i użyj skanera USB. Możesz też wpisać kod ręcznie i nacisnąć Enter.
+4. Po zarejestrowaniu wszystkich próbek zapisz protokół.
+5. W rejestrze wybierz `Podgląd / PDF`, aby wydrukować lub zapisać dokument.
+
+Testowy poprawny kod EAN-13 do ręcznego wpisania: `5901234123457`.
 
 ## Ważne ograniczenia trybu testowego
 

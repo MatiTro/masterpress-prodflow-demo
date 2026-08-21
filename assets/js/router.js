@@ -1,7 +1,7 @@
 let currentCss = null;
 let currentScript = null;
 let navigationRequestId = 0;
-const PROD_FLOW_ASSET_VERSION = "0.8.0-server-20260821";
+const PROD_FLOW_ASSET_VERSION = "0.9.0-github-test-20260821";
 
 function versionedAsset(path) {
     const separator = path.includes("?") ? "&" : "?";
