@@ -1,211 +1,82 @@
-<section class="pf-dashboard" aria-label="Dashboard operacyjny ProdFlow">
-
-    <header class="pf-dashboard__header">
-        <div>
-            <p class="pf-eyebrow">Centrum operacyjne</p>
-            <h1>Dashboard</h1>
-            <p class="pf-muted">Produkcja, magazyn i wysyłki w jednym widoku.</p>
-        </div>
-
-        <div class="pf-header-actions">
-            <div class="pf-live">
-                <span></span>
-                <div>
-                    <small>Dane lokalne</small>
-                    <strong id="dashboardClock">--:--:--</strong>
-                </div>
-            </div>
-
-            <button class="pf-btn pf-btn--ghost" type="button" data-dashboard-action="refresh">
-                Odśwież
-            </button>
-        </div>
-    </header>
-
-    <section class="pf-alert-strip" id="dashboardAlertStrip">
-        <div class="pf-alert-strip__icon">!</div>
-        <div>
-            <small>Najważniejsze teraz</small>
-            <strong id="dashboardAlertText">Ładowanie bieżącej sytuacji...</strong>
-        </div>
-        <button type="button" data-dashboard-action="open-alert-module">Przejdź do modułu</button>
-    </section>
-
-    <section class="pf-kpis">
-        <button class="pf-kpi" type="button" data-module-target="production">
-            <span class="pf-kpi__icon">🏭</span>
-            <div>
-                <small>Maszyny w produkcji</small>
-                <strong id="machinesRunningKpi">0</strong>
-                <em id="machinesRunningHint">Brak danych</em>
-            </div>
-        </button>
-
-        <button class="pf-kpi" type="button" data-module-target="production">
-            <span class="pf-kpi__icon">◎</span>
-            <div>
-                <small>Średnie OEE</small>
-                <strong id="oeeKpi">0%</strong>
-                <em>bieżąca zmiana</em>
-            </div>
-        </button>
-
-        <button class="pf-kpi" type="button" data-module-target="warehouse">
-            <span class="pf-kpi__icon">📦</span>
-            <div>
-                <small>Nowe zapotrzebowania</small>
-                <strong id="requestsKpi">0</strong>
-                <em id="requestsHint">Brak oczekujących</em>
-            </div>
-        </button>
-
-        <button class="pf-kpi" type="button" data-module-target="warehouse">
-            <span class="pf-kpi__icon">🚚</span>
-            <div>
-                <small>Wysyłki dzisiaj</small>
-                <strong id="shipmentsTodayKpi">0</strong>
-                <em id="shipmentsTodayHint">Brak transportów</em>
-            </div>
-        </button>
-
-        <button class="pf-kpi" type="button" data-module-target="planning">
-            <span class="pf-kpi__icon">📋</span>
-            <div>
-                <small>Aktywne zlecenia</small>
-                <strong id="ordersKpi">0</strong>
-                <em id="ordersHint">Brak aktywnych zleceń</em>
-            </div>
-        </button>
-
-        <button class="pf-kpi" type="button" data-module-target="qualityComplaints">
-            <span class="pf-kpi__icon">⚠</span>
-            <div>
-                <small>Problemy operacyjne</small>
-                <strong id="issuesKpi">0</strong>
-                <em id="issuesHint">Brak krytycznych</em>
-            </div>
-        </button>
-    </section>
-
-    <div class="pf-dashboard__grid">
-
-        <main class="pf-dashboard__main">
-
-            <article class="pf-panel">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">Produkcja na żywo</p>
-                        <h2>Status maszyn</h2>
-                    </div>
-
-                    <button class="pf-link-btn" type="button" data-module-target="production">
-                        Otwórz produkcję
-                    </button>
-                </div>
-
-                <div class="pf-machine-grid" id="machineGrid"></div>
-            </article>
-
-            <article class="pf-panel">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">Przepływ materiałów</p>
-                        <h2>Zapotrzebowania z produkcji</h2>
-                    </div>
-
-                    <button class="pf-link-btn" type="button" data-module-target="warehouse">
-                        Otwórz magazyn
-                    </button>
-                </div>
-
-                <div class="pf-request-list" id="dashboardRequests"></div>
-            </article>
-
-            <article class="pf-panel">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">Aktywność</p>
-                        <h2>Ostatnie zdarzenia</h2>
-                    </div>
-                </div>
-
-                <div class="pf-timeline" id="dashboardTimeline"></div>
-            </article>
-
-        </main>
-
-        <aside class="pf-dashboard__side">
-
-            <article class="pf-panel">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">DOK / D365</p>
-                        <h2>Najbliższe wysyłki</h2>
-                    </div>
-
-                    <button class="pf-link-btn" type="button" data-module-target="warehouse">
-                        Wszystkie
-                    </button>
-                </div>
-
-                <div class="pf-shipment-list" id="dashboardShipments"></div>
-            </article>
-
-            <article class="pf-panel pf-capacity">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">Realizacja zmiany</p>
-                        <h2>Wynik produkcji</h2>
-                    </div>
-                </div>
-
-                <div class="pf-capacity__main">
-                    <div class="pf-ring" id="productionRing">
-                        <div>
-                            <strong id="shiftProgress">0%</strong>
-                            <small>planu</small>
-                        </div>
-                    </div>
-
-                    <div class="pf-capacity__numbers">
-                        <div>
-                            <span>Dobre sztuki</span>
-                            <strong id="shiftGood">0</strong>
-                        </div>
-                        <div>
-                            <span>Braki</span>
-                            <strong id="shiftScrap">0</strong>
-                        </div>
-                        <div>
-                            <span>Pozostało</span>
-                            <strong id="shiftRemaining">0</strong>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <article class="pf-panel">
-                <div class="pf-panel__heading">
-                    <div>
-                        <p class="pf-eyebrow">Szybki dostęp</p>
-                        <h2>Moduły</h2>
-                    </div>
-                </div>
-
-                <div class="pf-shortcuts">
-                    <button type="button" data-module-target="productionCard"><span>📄</span>Karta produkcyjna</button>
-                    <button type="button" data-module-target="planning"><span>🗓</span>Planowanie</button>
-                    <button type="button" data-module-target="production"><span>🏭</span>Produkcja</button>
-                    <button type="button" data-module-target="warehouse"><span>📦</span>Magazyn</button>
-                    <button type="button" data-module-target="history"><span>🕓</span>Historia</button>
-                    <button type="button" data-module-target="statistics"><span>📊</span>Statystyki</button>
-                </div>
-            </article>
-
-        </aside>
-
+<section class="pf-dashboard" id="dashboardModule" aria-label="Pulpit operacyjny ProdFlow">
+  <header class="dashboard-header">
+    <div class="dashboard-header__copy">
+      <span class="dashboard-eyebrow">Pulpit operacyjny</span>
+      <h1>Najważniejsze na teraz</h1>
+      <p>Aktualny obraz zleceń, priorytetów i spraw wymagających reakcji.</p>
     </div>
 
-    <div class="pf-toast" id="dashboardToast" role="status" aria-live="polite"></div>
+    <div class="dashboard-clock" aria-label="Bieżąca data, godzina i zmiana">
+      <div>
+        <span id="dashboardDate">—</span>
+        <strong id="dashboardClock">--:--</strong>
+      </div>
+      <div class="dashboard-shift">
+        <small>AKTUALNA ZMIANA</small>
+        <strong id="dashboardShift">—</strong>
+        <span id="dashboardShiftHours">—</span>
+      </div>
+    </div>
+  </header>
 
+  <section class="dashboard-brief" id="dashboardBrief" data-tone="neutral" aria-live="polite">
+    <span class="dashboard-brief__mark" aria-hidden="true">i</span>
+    <div>
+      <small>Sytuacja operacyjna</small>
+      <strong id="dashboardBriefText">Wczytywanie danych…</strong>
+    </div>
+  </section>
+
+  <section class="dashboard-kpis" aria-label="Podsumowanie zleceń">
+    <article class="dashboard-kpi" data-tone="new">
+      <span class="dashboard-kpi__symbol">01</span>
+      <div><small>Do zaplanowania</small><strong id="dashboardToPlan">0</strong><p id="dashboardToPlanHint">Brak nowych zleceń</p></div>
+    </article>
+    <article class="dashboard-kpi" data-tone="planned">
+      <span class="dashboard-kpi__symbol">02</span>
+      <div><small>Zaplanowane</small><strong id="dashboardPlanned">0</strong><p id="dashboardPlannedHint">Brak kolejki</p></div>
+    </article>
+    <article class="dashboard-kpi" data-tone="running">
+      <span class="dashboard-kpi__symbol">03</span>
+      <div><small>W produkcji</small><strong id="dashboardRunning">0</strong><p id="dashboardRunningHint">Brak realizowanych zleceń</p></div>
+    </article>
+    <article class="dashboard-kpi" data-tone="attention">
+      <span class="dashboard-kpi__symbol">!</span>
+      <div><small>Wymaga reakcji</small><strong id="dashboardAttention">0</strong><p id="dashboardAttentionHint">Brak pilnych spraw</p></div>
+    </article>
+  </section>
+
+  <div class="dashboard-grid">
+    <article class="dashboard-panel dashboard-priorities">
+      <header class="dashboard-panel__header">
+        <div><span class="dashboard-eyebrow">Kolejność realizacji</span><h2>Plan i priorytety</h2></div>
+        <span class="dashboard-count" id="dashboardPriorityCount">0 zleceń</span>
+      </header>
+      <div class="dashboard-order-list" id="dashboardPriorityList"></div>
+    </article>
+
+    <article class="dashboard-panel dashboard-attention-panel">
+      <header class="dashboard-panel__header">
+        <div><span class="dashboard-eyebrow">Do sprawdzenia</span><h2>Wymaga reakcji</h2></div>
+        <span class="dashboard-attention-light" id="dashboardAttentionLight" data-state="ok"></span>
+      </header>
+      <div class="dashboard-attention-list" id="dashboardAttentionList"></div>
+    </article>
+
+    <article class="dashboard-panel dashboard-stages">
+      <header class="dashboard-panel__header">
+        <div><span class="dashboard-eyebrow">Stan procesu</span><h2>Etapy zleceń</h2></div>
+        <span class="dashboard-count" id="dashboardStageTotal">0 aktywnych</span>
+      </header>
+      <div class="dashboard-stage-list" id="dashboardStageList"></div>
+    </article>
+
+    <article class="dashboard-panel dashboard-activity">
+      <header class="dashboard-panel__header">
+        <div><span class="dashboard-eyebrow">Rejestr systemu</span><h2>Ostatnia aktywność</h2></div>
+        <span class="dashboard-count">Najnowsze wpisy</span>
+      </header>
+      <div class="dashboard-activity-list" id="dashboardActivityList"></div>
+    </article>
+  </div>
 </section>

@@ -108,6 +108,14 @@
       <div class="hmi-timeline" id="productionTimeline">
         <p class="pf-muted">Brak zdarzeń dla bieżącego zlecenia.</p>
       </div>
+      <div class="hmi-events__actions" aria-label="Zmiana przebiegu zlecenia">
+        <button class="hmi-action-compact hmi-action-compact--suspend" id="productionSuspendBtn" type="button" data-production-action="suspend">
+          <span>Ⅱ</span><div><strong>Zawieś zlecenie</strong><small>Pozostaw do wznowienia</small></div>
+        </button>
+        <button class="hmi-action-compact hmi-action-compact--drop" id="productionDropBtn" type="button" data-production-action="drop-order">
+          <span>↘</span><div><strong>Zlecenie spadło</strong><small>Oddaj do planowania</small></div>
+        </button>
+      </div>
     </section>
 
     <aside class="hmi-actions" aria-label="Sterowanie produkcją">
@@ -119,14 +127,6 @@
       <button class="hmi-action hmi-action--stop" id="productionStopBtn" type="button" data-production-action="stop">
         <span>■</span><div><strong>STOP</strong><small>Wybierz powód zatrzymania</small></div>
       </button>
-      <div class="hmi-actions__secondary">
-        <button class="hmi-action-compact hmi-action-compact--suspend" id="productionSuspendBtn" type="button" data-production-action="suspend">
-          <span>Ⅱ</span><div><strong>Zawieś zlecenie</strong><small>Pozostaw do wznowienia</small></div>
-        </button>
-        <button class="hmi-action-compact hmi-action-compact--drop" id="productionDropBtn" type="button" data-production-action="drop-order">
-          <span>↘</span><div><strong>Zlecenie spadło</strong><small>Oddaj do planowania</small></div>
-        </button>
-      </div>
       <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
         <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
       </button>

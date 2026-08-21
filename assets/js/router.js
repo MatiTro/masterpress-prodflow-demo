@@ -1,7 +1,7 @@
 let currentCss = null;
 let currentScript = null;
 let navigationRequestId = 0;
-const PROD_FLOW_ASSET_VERSION = "0.10.0-github-test-20260821";
+const PROD_FLOW_ASSET_VERSION = "0.11.0-github-test-20260821";
 
 function versionedAsset(path) {
     const separator = path.includes("?") ? "&" : "?";
@@ -100,6 +100,7 @@ async function loadModule(moduleKey) {
          * a stary arkusz usuwamy po wykonaniu podmiany.
          */
         content.innerHTML = html;
+        content.dataset.currentModule = moduleKey;
         previousCss?.remove();
 
         currentScript = document.createElement("script");

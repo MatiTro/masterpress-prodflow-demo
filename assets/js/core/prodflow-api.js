@@ -6,7 +6,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "0.10.0-GITHUB-TEST";
+  const VERSION = "0.11.0-GITHUB-TEST";
   const STATE_KEY = "prodflow.github-test.state.v1";
   const USERS_KEY = "prodflow.github-test.users.v1";
   const SESSION_KEY = "prodflow.github-test.session.v1";
@@ -159,7 +159,7 @@
     banner.textContent = "GITHUB TEST · dane tylko w tej przeglądarce";
     document.body.appendChild(banner);
     const versionLabel = document.querySelector(".sidebar-footer > span:last-child");
-    if (versionLabel) versionLabel.textContent = "ProdFlow 0.10.0 GITHUB TEST";
+    if (versionLabel) versionLabel.textContent = "ProdFlow 0.11.0 GITHUB TEST";
   }
 
   document.addEventListener("DOMContentLoaded", addTestBanner);

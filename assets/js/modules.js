@@ -50,11 +50,6 @@ const MODULES = {
         title: "Produkcja"
     },
 
-    warehouse: {
-        folder: "warehouse",
-        title: "Magazyn"
-    },
-
     statistics: {
         folder: "statistics",
         title: "Statystyki"

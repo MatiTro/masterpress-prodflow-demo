@@ -232,9 +232,11 @@
     const valid = selectedConfig.errors.length === 0;
     validation.classList.toggle("is-error", !valid);
     validation.textContent = valid
-      ? `Gotowe: system przygotuje ${formatNumber(selectedConfig.cartons)} etykiet i automatycznie nada numery palet.`
+      ? `Gotowe: łącznie ${formatNumber(selectedConfig.cartons)} etykiet z automatyczną numeracją palet.`
       : `Uzupełnij Kartę Produkcyjną: ${selectedConfig.errors.join(", ")}.`;
     $("labelsPrintSubmit").disabled = !valid;
+    $("labelsBatchPanel").hidden = !valid;
+    if (valid) renderBatchControls(true);
     $("labelsPrintDialog").showModal();
   }
 
@@ -302,22 +304,80 @@
       </article>`;
   }
 
-  function labelsPrintDocument(config) {
-    const pages = Array.from({ length: config.cartons }, (_, index) => {
-      const cartonNumber = index + 1;
+  function buildBatches(config, size = Number($("labelsBatchSize")?.value) || 250) {
+    const batchSize = Math.max(1, Math.floor(Number(size) || 250));
+    const batches = [];
+    for (let start = 1; start <= config.cartons; start += batchSize) {
+      const end = Math.min(config.cartons, start + batchSize - 1);
+      batches.push({
+        index: batches.length,
+        number: batches.length + 1,
+        start,
+        end,
+        count: end - start + 1
+      });
+    }
+    return batches;
+  }
+
+  function batchWasPrinted(config, batch) {
+    return store().getLabels().some(record =>
+      record.orderId === config.order.id &&
+      Number(record.data?.labelStart) === batch.start &&
+      Number(record.data?.labelEnd) === batch.end
+    );
+  }
+
+  function selectedBatch() {
+    if (!selectedConfig) return null;
+    const batches = buildBatches(selectedConfig);
+    return batches[Number($("labelsBatchRange").value) || 0] || batches[0] || null;
+  }
+
+  function updateBatchDescription() {
+    if (!selectedConfig) return;
+    const batches = buildBatches(selectedConfig);
+    const batch = selectedBatch();
+    if (!batch) return;
+    $("labelsBatchCount").textContent = `${batches.length} ${batches.length === 1 ? "partia" : "partii"}`;
+    $("labelsBatchInfo").textContent = batches.length === 1
+      ? `Otworzy się komplet ${formatNumber(batch.count)} etykiet.`
+      : `Otworzą się etykiety ${formatNumber(batch.start)}–${formatNumber(batch.end)} z ${formatNumber(selectedConfig.cartons)}. Po wydruku system wybierze następną partię.`;
+    $("labelsPrintSubmit").textContent = batches.length === 1
+      ? "Otwórz wydruk"
+      : `Drukuj partię ${batch.number} z ${batches.length}`;
+  }
+
+  function renderBatchControls(resetSelection = false) {
+    if (!selectedConfig) return;
+    const range = $("labelsBatchRange");
+    const previous = resetSelection ? 0 : Number(range.value) || 0;
+    const batches = buildBatches(selectedConfig);
+    range.innerHTML = batches.map(batch => {
+      const printed = batchWasPrinted(selectedConfig, batch);
+      return `<option value="${batch.index}">Partia ${batch.number} z ${batches.length} · etykiety ${formatNumber(batch.start)}–${formatNumber(batch.end)}${printed ? " · wydrukowana ✓" : ""}</option>`;
+    }).join("");
+    range.value = String(Math.min(previous, Math.max(0, batches.length - 1)));
+    updateBatchDescription();
+  }
+
+  function labelsPrintDocument(config, batch) {
+    const pageList = [];
+    for (let cartonNumber = batch.start; cartonNumber <= batch.end; cartonNumber += 1) {
       const palletNumber = config.cartonsPerPallet > 0
         ? Math.ceil(cartonNumber / config.cartonsPerPallet)
         : 1;
-      return config.carlton
+      pageList.push(config.carlton
         ? carltonLabelHtml(config, cartonNumber, palletNumber)
-        : masterpressLabelHtml(config, cartonNumber, palletNumber);
-    }).join("");
+        : masterpressLabelHtml(config, cartonNumber, palletNumber));
+    }
+    const pages = pageList.join("");
 
     return `<!doctype html>
       <html lang="pl">
       <head>
         <meta charset="utf-8">
-        <title>Etykiety ${escapeHtml(orderNumber(config.order))}</title>
+        <title>Etykiety ${escapeHtml(orderNumber(config.order))} · ${batch.start}-${batch.end}</title>
         <style>
           @page{size:100mm 75mm;margin:0}
           *{box-sizing:border-box}
@@ -359,7 +419,7 @@
       </html>`;
   }
 
-  function printLabels(config) {
+  function printLabels(config, batch) {
     const printWindow = window.open("", "_blank", "width=760,height=720");
     if (!printWindow) {
       showToast("Przeglądarka zablokowała okno wydruku.");
@@ -367,16 +427,20 @@
     }
 
     printWindow.document.open();
-    printWindow.document.write(labelsPrintDocument(config));
+    printWindow.document.write(labelsPrintDocument(config, batch));
     printWindow.document.close();
 
     store().addLabelRecord(config.order.id, {
       template: config.template,
-      quantity: config.cartons,
+      quantity: batch.count,
       data: {
         source: "automatic-carton-labels",
         unitsPerCarton: config.unitsPerCarton,
         cartons: config.cartons,
+        labelStart: batch.start,
+        labelEnd: batch.end,
+        batchNumber: batch.number,
+        batchCount: buildBatches(config).length,
         pallets: config.pallets,
         customerOrderNumber: config.customerOrderNumber,
         clientIndex: config.clientIndex,
@@ -404,14 +468,27 @@
   });
   $("labelsDialogClose").addEventListener("click", closeDialog);
   $("labelsCancelBtn").addEventListener("click", closeDialog);
+  $("labelsBatchSize").addEventListener("change", () => renderBatchControls(true));
+  $("labelsBatchRange").addEventListener("change", updateBatchDescription);
   $("labelsPrintForm").addEventListener("submit", event => {
     event.preventDefault();
     if (!selectedConfig || selectedConfig.errors.length) return;
-    if (printLabels(selectedConfig)) {
-      const count = selectedConfig.cartons;
-      closeDialog();
+    const batches = buildBatches(selectedConfig);
+    const batch = selectedBatch();
+    if (!batch) return;
+    if (printLabels(selectedConfig, batch)) {
       render();
-      showToast(`Przygotowano ${formatNumber(count)} etykiet 100 × 75 mm.`);
+      const nextIndex = batch.index + 1;
+      if (nextIndex < batches.length) {
+        renderBatchControls(false);
+        $("labelsBatchRange").value = String(nextIndex);
+        updateBatchDescription();
+        showToast(`Przygotowano partię ${batch.number}: ${formatNumber(batch.count)} etykiet. Wybrano następną partię.`);
+      } else {
+        const count = batch.count;
+        closeDialog();
+        showToast(`Przygotowano ostatnią partię: ${formatNumber(count)} etykiet 100 × 75 mm.`);
+      }
     }
   });
 

@@ -60,6 +60,28 @@
 
       <div class="labels-validation" id="labelsValidation" role="status"></div>
 
+      <section class="labels-batch-panel" id="labelsBatchPanel" hidden>
+        <header>
+          <div><span>Bezpieczny wydruk</span><strong>Drukowanie w partiach</strong></div>
+          <b id="labelsBatchCount">1 partia</b>
+        </header>
+        <div class="labels-batch-controls">
+          <label>
+            <span>Etykiet w jednej partii</span>
+            <select id="labelsBatchSize">
+              <option value="100">100</option>
+              <option value="250" selected>250 — zalecane</option>
+              <option value="500">500</option>
+            </select>
+          </label>
+          <label>
+            <span>Partia do wydrukowania</span>
+            <select id="labelsBatchRange"></select>
+          </label>
+        </div>
+        <p id="labelsBatchInfo">Otworzy się tylko wybrana część etykiet.</p>
+      </section>
+
       <div class="labels-mini-preview" id="labelsMiniPreview">
         <div>
           <small id="labelsPreviewKind">ETYKIETA KARTONOWA</small>

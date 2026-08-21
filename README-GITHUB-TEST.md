@@ -1,4 +1,4 @@
-# ProdFlow 0.10.0 — GITHUB TEST
+# ProdFlow 0.11.0 — GITHUB TEST
 
 Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pages. Nie wymaga ASP.NET Core ani SQL Servera.
 
@@ -9,16 +9,18 @@ Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pag
 
 W module `Konta i dostęp` można utworzyć dodatkowe konta testowe, np. konto operatora.
 
-## Nowości w wersji 0.10.0
+## Nowości w wersji 0.11.0
 
-- pole `Small / Large` wyświetlane automatycznie dla klienta Carlton,
-- poprawiony automatyczny wzór etykiety Carlton oraz stałe wartości MISC i ilości w kartonie,
-- usunięta numeracja kartonu z etykiety Carlton,
-- czytelna, dwujęzyczna lista kontrolna JB z pełnymi nazwami kolumn,
-- przebudowany panel operatora z dużymi przyciskami dokumentów i obsługi palety,
-- moduł `Wniosek kasacji` oddzielony od nowego modułu `Reklamacje`,
-- trzy profesjonalne formularze: reklamacja surowca, reklamacja wyrobu gotowego i niezgodność procesu,
-- rejestr reklamacji z edycją i dokumentami do wydruku lub zapisu jako PDF.
+- całkowicie uporządkowany Dashboard bez wysyłek, zapotrzebowań, przepływu materiałów, maszyn i skrótów,
+- Dashboard pokazuje zmianę, zlecenia do zaplanowania, kolejkę, produkcję, priorytety i sprawy wymagające reakcji,
+- usunięty moduł `Magazyn` — zostanie przygotowany jako osobny, późniejszy projekt,
+- mniejszy i bardziej zwarty panel operatora,
+- przyciski `Zawieś zlecenie` i `Zlecenie spadło` przeniesione pod `Ostatnie zdarzenia`, z dala od raportowania wyniku,
+- automatyczny wydruk etykiet podzielony na partie po 100, 250 albo 500 sztuk,
+- przy dużych nakładach system generuje tylko wybrany zakres etykiet i po wydruku wybiera następną partię,
+- zachowana globalna numeracja kartonów i palet pomiędzy partiami wydruku.
+
+Wersja zawiera również wcześniejsze funkcje 0.10.0: warianty Carlton Small/Large, dwujęzyczną listę kontrolną JB, moduł Reklamacje oraz poprawiony panel dokumentów produkcyjnych.
 
 Numer ASIN dla wariantu `Small` jest skonfigurowany jako `B0DHDB7377`. Wariant `Large` wymaga uzupełnienia właściwego numeru ASIN przed wydrukiem.
 
@@ -40,6 +42,8 @@ Po aktualizacji plików odczekaj chwilę i odśwież stronę skrótem `Ctrl+F5`.
 4. Przekaż kartę do planowania i otwórz moduł `Etykiety`.
 5. Dla `Small` system stosuje 200 szt. / karton, `MISC2360` i ASIN `B0DHDB7377`.
 6. Wydruk wariantu `Large` pozostaje zablokowany do czasu podania właściwego numeru ASIN.
+
+Przy dużej liczbie etykiet wybierz w oknie wydruku wielkość partii. Zalecane ustawienie to `250`. Po otwarciu jednej partii okno ProdFlow pozostaje gotowe do wydrukowania następnej.
 
 ## Szybki test nowej karty palety
 

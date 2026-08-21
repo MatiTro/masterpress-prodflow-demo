@@ -593,6 +593,10 @@ body{
 
 }
 
+#content[data-current-module="production"]{
+    padding:6px;
+}
+
 .welcome{
 
     margin-bottom:40px;
