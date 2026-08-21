@@ -1,0 +1,167 @@
+<section class="qc-module" id="qualityComplaintsModule" aria-label="Rejestr reklamacji i niezgodności">
+  <header class="qc-header">
+    <div>
+      <span class="qc-kicker">Jakość · rejestr niezgodności</span>
+      <h1>Reklamacje</h1>
+      <p>Jednolita dokumentacja reklamacji surowca, wyrobu gotowego oraz niezgodności procesu.</p>
+    </div>
+    <button class="qc-button qc-button--secondary" id="qcNewRecord" type="button">+ Nowe zgłoszenie</button>
+  </header>
+
+  <section class="qc-metrics" aria-label="Podsumowanie reklamacji">
+    <article><span>Wszystkie zgłoszenia</span><strong id="qcMetricTotal">0</strong><small>zapisanych dokumentów</small></article>
+    <article class="is-new"><span>Nowe</span><strong id="qcMetricNew">0</strong><small>oczekują na analizę</small></article>
+    <article class="is-progress"><span>W analizie</span><strong id="qcMetricProgress">0</strong><small>w trakcie działań</small></article>
+    <article class="is-closed"><span>Zamknięte</span><strong id="qcMetricClosed">0</strong><small>zakończone sprawy</small></article>
+  </section>
+
+  <section class="qc-type-panel" id="qcTypePanel">
+    <div class="qc-section-heading">
+      <div><span class="qc-kicker">Krok 1</span><h2>Wybierz rodzaj formularza</h2></div>
+      <p>Zakres pól i dokument PDF zostaną dopasowane do rodzaju zgłoszenia.</p>
+    </div>
+    <div class="qc-type-grid">
+      <button type="button" data-qc-type="material">
+        <span class="qc-type-icon">SU</span>
+        <strong>Reklamacja surowca</strong>
+        <small>Dostawca, dostawa, partia, ilość i decyzja dotycząca materiału.</small>
+        <b>Wybierz →</b>
+      </button>
+      <button type="button" data-qc-type="finished">
+        <span class="qc-type-icon">WG</span>
+        <strong>Reklamacja wyrobu gotowego</strong>
+        <small>Klient, zlecenie, partia wyrobu, wada i działania po reklamacji.</small>
+        <b>Wybierz →</b>
+      </button>
+      <button type="button" data-qc-type="process">
+        <span class="qc-type-icon">NP</span>
+        <strong>Niezgodność procesu</strong>
+        <small>Maszyna, stanowisko, operator lub odstępstwo w przebiegu procesu.</small>
+        <b>Wybierz →</b>
+      </button>
+    </div>
+  </section>
+
+  <section class="qc-workspace" id="qcWorkspace" hidden>
+    <main class="qc-editor">
+      <form id="qcForm" autocomplete="off" novalidate>
+        <input id="qcRecordId" type="hidden">
+
+        <section class="qc-card qc-document-card">
+          <header class="qc-card-header">
+            <span class="qc-step">1</span>
+            <div><span class="qc-kicker" id="qcFormKicker">Formularz</span><h2 id="qcFormTitle">Nowe zgłoszenie</h2><p id="qcFormDescription"></p></div>
+            <span class="qc-type-badge" id="qcTypeBadge">—</span>
+          </header>
+          <div class="qc-document-strip">
+            <div><span>Numer dokumentu</span><strong id="qcNumberPreview">—</strong></div>
+            <div><span>Wersja</span><strong>Dokument elektroniczny</strong></div>
+          </div>
+          <div class="qc-fields qc-fields--3">
+            <label class="qc-field"><span>Numer zgłoszenia</span><input id="qcNumber" type="text" readonly></label>
+            <label class="qc-field qc-required"><span>Data zgłoszenia</span><input id="qcReportedAt" type="date" required></label>
+            <label class="qc-field qc-required"><span>Zgłaszający</span><input id="qcReporter" type="text" required placeholder="Imię, nazwisko lub stanowisko"></label>
+            <label class="qc-field"><span>Dział zgłaszający</span><select id="qcDepartment"><option value="quality">Jakość</option><option value="production">Produkcja</option><option value="warehouse">Magazyn</option><option value="planning">Planowanie</option><option value="sales">Obsługa klienta</option><option value="other">Inny</option></select></label>
+            <label class="qc-field qc-required"><span>Priorytet</span><select id="qcPriority" required><option value="normal">Normalny</option><option value="high">Wysoki</option><option value="critical">Krytyczny</option><option value="low">Niski</option></select></label>
+            <label class="qc-field qc-required"><span>Status sprawy</span><select id="qcStatus" required><option value="new">Nowa</option><option value="analysis">W analizie</option><option value="action">Działania w toku</option><option value="closed">Zamknięta</option><option value="rejected">Odrzucona</option></select></label>
+          </div>
+        </section>
+
+        <section class="qc-card">
+          <header class="qc-card-header"><span class="qc-step">2</span><div><h2>Dane identyfikacyjne</h2><p id="qcIdentificationHint">Uzupełnij dane związane ze zgłoszeniem.</p></div></header>
+
+          <div class="qc-fields qc-fields--3 qc-type-fields" data-qc-fields="material" hidden>
+            <label class="qc-field qc-required"><span>Dostawca</span><input id="qcSupplier" type="text" placeholder="Nazwa dostawcy"></label>
+            <label class="qc-field"><span>Numer zamówienia zakupu</span><input id="qcPurchaseOrder" type="text" placeholder="Np. ZZ-..."></label>
+            <label class="qc-field"><span>Numer dostawy / PZ</span><input id="qcDeliveryNumber" type="text"></label>
+            <label class="qc-field qc-required"><span>Indeks surowca</span><input id="qcMaterialIndex" type="text"></label>
+            <label class="qc-field qc-field--wide qc-required"><span>Nazwa surowca</span><input id="qcMaterialName" type="text"></label>
+            <label class="qc-field qc-required"><span>Numer partii</span><input id="qcBatch" type="text"></label>
+            <label class="qc-field"><span>Magazyn / lokalizacja</span><input id="qcWarehouse" type="text"></label>
+            <label class="qc-field qc-required"><span>Ilość reklamowana</span><input id="qcQuantity" type="number" min="0" step="0.001"></label>
+            <label class="qc-field qc-required"><span>Jednostka</span><select id="qcUnit"><option value="kg">kg</option><option value="m">m</option><option value="m2">m²</option><option value="szt.">szt.</option><option value="rol.">rol.</option><option value="pal.">pal.</option></select></label>
+          </div>
+
+          <div class="qc-fields qc-fields--3 qc-type-fields" data-qc-fields="finished" hidden>
+            <label class="qc-field qc-required"><span>Klient</span><input id="qcCustomer" type="text" placeholder="Nazwa klienta"></label>
+            <label class="qc-field"><span>Numer zamówienia klienta</span><input id="qcCustomerOrder" type="text"></label>
+            <label class="qc-field qc-required"><span>Numer zlecenia produkcyjnego</span><input id="qcProductionOrder" type="text"></label>
+            <label class="qc-field"><span>Numer wysyłki / dostawy</span><input id="qcShipmentNumber" type="text"></label>
+            <label class="qc-field qc-required"><span>Indeks wyrobu</span><input id="qcProductIndex" type="text"></label>
+            <label class="qc-field qc-field--wide qc-required"><span>Nazwa wyrobu gotowego</span><input id="qcProductName" type="text"></label>
+            <label class="qc-field qc-required"><span>Partia / batch</span><input id="qcFinishedBatch" type="text"></label>
+            <label class="qc-field qc-required"><span>Ilość reklamowana</span><input id="qcFinishedQuantity" type="number" min="0" step="1"></label>
+            <label class="qc-field qc-required"><span>Jednostka</span><select id="qcFinishedUnit"><option value="szt.">szt.</option><option value="kart.">kart.</option><option value="pal.">pal.</option></select></label>
+          </div>
+
+          <div class="qc-fields qc-fields--3 qc-type-fields" data-qc-fields="process" hidden>
+            <label class="qc-field qc-required"><span>Obszar procesu</span><select id="qcArea"><option value="production">Produkcja</option><option value="printing">Grafika i druk</option><option value="warehouse">Magazyn</option><option value="quality">Jakość</option><option value="planning">Planowanie</option><option value="other">Inny</option></select></label>
+            <label class="qc-field"><span>Maszyna / stanowisko</span><input id="qcMachine" type="text"></label>
+            <label class="qc-field"><span>Numer zlecenia</span><input id="qcProcessOrder" type="text"></label>
+            <label class="qc-field"><span>Zmiana</span><select id="qcShift"><option value="1">1 zmiana</option><option value="2">2 zmiana</option><option value="3">3 zmiana</option><option value="">Nie dotyczy</option></select></label>
+            <label class="qc-field"><span>Stanowisko / osoba związana ze zdarzeniem</span><input id="qcRelatedPerson" type="text" placeholder="Bez oceniania winy"></label>
+            <label class="qc-field qc-required"><span>Data i godzina zdarzenia</span><input id="qcEventAt" type="datetime-local"></label>
+            <label class="qc-field"><span>Czas przestoju</span><div class="qc-input-unit"><input id="qcDowntime" type="number" min="0" step="1"><span>min</span></div></label>
+          </div>
+        </section>
+
+        <section class="qc-card">
+          <header class="qc-card-header"><span class="qc-step">3</span><div><h2>Opis i zabezpieczenie</h2><p>Najpierw zapisz fakt, następnie działanie ograniczające skutki.</p></div></header>
+          <div class="qc-fields qc-fields--2">
+            <label class="qc-field qc-required"><span>Kategoria niezgodności</span><select id="qcCategory" required></select></label>
+            <label class="qc-field"><span>Miejsce wykrycia</span><input id="qcDetectionPoint" type="text" placeholder="Np. przyjęcie, produkcja, kontrola końcowa"></label>
+            <label class="qc-field qc-field--wide qc-required"><span>Opis niezgodności</span><textarea id="qcDescription" rows="5" required placeholder="Co stwierdzono? Podaj konkretny objaw, zakres i warunki wykrycia."></textarea></label>
+            <label class="qc-field qc-field--wide qc-required"><span>Działanie natychmiastowe / zabezpieczające</span><textarea id="qcImmediateAction" rows="4" required placeholder="Np. blokada partii, segregacja, zatrzymanie maszyny, dodatkowa kontrola."></textarea></label>
+            <label class="qc-field"><span>Wpływ na produkcję</span><select id="qcProductionBlocked"><option value="no">Brak zatrzymania</option><option value="limited">Produkcja ograniczona</option><option value="yes">Produkcja zatrzymana</option><option value="unknown">Do ustalenia</option></select></label>
+            <label class="qc-field"><span>Poziom skutku</span><select id="qcSeverity"><option value="minor">Mały</option><option value="major">Znaczący</option><option value="critical">Krytyczny</option></select></label>
+          </div>
+        </section>
+
+        <section class="qc-card">
+          <header class="qc-card-header"><span class="qc-step">4</span><div><h2>Analiza i działania CAPA</h2><p>Pola mogą zostać uzupełnione później podczas prowadzenia sprawy.</p></div></header>
+          <div class="qc-fields qc-fields--2">
+            <label class="qc-field qc-field--wide"><span>Przyczyna źródłowa</span><textarea id="qcRootCause" rows="4" placeholder="Wynik analizy przyczyny źródłowej"></textarea></label>
+            <label class="qc-field qc-field--wide"><span>Działanie korygujące</span><textarea id="qcCorrectiveAction" rows="4" placeholder="Co zostanie zrobione, aby usunąć przyczynę?"></textarea></label>
+            <label class="qc-field qc-field--wide"><span>Działanie zapobiegawcze</span><textarea id="qcPreventiveAction" rows="4" placeholder="Co zapobiegnie ponownemu wystąpieniu?"></textarea></label>
+            <label class="qc-field"><span>Osoba odpowiedzialna</span><input id="qcOwner" type="text"></label>
+            <label class="qc-field"><span>Termin realizacji</span><input id="qcDueDate" type="date"></label>
+            <label class="qc-field qc-field--wide"><span>Decyzja / sposób postępowania</span><textarea id="qcDisposition" rows="3" placeholder="Np. zwrot, wymiana, sortowanie, dopuszczenie warunkowe, szkolenie, naprawa."></textarea></label>
+          </div>
+        </section>
+
+        <div class="qc-form-actions">
+          <button class="qc-button qc-button--quiet" id="qcCancelEdit" type="button">Anuluj</button>
+          <button class="qc-button qc-button--secondary" id="qcSaveRecord" type="submit">Zapisz zgłoszenie</button>
+          <button class="qc-button qc-button--primary" id="qcSaveAndPrint" type="button">Zapisz i otwórz PDF</button>
+        </div>
+      </form>
+    </main>
+
+    <aside class="qc-aside">
+      <section class="qc-card qc-completeness">
+        <div class="qc-completeness-head"><div><span>Kompletność dokumentu</span><strong id="qcCompletenessValue">0%</strong></div><span class="qc-ring" id="qcCompletenessRing"></span></div>
+        <div class="qc-progress"><span id="qcCompletenessBar"></span></div>
+        <p id="qcCompletenessText">Uzupełnij pola wymagane.</p>
+        <div id="qcMissingFields"></div>
+      </section>
+      <section class="qc-card qc-guidance">
+        <span class="qc-kicker">Dobra praktyka</span>
+        <h3>Opisuj fakt, nie osobę</h3>
+        <p>W formularzu „Niezgodność procesu” zapisuj obserwowane zdarzenie, skutek i warunki. Odpowiedzialność ustala się dopiero po analizie przyczyny.</p>
+      </section>
+    </aside>
+  </section>
+
+  <section class="qc-card qc-register">
+    <header class="qc-register-header">
+      <div><span class="qc-kicker">Dokumentacja</span><h2>Rejestr reklamacji i niezgodności</h2><p>Zapisane zgłoszenia można ponownie otworzyć, uzupełnić oraz wygenerować jako PDF.</p></div>
+      <div class="qc-register-filters"><input id="qcSearch" type="search" placeholder="Szukaj numeru, klienta, dostawcy, indeksu..."><select id="qcStatusFilter"><option value="all">Wszystkie statusy</option><option value="new">Nowe</option><option value="analysis">W analizie</option><option value="action">Działania w toku</option><option value="closed">Zamknięte</option><option value="rejected">Odrzucone</option></select></div>
+    </header>
+    <div class="qc-table-wrap">
+      <table class="qc-table"><thead><tr><th>Numer / data</th><th>Rodzaj</th><th>Podmiot i przedmiot</th><th>Kategoria</th><th>Odpowiedzialny</th><th>Priorytet</th><th>Status</th><th></th></tr></thead><tbody id="qcRecordsBody"></tbody></table>
+    </div>
+    <div class="qc-empty" id="qcEmpty">Nie zapisano jeszcze żadnego zgłoszenia.</div>
+  </section>
+
+  <div class="qc-toast" id="qcToast" role="status" aria-live="polite"></div>
+</section>

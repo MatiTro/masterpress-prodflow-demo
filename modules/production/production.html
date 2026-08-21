@@ -30,8 +30,6 @@
         <div><small>NUMER ZLECENIA</small><h1 id="productionOrderNumber">Brak zlecenia</h1></div>
         <div class="hmi-job__tools">
           <span id="productionPriority">—</span>
-          <button type="button" data-production-action="production-card">Karta produkcyjna</button>
-          <button type="button" data-production-action="pallet-history">Kontrole palet · <b id="productionPalletCount">0</b></button>
         </div>
       </div>
 
@@ -45,6 +43,18 @@
         <div><small>Maszyna</small><strong id="productionMachine">—</strong></div>
         <div><small>Termin</small><strong id="productionDueDate">—</strong></div>
         <div><small>Materiał główny</small><strong id="productionMaterial">—</strong></div>
+      </div>
+
+      <div class="hmi-job__documents" aria-label="Dokumenty bieżącego zlecenia">
+        <button type="button" data-production-action="production-card">
+          <span>KP</span><div><strong>Karta produkcyjna</strong><small>Otwórz dokument zlecenia</small></div>
+        </button>
+        <button type="button" data-production-action="pallet-history">
+          <span>JB</span><div><strong>Kontrole palet</strong><small>Zapisane: <b id="productionPalletCount">0</b></small></div>
+        </button>
+        <button id="productionDocumentBtn" type="button" data-production-action="withdrawals">
+          <span>ZM</span><div><strong>Dokument zmiany</strong><small>Pozycje: <b id="productionDocumentCount">0</b></small></div>
+        </button>
       </div>
     </section>
 
@@ -66,6 +76,15 @@
         <article><small id="remainingLabel">Pozostało</small><strong id="remainingQuantity">0</strong><span>szt.</span></article>
         <article><small>Plan</small><strong id="plannedQuantity">0</strong><span>szt.</span></article>
       </div>
+
+      <div class="hmi-result__actions" aria-label="Obsługa wyniku i palety">
+        <button class="is-pallet" id="productionPalletBtn" type="button" data-production-action="pallet-check">
+          <span>▦</span><div><strong>Zakończ paletę</strong><small>Kontrola palety nr <b id="productionNextPallet">1</b></small></div>
+        </button>
+        <button class="is-correction" id="productionCorrectReportBtn" type="button" data-production-action="correct-report">
+          <span>✎</span><div><strong>Korekta raportu</strong><small>Popraw błędną ilość</small></div>
+        </button>
+      </div>
     </section>
 
     <section class="hmi-panel hmi-materials">
@@ -78,7 +97,6 @@
       </div>
       <div class="hmi-materials__footer">
         <button class="is-request" type="button" data-production-action="warehouse-request">Zgłoś zapotrzebowanie</button>
-        <button id="productionDocumentBtn" type="button" data-production-action="withdrawals">Dokument zmiany · <span id="productionDocumentCount">0</span></button>
       </div>
     </section>
 
@@ -111,12 +129,6 @@
       </div>
       <button class="hmi-action hmi-action--report" type="button" data-production-action="report">
         <span>＋</span><div><strong>Raport wyniku</strong><small>Dobre sztuki i odpad</small></div>
-      </button>
-      <button class="hmi-action hmi-action--pallet" id="productionPalletBtn" type="button" data-production-action="pallet-check">
-        <span>▦</span><div><strong>Zakończ paletę</strong><small>Kontrola palety nr <b id="productionNextPallet">1</b></small></div>
-      </button>
-      <button class="hmi-action hmi-action--correct" id="productionCorrectReportBtn" type="button" data-production-action="correct-report">
-        <span>✎</span><div><strong>Korekta raportu</strong><small>Popraw błędną ilość</small></div>
       </button>
       <button class="hmi-action hmi-action--material" type="button" data-production-action="withdraw-material">
         <span>⇩</span><div><strong>Pobierz surowiec</strong><small>Produkt, ID i ilość</small></div>

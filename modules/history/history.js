@@ -7,7 +7,8 @@ function initHistory() {
   const modules = {
     "production-card": ["Karta produkcyjna", "KP"],
     labels: ["Etykiety", "ET"],
-    complaints: ["Reklamacje", "RK"],
+    complaints: ["Wniosek kasacji", "WK"],
+    "quality-complaints": ["Reklamacje", "RE"],
     planning: ["Planowanie", "PL"],
     production: ["Produkcja", "PR"],
     warehouse: ["Magazyn", "MG"],

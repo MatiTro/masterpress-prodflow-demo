@@ -17,6 +17,11 @@ const MODULES = {
 
     complaints: {
         folder: "complaints",
+        title: "Wniosek kasacji"
+    },
+
+    qualityComplaints: {
+        folder: "quality-complaints",
         title: "Reklamacje"
     },
 

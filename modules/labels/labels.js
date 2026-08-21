@@ -4,7 +4,24 @@
   const root = document.getElementById("labelsModule");
   if (!root) return;
 
-  const CARLTON_ASIN = "B0DHDB7377";
+  const CARLTON_VARIANTS = Object.freeze({
+    small: Object.freeze({
+      key: "small",
+      label: "Small",
+      unitsPerCarton: 200,
+      misc: "MISC2360",
+      asin: "B0DHDB7377",
+      productName: "Paper Returns Mailer Small - Barcoded"
+    }),
+    large: Object.freeze({
+      key: "large",
+      label: "Large",
+      unitsPerCarton: 150,
+      misc: "MISC2353",
+      asin: "",
+      productName: "Paper Returns Mailer Large - Barcoded"
+    })
+  });
   const $ = id => root.querySelector(`#${id}`) || document.getElementById(id);
   let selectedConfig = null;
   let toastTimer = null;
@@ -72,17 +89,33 @@
         }).format(date);
   }
 
-  function detectMisc(productName, clientIndex) {
-    const source = normalize(`${productName} ${clientIndex}`);
-    if (source.includes("small")) return "MISC2360";
-    if (source.includes("large")) return "MISC2353";
+  function detectCarltonSize(...values) {
+    const source = normalize(values.join(" "));
+    if (source.includes("small")) return "small";
+    if (source.includes("large")) return "large";
     return "";
+  }
+
+  function resolveCarltonVariant(order, fields) {
+    const explicit = normalize(fields.carltonSize);
+    const key = CARLTON_VARIANTS[explicit]
+      ? explicit
+      : detectCarltonSize(
+          order.product?.name,
+          order.customer?.code,
+          fields.clientIndex,
+          order.product?.code
+        );
+    return CARLTON_VARIANTS[key] || null;
   }
 
   function buildConfig(order) {
     const fields = order.metadata?.productionCard?.fields || {};
     const quantity = Number(order.order?.quantity || order.product?.quantity) || 0;
-    const unitsPerCarton = Number(order.packing?.unitsPerPackage || fields.qtyCarton) || 0;
+    const carlton = isCarlton(order);
+    const carltonVariant = carlton ? resolveCarltonVariant(order, fields) : null;
+    const unitsPerCarton = carltonVariant?.unitsPerCarton ||
+      Number(order.packing?.unitsPerPackage || fields.qtyCarton) || 0;
     const unitsPerPallet = Number(fields.qtyPallet) || 0;
     const cartons = unitsPerCarton > 0 ? Math.ceil(quantity / unitsPerCarton) : 0;
     const cartonsPerPallet = unitsPerCarton > 0 && unitsPerPallet > 0
@@ -91,10 +124,11 @@
     const pallets = cartonsPerPallet > 0
       ? Math.ceil(cartons / cartonsPerPallet)
       : Number(order.packing?.palletsCount) || 0;
-    const carlton = isCarlton(order);
     const config = {
       order,
       carlton,
+      carltonSize: carltonVariant?.key || "",
+      carltonSizeLabel: carltonVariant?.label || "",
       template: carlton ? "carlton-carton" : "masterpress-carton",
       templateName: carlton ? "Carlton 100 × 75 mm" : "Masterpress 100 × 75 mm",
       quantity,
@@ -105,9 +139,10 @@
       pallets,
       customerOrderNumber: clean(order.order?.customerOrderNumber || fields.clientOrderNumber),
       clientIndex: clean(order.customer?.code || fields.clientIndex || order.product?.code),
-      productName: clean(order.product?.name || fields.productName),
+      productName: carltonVariant?.productName || clean(order.product?.name || fields.productName),
       customerName: clean(order.customer?.name),
-      misc: detectMisc(order.product?.name, order.customer?.code || fields.clientIndex),
+      asin: carltonVariant?.asin || "",
+      misc: carltonVariant?.misc || "",
       errors: []
     };
 
@@ -116,7 +151,8 @@
     if (!config.customerOrderNumber) config.errors.push("brak numeru zlecenia klienta");
     if (!config.clientIndex) config.errors.push("brak indeksu klienta");
     if (!config.productName) config.errors.push("brak nazwy produktu");
-    if (carlton && !config.misc) config.errors.push("nazwa produktu Carlton nie zawiera SMALL ani LARGE");
+    if (carlton && !carltonVariant) config.errors.push("brak wariantu Carlton Small/Large w Karcie Produkcyjnej");
+    if (carltonVariant && !config.asin) config.errors.push(`brak numeru ASIN dla wariantu ${carltonVariant.label}`);
     if (carlton && !cartonsPerPallet) config.errors.push("brak ilości na palecie");
 
     return config;
@@ -256,13 +292,12 @@
           <strong class="carlton-index">${escapeHtml(config.clientIndex)}</strong>
           <div class="carlton-name">${escapeHtml(config.productName)}</div>
           <div class="carlton-carton">${formatNumber(config.unitsPerCarton)}/carton</div>
-          <div class="carlton-code-row"><span>ASIN: ${CARLTON_ASIN}</span><strong>${escapeHtml(config.misc)}</strong></div>
-          <div class="carlton-barcode">${barcodeSvg(CARLTON_ASIN)}</div>
+          <div class="carlton-code-row"><span>ASIN: ${escapeHtml(config.asin)}</span><strong>${escapeHtml(config.misc)}</strong></div>
+          <div class="carlton-barcode">${barcodeSvg(config.asin)}</div>
           <div class="carlton-batch">Batch No: ${escapeHtml(config.customerOrderNumber)}</div>
         </section>
         <footer>
           <span>Palette no. ${String(palletNumber).padStart(2, "0")}</span>
-          <small>Carton ${formatNumber(cartonNumber)} / ${formatNumber(config.cartons)}</small>
         </footer>
       </article>`;
   }
@@ -315,8 +350,7 @@
           .carlton-barcode svg{display:block;width:100%;height:100%}
           .barcode-fallback{display:grid;height:100%;place-items:center;border:1mm solid #111;font-weight:700;letter-spacing:.35em}
           .carlton-batch{margin-top:.3mm;font-size:10pt}
-          .label-carlton footer{display:flex;height:14mm;align-items:flex-start;justify-content:space-between;padding:1.5mm 12mm 0;font-size:18pt;line-height:1}
-          .label-carlton footer small{font-size:7pt}
+          .label-carlton footer{display:grid;height:14mm;place-items:start center;padding-top:1.5mm;font-size:18pt;line-height:1}
           @media screen{body{display:grid;gap:8mm;padding:8mm;background:#e8edf2}.label-page{box-shadow:0 8px 25px rgba(0,0,0,.18)}}
           @media print{body{display:block;padding:0;background:#fff}.label-page{box-shadow:none}}
         </style>
@@ -346,8 +380,9 @@
         pallets: config.pallets,
         customerOrderNumber: config.customerOrderNumber,
         clientIndex: config.clientIndex,
-        asin: config.carlton ? CARLTON_ASIN : "",
-        misc: config.misc
+        asin: config.carlton ? config.asin : "",
+        misc: config.misc,
+        carltonSize: config.carltonSize
       }
     }, { module: "labels" });
     return true;

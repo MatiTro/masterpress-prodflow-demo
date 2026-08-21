@@ -1109,7 +1109,7 @@
     }
 
     function palletChecklistHtml() {
-        const logoUrl = new URL("assets/images/logo_firmowe.png", document.baseURI).href;
+        const logoUrl = new URL("assets/images/logoczarne.png", document.baseURI).href;
         const checkValue = (record, key) => record.checks?.[key] === "P" ? "P" : "N";
         const rows = state.palletChecks.map(record => `
             <tr class="${record.status === "nonconforming" ? "fail" : ""}">
@@ -1128,34 +1128,47 @@
             </tr>`).join("");
         const clearance = state.lineClearance || {};
         return `<!doctype html>
-        <html lang="pl"><head><meta charset="utf-8"><title>Lista kontrolna JB - ${escapeHtml(state.orderNumber)}</title>
+        <html lang="pl"><head><meta charset="utf-8"><title>Lista kontrolna JB / Checklist JB - ${escapeHtml(state.orderNumber)}</title>
         <style>
-          @page{size:A4 landscape;margin:8mm}*{box-sizing:border-box}body{margin:0;color:#17283a;font:8px Arial,sans-serif}
-          header{display:grid;grid-template-columns:150px 1fr 175px;align-items:center;border:1.5px solid #173e63}header>div{min-height:54px;padding:8px;border-left:1px solid #9aabb9}header>div:first-child{border-left:0}header img{display:block;max-width:126px;max-height:34px;margin:auto}h1{margin:0;color:#002855;font-size:18px;text-align:center}header p{margin:3px 0 0;color:#53687a;text-align:center}.doc{text-align:right}.doc strong,.doc span{display:block}.doc span{margin-top:4px;color:#627585}
-          .meta{display:grid;grid-template-columns:1fr 1fr 1.35fr 1.4fr;gap:0;margin-top:6px;border:1px solid #70889b}.meta div{min-height:48px;padding:7px;border-left:1px solid #a8b6c1}.meta div:first-child{border-left:0}.meta span,.meta strong{display:block}.meta span{color:#617485;font-size:7px;text-transform:uppercase}.meta strong{margin-top:5px;font-size:10px}
-          .clearance{display:grid;grid-template-columns:1.5fr 3fr 1fr 1fr;margin:6px 0;border:1px solid #70889b}.clearance div{padding:7px;border-left:1px solid #a8b6c1}.clearance div:first-child{border-left:0}.clearance span,.clearance strong{display:block}.clearance span{color:#617485;font-size:7px;text-transform:uppercase}.clearance strong{margin-top:4px;font-size:9px}
-          table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th,td{padding:5px 3px;border:1px solid #7890a3;vertical-align:middle;text-align:center;overflow-wrap:anywhere}th{background:#e8eef3;color:#173e63;font-size:6.5px;line-height:1.25;text-transform:uppercase}td:nth-child(10){text-align:left}tr.fail td{background:#fff0f1;color:#8b2731}tbody tr{break-inside:avoid;height:28px}
-          .legend{display:flex;justify-content:space-between;margin-top:6px;color:#617485}.legend strong{color:#173e63}footer{position:fixed;right:0;bottom:0;color:#8292a0;font-size:7px}
+          @page{size:A4 landscape;margin:7mm}*{box-sizing:border-box}body{margin:0;color:#17283a;font:7.2px Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+          .document-header{display:grid;grid-template-columns:165px 1fr 190px;align-items:stretch;border:1.5px solid #173e63}.document-header>div{display:grid;align-content:center;min-height:57px;padding:7px 9px;border-left:1px solid #9aabb9}.document-header>div:first-child{border-left:0}.document-header img{display:block;width:145px;height:auto;max-height:36px;margin:auto;object-fit:contain;image-rendering:auto}.document-header h1{margin:0;color:#002855;font-size:17px;text-align:center}.document-header p{margin:4px 0 0;color:#53687a;font-size:8px;text-align:center}.doc{text-align:right}.doc strong,.doc span{display:block}.doc strong{font-size:7px}.doc span{margin-top:4px;color:#627585;font-size:7px}
+          .meta{display:grid;grid-template-columns:1fr 1fr 1.45fr 1.2fr;margin-top:5px;border:1px solid #70889b}.meta div{min-height:46px;padding:6px 7px;border-left:1px solid #a8b6c1}.meta div:first-child{border-left:0}.meta span,.meta strong{display:block}.meta span{color:#52697c;font-size:6.8px;font-weight:700}.meta strong{margin-top:5px;font-size:9px}
+          .clearance{display:grid;grid-template-columns:.78fr 3.3fr 1.15fr 1.05fr;margin:5px 0;border:1px solid #70889b}.clearance div{display:grid;align-content:center;min-height:52px;padding:6px 7px;border-left:1px solid #a8b6c1}.clearance div:first-child{border-left:0}.clearance span,.clearance strong{display:block}.clearance span{color:#52697c;font-size:6.8px;font-weight:700}.clearance strong{margin-top:4px;font-size:8px;line-height:1.3}.clearance .statement strong{font-weight:500}
+          table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th,td{padding:4px 2px;border:1px solid #7890a3;vertical-align:middle;text-align:center;overflow-wrap:anywhere}th{background:#e8eef3;color:#173e63;font-size:6.1px;line-height:1.16}th span,th small{display:block}th span{font-weight:800}th small{margin-top:2px;color:#415b70;font-size:5.8px;font-weight:500}td{font-size:6.8px}td:nth-child(10){text-align:left}tr.fail td{background:#fff0f1;color:#8b2731}tbody tr{height:28px;break-inside:avoid}
+          .legend{display:flex;justify-content:space-between;gap:16px;margin-top:5px;color:#52697c;font-size:6.8px}.legend strong{color:#173e63}footer{position:fixed;right:0;bottom:0;color:#8292a0;font-size:6.5px}
         </style></head><body>
-          <header><div><img src="${logoUrl}" alt="Masterpress"></div><div><h1>Lista kontrolna JB</h1><p>Checklist JB · elektroniczna kontrola skompletowanych palet</p></div><div class="doc"><strong>DOKUMENT ELEKTRONICZNY</strong><span>Wygenerowano: ${escapeHtml(formatDocumentDate(new Date()))}</span></div></header>
+          <header class="document-header"><div><img src="${logoUrl}" alt="Masterpress"></div><div><h1>Lista kontrolna JB / Checklist JB</h1><p>Elektroniczna kontrola każdej skompletowanej palety / Electronic inspection of every completed pallet</p></div><div class="doc"><strong>FO.PROD.105_LISTA KONTROLNA JB_v01</strong><span>Dokument elektroniczny / Electronic document</span><span>Wygenerowano / Generated: ${escapeHtml(formatDocumentDate(new Date()))}</span></div></header>
           <section class="meta">
-            <div><span>Numer zlecenia JB</span><strong>${escapeHtml(state.orderNumber || "—")}</strong></div>
-            <div><span>Numer zlecenia z druku</span><strong>${escapeHtml(state.printOrderNumber || "—")}</strong></div>
-            <div><span>Wyrób / indeks</span><strong>${escapeHtml(state.product || "—")} ${state.productCode ? `· ${escapeHtml(state.productCode)}` : ""}</strong></div>
-            <div><span>Wymiar nominalny</span><strong>${escapeHtml(dimensionText())}</strong></div>
+            <div><span>Numer zlecenia JB / JB order number</span><strong>${escapeHtml(state.orderNumber || "—")}</strong></div>
+            <div><span>Numer zlecenia z druku / Print order number</span><strong>${escapeHtml(state.printOrderNumber || "—")}</strong></div>
+            <div><span>Wyrób i indeks / Product and item number</span><strong>${escapeHtml(state.product || "—")} ${state.productCode ? `· ${escapeHtml(state.productCode)}` : ""}</strong></div>
+            <div><span>Wymiar nominalny / Nominal dimensions</span><strong>${escapeHtml(dimensionText())}</strong></div>
           </section>
           <section class="clearance">
-            <div><span>Oczyszczenie linii</span><strong>${clearance.confirmed ? "TAK / YES" : "NIE / NO"}</strong></div>
-            <div><span>Potwierdzenie</span><strong>Linia oczyszczona, brak zbędnych komponentów, czyste stoły, maszyna i podłoga</strong></div>
-            <div><span>Data / zmiana</span><strong>${clearance.confirmedAt ? escapeHtml(formatDocumentDate(clearance.confirmedAt)) : "—"}<br>${clearance.shift ? `Zm. ${escapeHtml(clearance.shift)}` : ""}</strong></div>
-            <div><span>Operator</span><strong>${escapeHtml(clearance.operator || "—")}</strong></div>
+            <div><span>Oczyszczenie linii / Line cleaning</span><strong>${clearance.confirmed ? "TAK / YES" : "NIE / NO"}</strong></div>
+            <div class="statement"><span>Potwierdzenie / Confirmation</span><strong>Potwierdzam oczyszczenie linii przed rozpoczęciem zlecenia: usunięto zbędne komponenty, a stoły, maszyna i podłoga są czyste. / I confirm that the line has been cleaned before production: unnecessary components were removed and the tables, machine and floor are clean.</strong></div>
+            <div><span>Data i zmiana / Date and shift</span><strong>${clearance.confirmedAt ? escapeHtml(formatDocumentDate(clearance.confirmedAt)) : "—"}<br>${clearance.shift ? `Zmiana / Shift: ${escapeHtml(clearance.shift)}` : ""}</strong></div>
+            <div><span>Podpis operatora / Operator signature</span><strong>${escapeHtml(clearance.operator || "—")}</strong></div>
           </section>
-          <table><colgroup><col style="width:4%"><col style="width:7%"><col style="width:8%"><col style="width:13%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:7%"><col style="width:14%"><col style="width:11%"><col style="width:12%"></colgroup>
-            <thead><tr><th>Paleta</th><th>Nr partii kleju</th><th>Nr partii taśmy silikonowej</th><th>Wymiary koperty<br>szer. × dł. × dno × klapa</th><th>Klej i taśma</th><th>Sklejenie i zamknięcie</th><th>Kod kreskowy</th><th>Pakowanie</th><th>Etykieta i jakość druku</th><th>Uwagi</th><th>Data / zmiana</th><th>Operator</th></tr></thead>
+          <table><colgroup><col style="width:4%"><col style="width:7%"><col style="width:7.5%"><col style="width:12%"><col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:8%"><col style="width:9%"><col style="width:11.5%"><col style="width:9%"><col style="width:9%"></colgroup>
+            <thead><tr>
+              <th><span>Numer palety</span><small>Pallet number</small></th>
+              <th><span>Numer partii kleju</span><small>Glue batch number</small></th>
+              <th><span>Numer partii taśmy silikonowej</span><small>Silicone tape batch number</small></th>
+              <th><span>Wymiary koperty: szerokość × długość × dno × klapa</span><small>Envelope dimensions: width × length × bottom × flap</small></th>
+              <th><span>Obecność i pozycjonowanie kleju oraz taśmy</span><small>Presence and positioning of glue and tape</small></th>
+              <th><span>Poprawność sklejenia i zamknięcia</span><small>Correctness of gluing and closing</small></th>
+              <th><span>Poprawność kodu kreskowego</span><small>Correctness of barcode</small></th>
+              <th><span>Pakowanie zgodne ze specyfikacją</span><small>Packaging according to specification</small></th>
+              <th><span>Właściwa etykieta i jakość wydruku</span><small>Correct label and print quality</small></th>
+              <th><span>Uwagi</span><small>Comments</small></th>
+              <th><span>Data i zmiana</span><small>Date and shift</small></th>
+              <th><span>Podpis operatora</span><small>Operator signature</small></th>
+            </tr></thead>
             <tbody>${rows}</tbody>
           </table>
-          <div class="legend"><span><strong>P</strong> — poprawne / zgodne · <strong>N</strong> — niepoprawne / niezgodne</span><span>Palety: ${escapeHtml(state.palletChecks.length)}${state.plannedPallets ? ` / plan ${escapeHtml(state.plannedPallets)}` : ""}</span></div>
-          <footer>Dokument elektroniczny · Masterpress S.A.</footer>
+          <div class="legend"><span><strong>P</strong> — poprawne / zgodne / correct and compliant · <strong>N</strong> — niepoprawne / niezgodne / incorrect or non-compliant</span><span>Liczba skontrolowanych palet / Inspected pallets: ${escapeHtml(state.palletChecks.length)}${state.plannedPallets ? ` / plan ${escapeHtml(state.plannedPallets)}` : ""}</span></div>
+          <footer>Dokument elektroniczny / Electronic document · Masterpress S.A.</footer>
         </body></html>`;
     }
 
@@ -1173,7 +1186,14 @@
         printWindow.document.write(palletChecklistHtml());
         printWindow.document.close();
         printWindow.focus();
-        window.setTimeout(() => printWindow.print(), 350);
+        const images = Array.from(printWindow.document.images || []);
+        Promise.all(images.map(image => image.complete
+            ? Promise.resolve()
+            : new Promise(resolve => {
+                image.addEventListener("load", resolve, { once: true });
+                image.addEventListener("error", resolve, { once: true });
+            })))
+            .finally(() => window.setTimeout(() => printWindow.print(), 180));
     }
 
     function isReportDocumentRelevant(record) {

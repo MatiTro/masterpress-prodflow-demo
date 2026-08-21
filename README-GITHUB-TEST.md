@@ -1,4 +1,4 @@
-# ProdFlow 0.9.0 — GITHUB TEST
+# ProdFlow 0.10.0 — GITHUB TEST
 
 Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pages. Nie wymaga ASP.NET Core ani SQL Servera.
 
@@ -9,15 +9,18 @@ Ta paczka służy wyłącznie do testów funkcjonalnych z biznesem na GitHub Pag
 
 W module `Konta i dostęp` można utworzyć dodatkowe konta testowe, np. konto operatora.
 
-## Nowości w wersji 0.9.0
+## Nowości w wersji 0.10.0
 
-- osobny moduł `Jakość → Kontrola kodów`, bez połączenia ze zleceniem,
-- obsługa skanera USB działającego jak klawiatura,
-- wybór 1, 3, 5 albo 10 próbek,
-- kontrola powtarzalności odczytanych wartości,
-- walidacja cyfry kontrolnej EAN-8, EAN-13, UPC-A i GTIN-14,
-- rejestrowanie braku odczytu i wyniku negatywnego,
-- historia protokołów oraz dokument do wydruku lub zapisu jako PDF.
+- pole `Small / Large` wyświetlane automatycznie dla klienta Carlton,
+- poprawiony automatyczny wzór etykiety Carlton oraz stałe wartości MISC i ilości w kartonie,
+- usunięta numeracja kartonu z etykiety Carlton,
+- czytelna, dwujęzyczna lista kontrolna JB z pełnymi nazwami kolumn,
+- przebudowany panel operatora z dużymi przyciskami dokumentów i obsługi palety,
+- moduł `Wniosek kasacji` oddzielony od nowego modułu `Reklamacje`,
+- trzy profesjonalne formularze: reklamacja surowca, reklamacja wyrobu gotowego i niezgodność procesu,
+- rejestr reklamacji z edycją i dokumentami do wydruku lub zapisu jako PDF.
+
+Numer ASIN dla wariantu `Small` jest skonfigurowany jako `B0DHDB7377`. Wariant `Large` wymaga uzupełnienia właściwego numeru ASIN przed wydrukiem.
 
 ## Publikacja na GitHub Pages
 
@@ -28,6 +31,15 @@ W module `Konta i dostęp` można utworzyć dodatkowe konta testowe, np. konto o
 5. Otwórz adres pokazany przez GitHub Pages.
 
 Po aktualizacji plików odczekaj chwilę i odśwież stronę skrótem `Ctrl+F5`.
+
+## Szybki test etykiety Carlton
+
+1. W `Karcie produkcyjnej` wpisz klienta zawierającego nazwę `Carlton`.
+2. W sekcji produktu wybierz wariant `Small` albo `Large`.
+3. Uzupełnij numer zamówienia klienta, indeks klienta, ilość zlecenia i ilość na palecie.
+4. Przekaż kartę do planowania i otwórz moduł `Etykiety`.
+5. Dla `Small` system stosuje 200 szt. / karton, `MISC2360` i ASIN `B0DHDB7377`.
+6. Wydruk wariantu `Large` pozostaje zablokowany do czasu podania właściwego numeru ASIN.
 
 ## Szybki test nowej karty palety
 
@@ -49,6 +61,14 @@ Przy zaznaczeniu dowolnej niezgodności `N` system wymaga komentarza i oznacza p
 5. W rejestrze wybierz `Podgląd / PDF`, aby wydrukować lub zapisać dokument.
 
 Testowy poprawny kod EAN-13 do ręcznego wpisania: `5901234123457`.
+
+## Szybki test reklamacji
+
+1. Otwórz `Jakość → Reklamacje`.
+2. Wybierz `Reklamacja surowca`, `Reklamacja wyrobu gotowego` albo `Niezgodność procesu`.
+3. Uzupełnij pola oznaczone gwiazdką i zapisz zgłoszenie.
+4. Z rejestru użyj przycisku `PDF`, aby wydrukować dokument lub zapisać go jako PDF.
+5. Dotychczasowy formularz kasacji znajduje się osobno w `Jakość → Wniosek kasacji`.
 
 ## Ważne ograniczenia trybu testowego
 

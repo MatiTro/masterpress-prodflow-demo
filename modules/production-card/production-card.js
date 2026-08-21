@@ -80,6 +80,7 @@ let currentOrderId = sessionStorage.getItem(
     "productIndex",
     "orderQty",
     "productName",
+    "carltonSize",
     "ppwrWidth",
     "ppwrHeight",
     "ppwrFlap",
@@ -205,6 +206,43 @@ let currentOrderId = sessionStorage.getItem(
   function safeText(value, fallback = "—") {
     const text = String(value ?? "").trim();
     return text || fallback;
+  }
+
+  function normalizeSearchText(value) {
+    return String(value ?? "")
+      .trim()
+      .toLocaleLowerCase("pl-PL")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function detectCarltonSize(...values) {
+    const source = normalizeSearchText(values.join(" "));
+    if (source.includes("small")) return "small";
+    if (source.includes("large")) return "large";
+    return "";
+  }
+
+  function isCarltonClient() {
+    return normalizeSearchText(getValue("client")).includes("carlton");
+  }
+
+  function updateCarltonVariantVisibility() {
+    const field = getElement("carltonSizeField");
+    const select = getElement("carltonSize");
+    if (!field || !select) return;
+
+    const visible = isCarltonClient();
+    field.hidden = !visible;
+    field.classList.toggle("is-required", visible);
+
+    if (visible && !select.value) {
+      select.value = detectCarltonSize(
+        getValue("productName"),
+        getValue("clientIndex"),
+        getValue("productIndex")
+      );
+    }
   }
 
   function escapeHtml(value) {
@@ -1125,6 +1163,15 @@ let currentOrderId = sessionStorage.getItem(
       updatePackingCalculations();
     }
 
+    if (
+      fieldId === "client" ||
+      fieldId === "productName" ||
+      fieldId === "clientIndex" ||
+      fieldId === "productIndex"
+    ) {
+      updateCarltonVariantVisibility();
+    }
+
     clearFieldError(fieldId);
     updateAllViews();
     debounceAutoSave();
@@ -1480,7 +1527,8 @@ let currentOrderId = sessionStorage.getItem(
       product:
         Boolean(getValue("productIndex").trim()) &&
         toNumber(getValue("orderQty")) > 0 &&
-        Boolean(getValue("productType")),
+        Boolean(getValue("productType")) &&
+        (!isCarltonClient() || Boolean(getValue("carltonSize"))),
 
       materials:
         Boolean(getValue("paperIndex").trim()) ||
@@ -1685,7 +1733,7 @@ let currentOrderId = sessionStorage.getItem(
     });
 
     return {
-      version: 4,
+      version: 5,
       updatedAt: new Date().toISOString(),
       processStep: root.dataset.processStep || "card",
       fields,
@@ -2251,7 +2299,7 @@ let currentOrderId = sessionStorage.getItem(
     const dimensions = order.product?.dimensions || {};
 
     return {
-      version: 4,
+      version: 5,
 
       updatedAt:
         order.updatedAt ||
@@ -2292,6 +2340,13 @@ let currentOrderId = sessionStorage.getItem(
 
         productName:
           order.product?.name || "",
+
+        carltonSize:
+          detectCarltonSize(
+            order.product?.name,
+            order.customer?.code,
+            order.product?.code
+          ),
 
         ppwrWidth: dimensions.width || "",
         ppwrHeight: dimensions.height || "",
@@ -2417,6 +2472,14 @@ let currentOrderId = sessionStorage.getItem(
     }
     delete normalized.fields.envelopeSize;
 
+    if (!normalized.fields.carltonSize) {
+      normalized.fields.carltonSize = detectCarltonSize(
+        normalized.fields.productName,
+        normalized.fields.clientIndex,
+        normalized.fields.productIndex
+      );
+    }
+
     normalized.fields.ppwrTearStrip =
       normalizeTearType(
         normalized.fields.ppwrTearStrip,
@@ -2455,6 +2518,7 @@ let currentOrderId = sessionStorage.getItem(
       restoreInks(normalizedData.inks || []);
 
       updateEmbossedPaperVisibility();
+      updateCarltonVariantVisibility();
 
       renderSiliconeFields(
         normalizedData.silicone || []
@@ -3010,6 +3074,7 @@ let currentOrderId = sessionStorage.getItem(
     setValue("labelTypeSelect", "standard");
     setValue("siliconeSelect", "0");
     setValue("ppwrTearStrip", "");
+    updateCarltonVariantVisibility();
 
     graphicPdfAttachment = null;
     renderGraphicAttachment();
@@ -3195,6 +3260,7 @@ let currentOrderId = sessionStorage.getItem(
      ======================================================= */
 
   function updateAllViews() {
+    updateCarltonVariantVisibility();
     updateSummary();
     updatePackingCalculations();
     updateCompleteness();
